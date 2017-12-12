@@ -5,7 +5,8 @@ Use this program only for *personal* and/or *educational* purpose.
 ## Overview:
   * [Requirements & Setup](#requirements--setup)
   * [Usage](#usage)
-  * [Examples](#examples)
+  * [Example: Download *Test-Driven Development with Python, 2nd Edition*](#download-test-driven-development-with-python-2nd-edition)
+  * [Example: Use or not the `--no-kindle` option](#use-or-not-the---no-kindle-option)
 
 ## Requirements & Setup:
 ```shell
