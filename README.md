@@ -126,8 +126,9 @@ optional arguments:
     ```bash
     $ python3 safaribooks.py --no-kindle 9781491958698
     ```  
+    On the left book created with `--no-kindle` option, on the right without (default):  
     
-    ![NoKindle Option](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_example02_NoKindle.png "Version comparison")  
+    ![NoKindle Option](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_example02_NoKindle.png "Version compare")  
     
 ---  
   
