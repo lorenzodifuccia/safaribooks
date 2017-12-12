@@ -556,7 +556,7 @@ class SafariBooks:
                                   (self.filename.replace(".html", ".xhtml"),
                                    " (especially because you selected the `--no-kindle` option)" if self.args.no_kindle
                                    else ""))
-                self.display.book_ad_info = 1
+                self.display.book_ad_info = 2
 
         else:
             self.save_page_html(self.parse_html(self.get_html(urljoin(self.base_url, self.filename))))
@@ -650,7 +650,7 @@ class SafariBooks:
             os.makedirs(self.images_path)
             self.display.images_ad_info.value = 1
 
-        if self.display.book_ad_info == 1:
+        if self.display.book_ad_info == 2:
             self.display.info("Some of the book contents were already downloaded.\n"
                               "    If you want to be sure that all the images will be downloaded,\n"
                               "    please delete the `<BOOK NAME>/OEBPS/*.xhtml` files and restart the program.")
