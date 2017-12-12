@@ -38,9 +38,10 @@ If you don't want to cache the cookies, just use the `--no-cookies` option and p
 
 The program default options are thought for ensure best compatibilities for who want to export the `EPUB` to E-Readers like Amazon Kindle.  
 If you want to do it, I suggest you to convert the `EPUB` to `AZW3` file with [Calibre](https://calibre-ebook.com/).  
-You can also convert the book to `MOBI` and if you'll convert it with Calibre be sure to select the `Ignore margins`:  
+You can also convert the book to `MOBI` and if you'll convert it with Calibre be sure to select `Ignore margins`:  
+  
 ![Calibre IgnoreMargins](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_calibre_IgnoreMargins.png "Select Ignore margins")  
-
+  
 ### Program options:
 ```shell
 $ python3 safaribooks.py --help
