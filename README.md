@@ -1,8 +1,13 @@
 # SafariBooks
-Download and generate an EPUB of your favorite books from [Safari Books Online](https://www.safaribooksonline.com) library.  
-Use this program only for personal and/or educational purpose.  
+Download and generate an *EPUB* of your favorite books from [*Safari Books Online*](https://www.safaribooksonline.com) library.  
+Use this program only for *personal* and/or *educational* purpose.  
 
-## Requirements & setup:
+## Overview:
+  * [Requirements & Setup]()
+  * [Usage]()
+  * [Examples]()
+
+## Requirements & Setup:
 ```shell
 $ git clone https://github.com/lorenzodifuccia/safaribooks.git
 Cloning into 'safaribooks'...
@@ -11,7 +16,7 @@ $ cd safaribooks/
 $ pip3 install -r requirements.txt
 ```  
 
-The program depends of only two Python 3 modules:
+The program depends of only two **Python 3** modules:
 ```python3
 lxml>=4.1.1
 requests>=2.18.4
@@ -20,13 +25,13 @@ requests>=2.18.4
 ## Usage:
 It's really simple to use, just choose a book from the library and replace in the following command:
   * X-es with its ID, 
-  * `email:password`  with your own. 
+  * `email:password` with your own. 
 
 ```shell
 $ python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
 ```
 
-The ID are the digits that you can find in the URL of the book description page:  
+The ID are the digits that you find in the URL of the book description page:  
 `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`  
 Like: `https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/`  
   
@@ -37,12 +42,14 @@ Pay attention if you use a shared PC, because everyone that has access to your f
 If you don't want to cache the cookies, just use the `--no-cookies` option and provide all the time your `--cred`.  
 
 The program default options are thought for ensure best compatibilities for who want to export the `EPUB` to E-Readers like Amazon Kindle.  
-If you want to do it, I suggest you to convert the `EPUB` to `AZW3` file with [Calibre](https://calibre-ebook.com/).  
-You can also convert the book to `MOBI` and if you'll do it with Calibre be sure to select `Ignore margins`:  
+If you want to do it, I suggest you to convert the `EPUB` to `AZW3` with [Calibre](https://calibre-ebook.com/).  
+You can also convert the book to `MOBI` and if you'll do it with Calibre be sure to select `Ignore margins` in the conversion options:  
   
 ![Calibre IgnoreMargins](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_calibre_IgnoreMargins.png "Select Ignore margins")  
+
+In the other hand, if you're not going to export the `EPUB`, you can use the `--no-kindle` option to remove the CSS that blocks overflow on `table` and `pre` elements, see below in the examples.
   
-### Program options:
+#### Program options:
 ```shell
 $ python3 safaribooks.py --help
 usage: safaribooks.py [--cred <EMAIL:PASS>] [--no-cookies] [--no-kindle]
@@ -71,7 +78,8 @@ optional arguments:
   --help               Show this help message.
 ```
 
-  * ## Example: [Test-Driven Development with Python, 2nd Edition](https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/)  
+## Examples:
+  * ## Download [Test-Driven Development with Python, 2nd Edition](https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/):  
     ```shell
     $ python3 safaribooks.py --cred "XXXX@gmail.com:XXXXX" 9781491958698
 
@@ -113,8 +121,16 @@ optional arguments:
 
     ![Book Appearance](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_example01_TDD.png "Book opened with Calibre")  
  
-  * ## Example: `--no-kindle` option
+  * ## Use or not the `--no-kindle` option:
     ```bash
     $ python3 safaribooks.py --no-kindle 9781491958698
     ```  
+    
     ![NoKindle Option](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_example02_NoKindle.png "Version comparison")  
+    
+---  
+  
+## Thanks!!
+For any kind of problem, please don't hesitate to open an issue here on *GitHub*.  
+  
+*Lorenzo Di Fuccia*
