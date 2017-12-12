@@ -3,9 +3,9 @@ Download and generate an *EPUB* of your favorite books from [*Safari Books Onlin
 Use this program only for *personal* and/or *educational* purpose.  
 
 ## Overview:
-  * [Requirements & Setup]()
-  * [Usage]()
-  * [Examples]()
+  * [Requirements & Setup](#requirements--setup)
+  * [Usage](#usage)
+  * [Examples](#examples)
 
 ## Requirements & Setup:
 ```shell
