@@ -36,6 +36,11 @@ For the next times you'll download a book, before session expires, you can omit 
 Pay attention if you use a shared PC, because everyone that has access to your files can steal your session. 
 If you don't want to cache the cookies, just use the `--no-cookies` option and provide all the time your `--cred`.  
 
+The program default options are thought for ensure best compatibilities for who want to export the `EPUB` to E-Readers like Amazon Kindle.  
+If you want to do it, I suggest you to convert the `EPUB` to `AZW3` file with [Calibre](https://calibre-ebook.com/).  
+You can also convert the book to `MOBI` and if you'll convert it with Calibre be sure to select the `Ignore margins`:  
+![Calibre IgnoreMargins](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_calibre_IgnoreMargins.png "Select Ignore margins")  
+
 ### Program options:
 ```shell
 $ python3 safaribooks.py --help
@@ -103,7 +108,7 @@ optional arguments:
 
     [!] Bye!!
     ```  
-     The result will be (opening the EPUB file with [Calibre](https://calibre-ebook.com/)):  
+     The result will be (opening the `EPUB` file with Calibre):  
 
     ![Book Appearance](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_example01_TDD.png "Book opened with Calibre")  
  
