@@ -110,9 +110,10 @@ class Display:
             ("Publishers", ", ".join(pub["name"] for pub in info["publishers"])),
             ("Rights", info["rights"]),
             ("Description", description[:500] + "..." if len(description) >= 500 else description),
+            ("Release Date", info["issued"]),
             ("URL", info["web_url"])
         ]:
-            self.info("{0}: {1}".format(t[0], t[1]), True)
+            self.info("{0}{1}{2}: {3}".format(self.SH_YELLOW, t[0], self.SH_DEFAULT, t[1]), True)
 
     def state(self, origin, done):
         progress = int(done * 100 / origin)
@@ -196,7 +197,7 @@ class SafariBooks:
                     "</rootfiles>" \
                     "</container>"
 
-    # Format: ID, Title, Authors, Description, Subjects, Publisher, Rights, CoverId, MANIFEST, SPINE, CoverUrl
+    # Format: ID, Title, Authors, Description, Subjects, Publisher, Rights, Date, CoverId, MANIFEST, SPINE, CoverUrl
     CONTENT_OPF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" \
                   "<package xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"bookid\" version=\"2.0\" >\n" \
                   "<metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\" " \
@@ -208,15 +209,16 @@ class SafariBooks:
                   "<dc:publisher>{5}</dc:publisher>\n" \
                   "<dc:rights>{6}</dc:rights>\n" \
                   "<dc:language>en-US</dc:language>\n" \
+                  "<dc:date>{7}</dc:date>" \
                   "<dc:identifier id=\"bookid\">{0}</dc:identifier>\n" \
-                  "<meta name=\"cover\" content=\"{7}\"/>\n" \
+                  "<meta name=\"cover\" content=\"{8}\"/>\n" \
                   "</metadata>\n" \
                   "<manifest>\n" \
                   "<item id=\"ncx\" href=\"toc.ncx\" media-type=\"application/x-dtbncx+xml\" />\n" \
-                  "{8}\n" \
+                  "{9}\n" \
                   "</manifest>\n" \
-                  "<spine toc=\"ncx\">\n{9}</spine>\n" \
-                  "<guide><reference href=\"{10}\" title=\"Cover\" type=\"cover\" /></guide>\n" \
+                  "<spine toc=\"ncx\">\n{10}</spine>\n" \
+                  "<guide><reference href=\"{11}\" title=\"Cover\" type=\"cover\" /></guide>\n" \
                   "</package>"
 
     # Format: ID, Depth, Title, Author, NAVMAP
@@ -704,6 +706,7 @@ class SafariBooks:
             subjects,
             ", ".join(escape(pub["name"]) for pub in self.book_info["publishers"]),
             escape(self.book_info["rights"]),
+            self.book_info["issued"],
             self.cover if self.cover else alt_cover_id,
             "\n".join(manifest),
             "\n".join(spine),
