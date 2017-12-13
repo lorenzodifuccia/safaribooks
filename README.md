@@ -101,6 +101,7 @@ optional arguments:
     [-] Publishers: O'Reilly Media, Inc.                                            
     [-] Rights: Copyright © O'Reilly Media, Inc.                                    
     [-] Description: By taking you through the development of a real web application from beginning to end, the second edition of this hands-on guide demonstrates the practical advantages of test-driven development (TDD) with Python. You’ll learn how to write and run tests before building each part of your app, and then develop the minimum amount of code required to pass those tests. The result? Clean code that works.In the process, you’ll learn the basics of Django, Selenium, Git, jQuery, and Mock, along with curre...
+    [-] Release Date: 2017-08-18
     [-] URL: https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/
     [*] Found 73 chapters!                                                          
     [*] Output directory:                                                           
