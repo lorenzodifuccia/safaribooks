@@ -209,7 +209,7 @@ class SafariBooks:
                   "<dc:publisher>{5}</dc:publisher>\n" \
                   "<dc:rights>{6}</dc:rights>\n" \
                   "<dc:language>en-US</dc:language>\n" \
-                  "<dc:date>{7}</dc:date>" \
+                  "<dc:date>{7}</dc:date>\n" \
                   "<dc:identifier id=\"bookid\">{0}</dc:identifier>\n" \
                   "<meta name=\"cover\" content=\"{8}\"/>\n" \
                   "</metadata>\n" \
