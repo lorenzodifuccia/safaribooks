@@ -5,6 +5,7 @@ import shutil
 import logging
 import argparse
 import requests
+import traceback
 from lxml import html
 from html import escape
 from random import random
@@ -27,15 +28,17 @@ class Display:
     SH_BG_RED = "\033[41m"
     SH_BG_YELLOW = "\033[43m"
 
-    def __init__(self):
-        self.columns, _ = shutil.get_terminal_size()
+    def __init__(self, log_file):
+        self.log_file = os.path.join(PATH, log_file)
 
         self.logger = logging.getLogger("SafariBooks")
         self.logger.setLevel(logging.INFO)
-        logs_handler = logging.FileHandler(filename=os.path.join(PATH, "info.log"))
+        logs_handler = logging.FileHandler(filename=self.log_file)
         logs_handler.setFormatter(self.BASE_FORMAT)
         logs_handler.setLevel(logging.INFO)
         self.logger.addHandler(logs_handler)
+
+        self.columns, _ = shutil.get_terminal_size()
 
         self.logger.info("** Welcome to SafariBooks! **")
 
@@ -78,7 +81,8 @@ class Display:
         self.out(output)
         sys.exit(128)
 
-    def unhandled_exception(self, _, o, __):
+    def unhandled_exception(self, _, o, tb):
+        self.log("".join(traceback.format_tb(tb)))
         self.exit("Unhandled Exception: %s (type: %s)" % (o, o.__class__.__name__))
 
     def intro(self):
@@ -92,7 +96,10 @@ class Display:
     /____/\___/\___/_/\_\/___/
 """ + self.SH_DEFAULT
         output += "\n" + "~" * (self.columns // 2)
+
         self.out(output)
+
+        self.info("Retrieving book info...")
 
     def parse_description(self, desc):
         try:
@@ -138,7 +145,7 @@ class Display:
         message = "API: "
         if "detail" in response and "Not found" in response["detail"]:
             message += "book's not present in Safari Books Online.\n" \
-                       "    The book identifier are the digits that you can find in the URL:\n" \
+                       "    The book identifier is the digits that you can find in the URL:\n" \
                        "    `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`"
 
         else:
@@ -239,7 +246,7 @@ class SafariBooks:
 
     def __init__(self, args):
         self.args = args
-        self.display = Display()
+        self.display = Display("info_%s.log" % escape(args.bookid))
         self.display.intro()
 
         self.cookies = {}
@@ -261,9 +268,13 @@ class SafariBooks:
         self.api_url = self.API_TEMPLATE.format(self.book_id)
         self.book_info = self.get_book_info()
         self.display.book_info(self.book_info)
+
+        self.display.info("Retrieving book chapters...")
         self.book_chapters = self.get_book_chapters()
-        self.display.info("Found %s chapters!" % len(self.book_chapters))
         self.chapters_queue = self.book_chapters[:]
+
+        if len(self.book_chapters) > sys.getrecursionlimit():
+            sys.setrecursionlimit(len(self.book_chapters))
 
         self.book_title = self.book_info["title"]
         self.base_url = self.book_info["web_url"]
@@ -277,7 +288,7 @@ class SafariBooks:
         self.css = []
         self.images = []
 
-        self.display.info("Downloading book contents...", state=True)
+        self.display.info("Downloading book contents... (%s chapters)" % len(self.book_chapters), state=True)
         self.BASE_HTML = self.BASE_01_HTML + (self.KINDLE_HTML if not args.no_kindle else "") + self.BASE_02_HTML
         self.get()
 
@@ -285,9 +296,9 @@ class SafariBooks:
         self.images_path = ""
         self.cover = ""
 
-        self.display.info("Downloading book CSSs...", state=True)
+        self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
         self.collect_css()
-        self.display.info("Downloading book images...", state=True)
+        self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
         self.collect_images()
 
         self.display.info("Creating EPUB file...", state=True)
@@ -299,7 +310,7 @@ class SafariBooks:
         self.display.done(self.book_title + ".epub")
 
         if not self.display.in_error and not args.log:
-            os.remove(os.path.join(PATH, "info.log"))
+            os.remove(self.display.log_file)
 
         sys.exit(0)
 
@@ -420,6 +431,9 @@ class SafariBooks:
         if "results" not in response or not len(response["results"]):
             self.display.exit("API: unable to retrieve book chapters.")
 
+        if response["count"] > sys.getrecursionlimit():
+            sys.setrecursionlimit(response["count"])
+
         result = []
         result.extend([c for c in response["results"] if "cover." in c["filename"]])
         for c in result:
@@ -452,8 +466,10 @@ class SafariBooks:
     def link_replace(self, link):
         if link[0] == "/" and ("cover" in link or "images" in link or "graphics" in link
                                or link[-3:] in ["jpg", "jpeg", "png"]):
-            self.images.append(link)
-            self.display.log("Crawler: found a new image at %s" % link)
+            if link not in self.images:
+                self.images.append(link)
+                self.display.log("Crawler: found a new image at %s" % link)
+
             image = link.split("/")[-1]
             return "Images/" + image
 
@@ -542,29 +558,31 @@ class SafariBooks:
         self.display.log("Created: %s" % self.filename)
 
     def get(self):
-        if not len(self.chapters_queue):
-            return
+        len_books = len(self.book_chapters)
 
-        next_chapter = self.chapters_queue.pop(0)
-        self.chapter_title = next_chapter["title"]
-        self.filename = next_chapter["filename"]
+        for _ in self.book_chapters:
+            if not len(self.chapters_queue):
+                return
 
-        if os.path.isfile(os.path.join(self.BOOK_PATH, "OEBPS", self.filename.replace(".html", ".xhtml"))):
-            if not self.display.book_ad_info and \
-                    next_chapter not in self.book_chapters[:self.book_chapters.index(next_chapter)]:
-                self.display.info("File `%s` already exists.\n"
-                                  "    If you want to download again all the book%s,\n"
-                                  "    please delete the `<BOOK NAME>/OEBPS/*.xhtml` files and restart the program." %
-                                  (self.filename.replace(".html", ".xhtml"),
-                                   " (especially because you selected the `--no-kindle` option)" if self.args.no_kindle
-                                   else ""))
-                self.display.book_ad_info = 2
+            next_chapter = self.chapters_queue.pop(0)
+            self.chapter_title = next_chapter["title"]
+            self.filename = next_chapter["filename"]
 
-        else:
-            self.save_page_html(self.parse_html(self.get_html(urljoin(self.base_url, self.filename))))
+            if os.path.isfile(os.path.join(self.BOOK_PATH, "OEBPS", self.filename.replace(".html", ".xhtml"))):
+                if not self.display.book_ad_info and \
+                        next_chapter not in self.book_chapters[:self.book_chapters.index(next_chapter)]:
+                    self.display.info("File `%s` already exists.\n"
+                                      "    If you want to download again all the book%s,\n"
+                                      "    please delete the `<BOOK NAME>/OEBPS/*.xhtml` files and restart the program." %
+                                      (self.filename.replace(".html", ".xhtml"),
+                                       " (especially because you selected the `--no-kindle` option)" if self.args.no_kindle
+                                       else ""))
+                    self.display.book_ad_info = 2
 
-        self.display.state(len(self.book_chapters), len(self.book_chapters) - len(self.chapters_queue))
-        self.get()
+            else:
+                self.save_page_html(self.parse_html(self.get_html(urljoin(self.base_url, self.filename))))
+
+            self.display.state(len_books, len_books - len(self.chapters_queue))
 
     def _thread_download_css(self, url, done_queue):
         css_file = os.path.join(self.css_path, "Style{0:0>2}.css".format(self.css.index(url)))
@@ -805,10 +823,10 @@ arguments.add_argument(
          " Use this option if you're not going to export the EPUB to E-Readers like Amazon Kindle."
 )
 arguments.add_argument(
-    "--preserve-log", dest="log", action='store_true', help="Leave the `info.log` file even if there isn't any error."
+    "--preserve-log", dest="log", action='store_true', help="Leave the `info_XXXXXXXXXXXXX.log`"
+                                                            " file even if there isn't any error."
 )
 arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
-
 arguments.add_argument(
     "bookid", metavar='<BOOK ID>',
     help="Book digits ID that you want to download. You can find it in the URL (X-es):"
@@ -827,8 +845,5 @@ if args_parsed.cred:
 else:
     if args_parsed.no_cookies:
         arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
-
-if not args_parsed.bookid.isdigit():
-    arguments.error("invalid book id: %s" % args_parsed.bookid)
 
 SafariBooks(args_parsed)
