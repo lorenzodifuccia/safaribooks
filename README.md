@@ -32,23 +32,9 @@ It's really simple to use, just choose a book from the library and replace in th
 $ python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
 ```
 
-The ID are the digits that you find in the URL of the book description page:  
+The ID is the digits that you find in the URL of the book description page:  
 `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`  
 Like: `https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/`  
-  
-The first time you'll use the program, you'll have to specify your Safari Books Online account credentials. 
-For the next times you'll download a book, before session expires, you can omit the credential, because the program save your session cookies in a file called `cookies.json`.  
-  
-Pay attention if you use a shared PC, because everyone that has access to your files can steal your session. 
-If you don't want to cache the cookies, just use the `--no-cookies` option and provide all the time your `--cred`.  
-
-The program default options are thought for ensure best compatibilities for who want to export the `EPUB` to E-Readers like Amazon Kindle.  
-If you want to do it, I suggest you to convert the `EPUB` to `AZW3` with [Calibre](https://calibre-ebook.com/).  
-You can also convert the book to `MOBI` and if you'll do it with Calibre be sure to select `Ignore margins` in the conversion options:  
-  
-![Calibre IgnoreMargins](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_calibre_IgnoreMargins.png "Select Ignore margins")  
-
-In the other hand, if you're not going to export the `EPUB`, you can use the `--no-kindle` option to remove the CSS that blocks overflow on `table` and `pre` elements, see below in the examples.
   
 #### Program options:
 ```shell
@@ -74,11 +60,24 @@ optional arguments:
   --no-kindle          Remove some CSS rules that block overflow on `table`
                        and `pre` elements. Use this option if you're not going
                        to export the EPUB to E-Readers like Amazon Kindle.
-  --preserve-log       Leave the `info.log` file even if there isn't any
-                       error.
+  --preserve-log       Leave the `info_XXXXXXXXXXXXX.log` file even if there 
+                       isn't any error.
   --help               Show this help message.
 ```
+  
+The first time you'll use the program, you'll have to specify your Safari Books Online account credentials. 
+For the next times you'll download a book, before session expires, you can omit the credential, because the program save your session cookies in a file called `cookies.json`.  
+  
+Pay attention if you use a shared PC, because everyone that has access to your files can steal your session. 
+If you don't want to cache the cookies, just use the `--no-cookies` option and provide all the time your `--cred`.  
 
+The program default options are thought for ensure best compatibilities for who want to export the `EPUB` to E-Readers like Amazon Kindle. If you want to do it, I suggest you to convert the `EPUB` to `AZW3` with [Calibre](https://calibre-ebook.com/).  
+You can also convert the book to `MOBI` and if you'll do it with Calibre be sure to select `Ignore margins` in the conversion options:  
+  
+![Calibre IgnoreMargins](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_calibre_IgnoreMargins.png "Select Ignore margins")  
+
+In the other hand, if you're not going to export the `EPUB`, you can use the `--no-kindle` option to remove the CSS that blocks overflow on `table` and `pre` elements, see below in the examples.  
+  
 ## Examples:
   * ## Download [Test-Driven Development with Python, 2nd Edition](https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/):  
     ```shell
@@ -93,7 +92,8 @@ optional arguments:
         /____/\___/\___/_/\_\/___/
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    [-] Logging into Safari Books Online...                                         
+    [-] Logging into Safari Books Online...
+    [*] Retrieving book info... 
     [-] Title: Test-Driven Development with Python, 2nd Edition                     
     [-] Authors: Harry J.W. Percival                                                
     [-] Identifier: 9781491958698                                                   
@@ -101,11 +101,12 @@ optional arguments:
     [-] Publishers: O'Reilly Media, Inc.                                            
     [-] Rights: Copyright © O'Reilly Media, Inc.                                    
     [-] Description: By taking you through the development of a real web application from beginning to end, the second edition of this hands-on guide demonstrates the practical advantages of test-driven development (TDD) with Python. You’ll learn how to write and run tests before building each part of your app, and then develop the minimum amount of code required to pass those tests. The result? Clean code that works.In the process, you’ll learn the basics of Django, Selenium, Git, jQuery, and Mock, along with curre...
+    [-] Release Date: 2017-08-18
     [-] URL: https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/
-    [*] Found 73 chapters!                                                          
+    [*] Retrieving book chapters...                                                          
     [*] Output directory:                                                           
         /XXXX/XXXX/Test-Driven Development with Python, 2nd Edition
-    [-] Downloading book contents...                                                
+    [-] Downloading book contents... (73 chapters)                                               
         [#########################################----------------------------]  60%
     ...
     [-] Creating EPUB file...                                                       
