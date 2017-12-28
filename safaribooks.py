@@ -1,3 +1,4 @@
+# coding: utf-8
 import os
 import sys
 import json
@@ -23,10 +24,10 @@ class Display:
         datefmt="%d/%b/%Y %H:%M:%S"
     )
 
-    SH_DEFAULT = "\033[0m"
-    SH_YELLOW = "\033[33m"
-    SH_BG_RED = "\033[41m"
-    SH_BG_YELLOW = "\033[43m"
+    SH_DEFAULT = "\033[0m" if "win" not in sys.platform else ""  # TODO colors for Windows
+    SH_YELLOW = "\033[33m" if "win" not in sys.platform else ""
+    SH_BG_RED = "\033[41m" if "win" not in sys.platform else ""
+    SH_BG_YELLOW = "\033[43m" if "win" not in sys.platform else ""
 
     def __init__(self, log_file):
         self.log_file = os.path.join(PATH, log_file)
@@ -99,8 +100,6 @@ class Display:
 
         self.out(output)
 
-        self.info("Retrieving book info...")
-
     def parse_description(self, desc):
         try:
             return html.fromstring(desc).text_content()
@@ -155,6 +154,14 @@ class Display:
                        " Use the `--cred` option in order to perform the auth login to Safari Books Online."
 
         return message
+
+
+class WinQueue(list):  # TODO: error while use Process in Windows: can't pickle _thread.RLock objects
+    def put(self, el):
+        self.append(el)
+
+    def qsize(self):
+        return self.__len__()
 
 
 class SafariBooks:
@@ -266,6 +273,8 @@ class SafariBooks:
 
         self.book_id = args.bookid
         self.api_url = self.API_TEMPLATE.format(self.book_id)
+
+        self.display.info("Retrieving book info...")
         self.book_info = self.get_book_info()
         self.display.book_info(self.book_info)
 
@@ -296,8 +305,10 @@ class SafariBooks:
         self.images_path = ""
         self.cover = ""
 
+        self.css_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
         self.collect_css()
+        self.images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
         self.collect_images()
 
@@ -465,7 +476,7 @@ class SafariBooks:
 
     def link_replace(self, link):
         if link[0] == "/" and ("cover" in link or "images" in link or "graphics" in link
-                               or link[-3:] in ["jpg", "jpeg", "png"]):
+                               or link[-3:] in ["jpg", "peg", "png", "gif"]):
             if link not in self.images:
                 self.images.append(link)
                 self.display.log("Crawler: found a new image at %s" % link)
@@ -553,8 +564,8 @@ class SafariBooks:
 
     def save_page_html(self, contents):
         self.filename = self.filename.replace(".html", ".xhtml")
-        open(os.path.join(self.BOOK_PATH, "OEBPS", self.filename), "w")\
-            .write(self.BASE_HTML.format(contents[0], contents[1]))
+        open(os.path.join(self.BOOK_PATH, "OEBPS", self.filename), "wb")\
+            .write(self.BASE_HTML.format(contents[0], contents[1]).encode("utf-8", "replace"))
         self.display.log("Created: %s" % self.filename)
 
     def get(self):
@@ -571,12 +582,16 @@ class SafariBooks:
             if os.path.isfile(os.path.join(self.BOOK_PATH, "OEBPS", self.filename.replace(".html", ".xhtml"))):
                 if not self.display.book_ad_info and \
                         next_chapter not in self.book_chapters[:self.book_chapters.index(next_chapter)]:
-                    self.display.info("File `%s` already exists.\n"
-                                      "    If you want to download again all the book%s,\n"
-                                      "    please delete the `<BOOK NAME>/OEBPS/*.xhtml` files and restart the program." %
-                                      (self.filename.replace(".html", ".xhtml"),
-                                       " (especially because you selected the `--no-kindle` option)" if self.args.no_kindle
-                                       else ""))
+                    self.display.info(
+                        "File `%s` already exists.\n"
+                        "    If you want to download again all the book%s,\n"
+                        "    please delete the `<BOOK NAME>/OEBPS/*.xhtml` files and restart the program." %
+                        (
+                            self.filename.replace(".html", ".xhtml"),
+                            " (especially because you selected the `--no-kindle` option)"
+                            if self.args.no_kindle else ""
+                        )
+                    )
                     self.display.book_ad_info = 2
 
             else:
@@ -584,7 +599,7 @@ class SafariBooks:
 
             self.display.state(len_books, len_books - len(self.chapters_queue))
 
-    def _thread_download_css(self, url, done_queue):
+    def _thread_download_css(self, url):
         css_file = os.path.join(self.css_path, "Style{0:0>2}.css".format(self.css.index(url)))
         if os.path.isfile(css_file):
             if not self.display.css_ad_info.value and url not in self.css[:self.css.index(url)]:
@@ -604,10 +619,10 @@ class SafariBooks:
                 for chunk in response.iter_content(1024):
                     s.write(chunk)
 
-        done_queue.put(1)
-        self.display.state(len(self.css), done_queue.qsize())
+        self.css_done_queue.put(1)
+        self.display.state(len(self.css), self.css_done_queue.qsize())
 
-    def _thread_download_images(self, url, done_queue):
+    def _thread_download_images(self, url):
         image_name = url.split("/")[-1]
         image_path = os.path.join(self.images_path, image_name)
         if os.path.isfile(image_path):
@@ -630,19 +645,16 @@ class SafariBooks:
                 for chunk in response.iter_content(1024):
                     img.write(chunk)
 
-        done_queue.put(1)
-        self.display.state(len(self.images), done_queue.qsize())
+        self.images_done_queue.put(1)
+        self.display.state(len(self.images), self.images_done_queue.qsize())
 
-    def _start_multiprocessing(self, operation, full_queue, done_queue=None):
-        if not done_queue:
-            done_queue = Queue(0)
-
+    def _start_multiprocessing(self, operation, full_queue):
         if len(full_queue) > 5:
             for i in range(0, len(full_queue), 5):
-                self._start_multiprocessing(operation, full_queue[i:i+5], done_queue)
+                self._start_multiprocessing(operation, full_queue[i:i+5])
 
         else:
-            process_queue = [Process(target=operation, args=(arg, done_queue)) for arg in full_queue]
+            process_queue = [Process(target=operation, args=(arg,)) for arg in full_queue]
             for proc in process_queue:
                 proc.start()
 
@@ -659,7 +671,14 @@ class SafariBooks:
             self.display.css_ad_info.value = 1
 
         self.display.state_status.value = -1
-        self._start_multiprocessing(self._thread_download_css, self.css)
+
+        if "win" in sys.platform:
+            # TODO
+            for css_url in self.css:
+                self._thread_download_css(css_url)
+
+        else:
+            self._start_multiprocessing(self._thread_download_css, self.css)
 
     def collect_images(self):
         self.images_path = os.path.join(self.BOOK_PATH, "OEBPS", "Images")
@@ -676,7 +695,14 @@ class SafariBooks:
                               "    please delete the `<BOOK NAME>/OEBPS/*.xhtml` files and restart the program.")
 
         self.display.state_status.value = -1
-        self._start_multiprocessing(self._thread_download_images, self.images)
+
+        if "win" in sys.platform:
+            # TODO
+            for image_url in self.images:
+                self._thread_download_images(image_url)
+
+        else:
+            self._start_multiprocessing(self._thread_download_images, self.images)
 
     def create_content_opf(self):
         self.cover = self.images[0] if len(self.images) else ""
