@@ -475,17 +475,19 @@ class SafariBooks:
         return root
 
     def link_replace(self, link):
-        if link[0] == "/" and ("cover" in link or "images" in link or "graphics" in link
-                               or link[-3:] in ["jpg", "peg", "png", "gif"]):
-            if link not in self.images:
-                self.images.append(link)
-                self.display.log("Crawler: found a new image at %s" % link)
+        if link:
 
-            image = link.split("/")[-1]
-            return "Images/" + image
+            if link[0] == "/" and ("cover" in link or "images" in link or "graphics" in link
+                                   or link[-3:] in ["jpg", "peg", "png", "gif"]):
+                if link not in self.images:
+                    self.images.append(link)
+                    self.display.log("Crawler: found a new image at %s" % link)
 
-        elif link[0] not in ["/", "h"]:
-            return link.replace(".html", ".xhtml")
+                image = link.split("/")[-1]
+                return "Images/" + image
+
+            elif link[0] not in ["/", "h"]:
+                return link.replace(".html", ".xhtml")
 
         return link
 
