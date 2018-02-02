@@ -105,7 +105,7 @@ In the other hand, if you're not going to export the `EPUB`, you can use the `--
     [-] URL: https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/
     [*] Retrieving book chapters...                                                          
     [*] Output directory:                                                           
-        /XXXX/XXXX/Test-Driven Development with Python, 2nd Edition
+        /XXXX/XXXX/Books/Test-Driven Development with Python, 2nd Edition
     [-] Downloading book contents... (73 chapters)                                               
         [#########################################----------------------------]  60%
     ...
