@@ -282,6 +282,9 @@ class SafariBooks:
         self.book_chapters = self.get_book_chapters()
         self.chapters_queue = self.book_chapters[:]
 
+        if len(self.book_chapters) > sys.getrecursionlimit():
+            sys.setrecursionlimit(len(self.book_chapters))
+
         self.book_title = self.book_info["title"]
         self.base_url = self.book_info["web_url"]
 
@@ -438,6 +441,9 @@ class SafariBooks:
 
         if "results" not in response or not len(response["results"]):
             self.display.exit("API: unable to retrieve book chapters.")
+
+        if response["count"] > sys.getrecursionlimit():
+            sys.setrecursionlimit(response["count"])
 
         result = []
         result.extend([c for c in response["results"] if "cover." in c["filename"]])
