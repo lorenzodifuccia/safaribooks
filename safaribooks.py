@@ -10,7 +10,7 @@ import traceback
 from lxml import html
 from html import escape
 from random import random
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit, urlparse
 from multiprocessing import Process, Queue, Value
 
 
@@ -24,7 +24,7 @@ class Display:
         datefmt="%d/%b/%Y %H:%M:%S"
     )
 
-    SH_DEFAULT = "\033[0m" if "win" not in sys.platform else ""  # TODO colors for Windows
+    SH_DEFAULT = "\033[0m" if "win" not in sys.platform else ""  # TODO: colors for Windows
     SH_YELLOW = "\033[33m" if "win" not in sys.platform else ""
     SH_BG_RED = "\033[41m" if "win" not in sys.platform else ""
     SH_BG_YELLOW = "\033[43m" if "win" not in sys.platform else ""
@@ -282,13 +282,10 @@ class SafariBooks:
         self.book_chapters = self.get_book_chapters()
         self.chapters_queue = self.book_chapters[:]
 
-        if len(self.book_chapters) > sys.getrecursionlimit():
-            sys.setrecursionlimit(len(self.book_chapters))
-
         self.book_title = self.book_info["title"]
         self.base_url = self.book_info["web_url"]
 
-        self.BOOK_PATH = os.path.join(PATH, self.book_title)
+        self.BOOK_PATH = os.path.join(PATH, "Books", self.book_title)
         self.create_dirs()
         self.display.info("Output directory:\n    %s" % self.BOOK_PATH)
 
@@ -442,9 +439,6 @@ class SafariBooks:
         if "results" not in response or not len(response["results"]):
             self.display.exit("API: unable to retrieve book chapters.")
 
-        if response["count"] > sys.getrecursionlimit():
-            sys.setrecursionlimit(response["count"])
-
         result = []
         result.extend([c for c in response["results"] if "cover." in c["filename"]])
         for c in result:
@@ -474,24 +468,28 @@ class SafariBooks:
 
         return root
 
+    @staticmethod
+    def url_is_absolute(url):
+        return bool(urlparse(url).netloc)
+
     def link_replace(self, link):
         if link:
+            if not self.url_is_absolute(link):
+                link = urljoin(self.base_url, link)
+                if "cover" in link or "images" in link or "graphics" in link or \
+                        link[-3:] in ["jpg", "peg", "png", "gif"]:
+                    if link not in self.images:
+                        self.images.append(link)
+                        self.display.log("Crawler: found a new image at %s" % link)
 
-            if link[0] == "/" and ("cover" in link or "images" in link or "graphics" in link
-                                   or link[-3:] in ["jpg", "peg", "png", "gif"]):
-                if link not in self.images:
-                    self.images.append(link)
-                    self.display.log("Crawler: found a new image at %s" % link)
+                    image = link.split("/")[-1]
+                    return "Images/" + image
 
-                image = link.split("/")[-1]
-                return "Images/" + image
-
-            elif link[0] not in ["/", "h"]:
                 return link.replace(".html", ".xhtml")
 
         return link
 
-    def parse_html(self, root):
+    def parse_html(self, root, is_cover=False):
         if random() > 0.5:
             if len(root.xpath("//div[@class='controls']/a/text()")):
                 self.display.exit(self.display.api_error(" "))
@@ -536,8 +534,24 @@ class SafariBooks:
                         (self.filename, self.chapter_title)
                     )
 
+        if is_cover:
+            page_css += "<style>img,image{height:100%;width:100%;}</style>"
+
         book_content = book_content[0]
         book_content.rewrite_links(self.link_replace)
+
+        # TODO: add all not covered tag for `link_replace` function
+        svg_image_tags = root.xpath("//image")
+        if len(svg_image_tags):
+            for img in svg_image_tags:
+                image_attr_href = [x for x in img.attrib.keys() if "href" in x]
+                if len(image_attr_href):
+                    svg_url = img.attrib.get(image_attr_href[0])
+                    svg_root = img.getparent().getparent()
+                    new_img = svg_root.makeelement("img")
+                    new_img.attrib.update({"src": self.link_replace(svg_url)})
+                    svg_root.remove(img.getparent())
+                    svg_root.append(new_img)
 
         xhtml = None
         try:
@@ -577,6 +591,8 @@ class SafariBooks:
             if not len(self.chapters_queue):
                 return
 
+            is_cover = len_books == len(self.chapters_queue)
+
             next_chapter = self.chapters_queue.pop(0)
             self.chapter_title = next_chapter["title"]
             self.filename = next_chapter["filename"]
@@ -597,7 +613,7 @@ class SafariBooks:
                     self.display.book_ad_info = 2
 
             else:
-                self.save_page_html(self.parse_html(self.get_html(urljoin(self.base_url, self.filename))))
+                self.save_page_html(self.parse_html(self.get_html(urljoin(self.base_url, self.filename)), is_cover))
 
             self.display.state(len_books, len_books - len(self.chapters_queue))
 
