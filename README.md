@@ -1,5 +1,5 @@
 # SafariBooks
-Download and generate an *EPUB* of your favorite books from [*Safari Books Online*](https://www.safaribooksonline.com) library.  
+Download and generate *EPUB* of your favorite books from [*Safari Books Online*](https://www.safaribooksonline.com) library.  
 Use this program only for *personal* and/or *educational* purpose.  
 
 ## Overview:
@@ -43,7 +43,7 @@ usage: safaribooks.py [--cred <EMAIL:PASS>] [--no-cookies] [--no-kindle]
                       [--preserve-log] [--help]
                       <BOOK ID>
 
-Download and generate an EPUB of your favorite books from Safari Books Online.
+Download and generate EPUB of your favorite books from Safari Books Online.
 
 positional arguments:
   <BOOK ID>            Book digits ID that you want to download.
