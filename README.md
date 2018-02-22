@@ -66,7 +66,7 @@ optional arguments:
 ```
   
 The first time you'll use the program, you'll have to specify your Safari Books Online account credentials. 
-For the next times you'll download a book, before session expires, you can omit the credential, because the program save your session cookies in a file called `cookies.json` (see file format [`here`](/../../issues/2)). 
+For the next times you'll download a book, before session expires, you can omit the credential, because the program save your session cookies in a file called `cookies.json` (see file format [`here`](/../../issues/2#issuecomment-367726544)). 
   
 Pay attention if you use a shared PC, because everyone that has access to your files can steal your session. 
 If you don't want to cache the cookies, just use the `--no-cookies` option and provide all the time your `--cred`.  
