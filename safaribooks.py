@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # coding: utf-8
 import os
 import sys
@@ -10,8 +11,8 @@ import traceback
 from lxml import html
 from html import escape
 from random import random
-from urllib.parse import urljoin, urlsplit, urlparse
 from multiprocessing import Process, Queue, Value
+from urllib.parse import urljoin, urlsplit, urlparse
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -288,7 +289,8 @@ class SafariBooks:
         self.book_title = self.book_info["title"]
         self.base_url = self.book_info["web_url"]
 
-        self.BOOK_PATH = os.path.join(PATH, "Books", self.book_title)
+        self.clean_book_title = self.clean_dirname(self.book_title)
+        self.BOOK_PATH = os.path.join(PATH, "Books", self.clean_book_title)
         self.create_dirs()
         self.display.info("Output directory:\n    %s" % self.BOOK_PATH)
 
@@ -318,7 +320,7 @@ class SafariBooks:
         if not args.no_cookies:
             json.dump(self.cookies, open(COOKIES_FILE, "w"))
 
-        self.display.done(self.book_title + ".epub")
+        self.display.done(self.clean_book_title + ".epub")
 
         if not self.display.in_error and not args.log:
             os.remove(self.display.log_file)
@@ -571,6 +573,18 @@ class SafariBooks:
             )
 
         return page_css, xhtml
+
+    @staticmethod
+    def clean_dirname(dirname):
+        if ":" in dirname:
+            if dirname.index(":") > 45:
+                dirname = dirname.split(":")[0]
+
+        for ch in ['\\', '/', '<', '>', '`', '\'', '"', '*', '?', ':', '|']:
+            if ch in dirname:
+                dirname = dirname.replace(ch, "_")
+
+        return dirname
 
     def create_dirs(self):
         if os.path.isdir(self.BOOK_PATH):
@@ -842,13 +856,14 @@ class SafariBooks:
         open(os.path.join(self.BOOK_PATH, "OEBPS", "content.opf"), "w").write(self.create_content_opf())
         open(os.path.join(self.BOOK_PATH, "OEBPS", "toc.ncx"), "w").write(self.create_toc())
 
-        zip_file = os.path.join(self.BOOK_PATH, self.book_title)
+        zip_file = os.path.join(PATH, "Books", self.book_id)
         if os.path.isfile(zip_file + ".epub"):
             os.remove(zip_file + ".epub")
         if os.path.isfile(zip_file + ".zip"):
             os.remove(zip_file + ".zip")
+
         shutil.make_archive(zip_file, 'zip', self.BOOK_PATH)
-        os.rename(zip_file + ".zip", zip_file + ".epub")
+        os.rename(zip_file + ".zip", os.path.join(self.BOOK_PATH, self.clean_book_title) + ".epub")
 
 
 # MAIN
