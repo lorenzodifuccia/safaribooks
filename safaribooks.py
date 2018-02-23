@@ -580,7 +580,7 @@ class SafariBooks:
             if dirname.index(":") > 45:
                 dirname = dirname.split(":")[0]
 
-        for ch in ['\\', '/', '<', '>', '`', '\'', '"', '*', '?', ':', '|']:
+        for ch in ['\\', '/', '<', '>', '`', '\'', '"', '*', '?', '|']:
             if ch in dirname:
                 dirname = dirname.replace(ch, "_")
 
