@@ -47,6 +47,7 @@ class Display:
         self.book_ad_info = False
         self.css_ad_info = Value("i", 0)
         self.images_ad_info = Value("i", 0)
+        self.last_request = (None,)
         self.in_error = False
 
         self.state_status = Value("i", 0)
@@ -85,6 +86,10 @@ class Display:
 
     def unhandled_exception(self, _, o, tb):
         self.log("".join(traceback.format_tb(tb)))
+        if any(self.last_request):
+            self.log("Last request done:\n\tURL: {0}\n\tDATA: {1}\n\tOTHERS: {2}\n\n\t{3}\n{4}\n\n{5}\n"
+                     .format(*self.last_request))
+
         self.exit("Unhandled Exception: %s (type: %s)" % (o, o.__class__.__name__))
 
     def intro(self):
@@ -354,6 +359,12 @@ class SafariBooks:
                 **kwargs
             )
 
+            self.display.last_request = (
+                url, data, kwargs, response.status_code, "\n".join(
+                    ["\t{}: {}".format(*h) for h in response.headers.items()]
+                ), response.text
+            )
+
         except (requests.ConnectionError, requests.ConnectTimeout, requests.RequestException) as request_exception:
             self.display.error(str(request_exception))
             return 0
@@ -577,7 +588,7 @@ class SafariBooks:
     @staticmethod
     def clean_dirname(dirname):
         if ":" in dirname:
-            if dirname.index(":") > 45:
+            if dirname.index(":") > 30:
                 dirname = dirname.split(":")[0]
 
         for ch in ['\\', '/', '<', '>', '`', '\'', '"', '*', '?', '|']:
@@ -601,7 +612,7 @@ class SafariBooks:
     def save_page_html(self, contents):
         self.filename = self.filename.replace(".html", ".xhtml")
         open(os.path.join(self.BOOK_PATH, "OEBPS", self.filename), "wb")\
-            .write(self.BASE_HTML.format(contents[0], contents[1]).encode("utf-8", "replace"))
+            .write(self.BASE_HTML.format(contents[0], contents[1]).encode("utf-8", 'xmlcharrefreplace'))
         self.display.log("Created: %s" % self.filename)
 
     def get(self):
@@ -852,9 +863,15 @@ class SafariBooks:
         else:
             os.makedirs(meta_info)
 
-        open(os.path.join(meta_info, "container.xml"), "w").write(self.CONTAINER_XML)
-        open(os.path.join(self.BOOK_PATH, "OEBPS", "content.opf"), "w").write(self.create_content_opf())
-        open(os.path.join(self.BOOK_PATH, "OEBPS", "toc.ncx"), "w").write(self.create_toc())
+        open(os.path.join(meta_info, "container.xml"), "wb").write(
+            self.CONTAINER_XML.encode("utf-8", "xmlcharrefreplace")
+        )
+        open(os.path.join(self.BOOK_PATH, "OEBPS", "content.opf"), "wb").write(
+            self.create_content_opf().encode("utf-8", "xmlcharrefreplace")
+        )
+        open(os.path.join(self.BOOK_PATH, "OEBPS", "toc.ncx"), "wb").write(
+            self.create_toc().encode("utf-8", "xmlcharrefreplace")
+        )
 
         zip_file = os.path.join(PATH, "Books", self.book_id)
         if os.path.isfile(zip_file + ".epub"):
