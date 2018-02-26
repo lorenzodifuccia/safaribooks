@@ -82,15 +82,18 @@ class Display:
 
         output = self.SH_BG_RED + "[!]" + self.SH_DEFAULT + " Aborting..."
         self.out(output)
+
+        self.save_last_request()
         sys.exit(128)
 
     def unhandled_exception(self, _, o, tb):
         self.log("".join(traceback.format_tb(tb)))
+        self.exit("Unhandled Exception: %s (type: %s)" % (o, o.__class__.__name__))
+
+    def save_last_request(self):
         if any(self.last_request):
             self.log("Last request done:\n\tURL: {0}\n\tDATA: {1}\n\tOTHERS: {2}\n\n\t{3}\n{4}\n\n{5}\n"
                      .format(*self.last_request))
-
-        self.exit("Unhandled Exception: %s (type: %s)" % (o, o.__class__.__name__))
 
     def intro(self):
         output = self.SH_YELLOW + """
@@ -286,6 +289,16 @@ class SafariBooks:
 
         self.display.info("Retrieving book chapters...")
         self.book_chapters = self.get_book_chapters()
+
+        self.no_cover = False
+        if "cover" not in self.book_chapters[0]["filename"] or "cover" not in self.book_chapters[0]["title"]:
+            self.book_chapters = [{
+                "filename": "cover",
+                "title": "Cover",
+                "web_url": self.book_info["cover"]
+            }] + self.book_chapters
+            self.no_cover = True
+
         self.chapters_queue = self.book_chapters[:]
 
         if len(self.book_chapters) > sys.getrecursionlimit():
@@ -306,6 +319,7 @@ class SafariBooks:
 
         self.display.info("Downloading book contents... (%s chapters)" % len(self.book_chapters), state=True)
         self.BASE_HTML = self.BASE_01_HTML + (self.KINDLE_HTML if not args.no_kindle else "") + self.BASE_02_HTML
+
         self.get()
 
         self.css_path = ""
@@ -442,8 +456,8 @@ class SafariBooks:
 
         return response
 
-    def get_book_chapters(self, page=0):
-        response = self.requests_provider(urljoin(self.api_url, "chapter/" + ("" if not page else "?page=%s" % page)))
+    def get_book_chapters(self, page=1):
+        response = self.requests_provider(urljoin(self.api_url, "chapter/?page=%s" % page))
         if response == 0:
             self.display.exit("API: unable to retrieve book chapters.")
 
@@ -463,7 +477,7 @@ class SafariBooks:
         for c in result:
             del response["results"][response["results"].index(c)]
 
-        result += response["results"]   
+        result += response["results"]
         return result + (self.get_book_chapters(page + 1) if response["next"] else [])
 
     def get_html(self, url):
@@ -532,9 +546,9 @@ class SafariBooks:
                     self.css.append(css_url)
                     self.display.log("Crawler: found a new CSS at %s" % css_url)
 
-                stylesheet_count += 1
                 page_css += "<link href=\"Styles/Style{0:0>2}.css\" " \
                             "rel=\"stylesheet\" type=\"text/css\" />\n".format(stylesheet_count)
+                stylesheet_count += 1
 
         stylesheets = root.xpath("//style")
         if len(stylesheets):
@@ -553,12 +567,6 @@ class SafariBooks:
                         (self.filename, self.chapter_title)
                     )
 
-        if is_cover:
-            page_css += "<style>img,image{height:100%;width:100%;}</style>"
-
-        book_content = book_content[0]
-        book_content.rewrite_links(self.link_replace)
-
         # TODO: add all not covered tag for `link_replace` function
         svg_image_tags = root.xpath("//image")
         if len(svg_image_tags):
@@ -568,12 +576,31 @@ class SafariBooks:
                     svg_url = img.attrib.get(image_attr_href[0])
                     svg_root = img.getparent().getparent()
                     new_img = svg_root.makeelement("img")
-                    new_img.attrib.update({"src": self.link_replace(svg_url)})
+                    new_img.attrib.update({"src": svg_url})
                     svg_root.remove(img.getparent())
                     svg_root.append(new_img)
 
+        book_content = book_content[0]
+        book_content.rewrite_links(self.link_replace)
+
         xhtml = None
         try:
+            if is_cover:
+                page_css = "<style>" \
+                           "body{display:table;position:absolute;margin:0!important;height:100%;width:100%;}" \
+                           "#Cover{display:table-cell;vertical-align:middle;text-align:center;}" \
+                           "img{height:90vh;margin-left:auto;margin-right:auto;}" \
+                           "</style>"
+
+                cover_html = html.fromstring("<div id=\"Cover\"></div>")
+                cover_div = cover_html.xpath("//div")[0]
+
+                if len(book_content.xpath("//img")):
+                    cover_img = cover_div.makeelement("img")
+                    cover_img.attrib.update({"src": book_content.xpath("//img")[0].attrib["src"]})
+                    cover_div.append(cover_img)
+                    book_content = cover_html
+
             xhtml = html.tostring(book_content, method="xml", encoding='unicode')
 
         except (html.etree.ParseError, html.etree.ParserError) as parsing_error:
@@ -644,7 +671,25 @@ class SafariBooks:
                     self.display.book_ad_info = 2
 
             else:
-                self.save_page_html(self.parse_html(self.get_html(urljoin(self.base_url, self.filename)), is_cover))
+                if is_cover and self.no_cover:
+                    response = self.requests_provider(next_chapter["web_url"], update_cookies=False, stream=True)
+                    if response != 0:
+                        with open(os.path.join(self.BOOK_PATH, "OEBPS", "Images",
+                                  self.filename + "." + response.headers["Content-Type"].split("/")[-1]), 'wb') as s:
+                            for chunk in response.iter_content(1024):
+                                s.write(chunk)
+
+                        cover_html = self.parse_html(html.fromstring(
+                            "<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(
+                                self.filename + "." + response.headers["Content-Type"].split("/")[-1]
+                            )
+                        ), is_cover)
+                        self.filename += ".xhtml"
+                        self.book_chapters[0]["filename"] += ".xhtml"
+                        self.save_page_html(cover_html)
+                        continue
+
+                self.save_page_html(self.parse_html(self.get_html(next_chapter["web_url"]), is_cover))
 
             self.display.state(len_books, len_books - len(self.chapters_queue))
 
@@ -769,7 +814,7 @@ class SafariBooks:
             spine.append("<itemref idref=\"{0}\"/>".format(item_id))
 
         alt_cover_id = False
-        for i in self.images:
+        for i in set(self.images):
             dot_split = i.split(".")
             head = "img_" + escape("".join(dot_split[:-1]))
             extension = dot_split[-1]
@@ -780,7 +825,7 @@ class SafariBooks:
             if not alt_cover_id:
                 alt_cover_id = head
 
-        for i in range(1, len(self.css) + 1):
+        for i in range(len(self.css)):
             manifest.append("<item id=\"style_{0:0>2}\" href=\"Styles/Style{0:0>2}.css\" "
                             "media-type=\"text/css\" />".format(i))
 
@@ -818,7 +863,7 @@ class SafariBooks:
                  "<navLabel><text>{2}</text></navLabel>" \
                  "<content src=\"{3}\"/>".format(
                     cc["fragment"] if len(cc["fragment"]) else cc["id"], c,
-                    escape(cc["label"]), cc["href"].replace(".html", ".xhtml")
+                    escape(cc["label"]), cc["href"].replace(".html", ".xhtml").split("/")[-1]
                  )
 
             if cc["children"]:
