@@ -299,7 +299,12 @@ class SafariBooks:
         self.base_url = self.book_info["web_url"]
 
         self.clean_book_title = self.clean_dirname(self.book_title)
-        self.BOOK_PATH = os.path.join(PATH, "Books", self.clean_book_title)
+
+        books_dir = os.path.join(PATH, "Books")
+        if not os.path.isdir(books_dir):
+            os.mkdir(books_dir)
+
+        self.BOOK_PATH = os.path.join(books_dir, self.clean_book_title)
         self.css_path = ""
         self.images_path = ""
         self.create_dirs()
