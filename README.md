@@ -15,6 +15,10 @@ Cloning into 'safaribooks'...
 
 $ cd safaribooks/
 $ pip3 install -r requirements.txt
+
+OR
+
+$ pipenv install && pipenv shell
 ```  
 
 The program depends of only two **Python 3** modules:
