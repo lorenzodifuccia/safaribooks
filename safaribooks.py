@@ -298,7 +298,9 @@ class SafariBooks:
         self.book_title = self.book_info["title"]
         self.base_url = self.book_info["web_url"]
 
-        self.clean_book_title = self.clean_dirname(self.book_title)
+        self.clean_book_title = self.escape_dirname(self.book_title) + " ({0})".format(
+            self.escape_dirname(", ".join(a["name"] for a in self.book_info["authors"]), clean_space=True)
+        )
 
         books_dir = os.path.join(PATH, "Books")
         if not os.path.isdir(books_dir):
@@ -657,7 +659,7 @@ class SafariBooks:
         return page_css, xhtml
 
     @staticmethod
-    def clean_dirname(dirname):
+    def escape_dirname(dirname, clean_space=False):
         if ":" in dirname:
             if dirname.index(":") > 30:
                 dirname = dirname.split(":")[0]
@@ -666,11 +668,11 @@ class SafariBooks:
             if ch in dirname:
                 dirname = dirname.replace(ch, "")
 
-        return dirname
+        return dirname if not clean_space else dirname.replace(" ", "")
 
     def create_dirs(self):
         if os.path.isdir(self.BOOK_PATH):
-            self.display.log("Book directory already exists: %s" % self.book_title)
+            self.display.log("Book directory already exists: %s" % self.BOOK_PATH)
 
         else:
             os.makedirs(self.BOOK_PATH)
