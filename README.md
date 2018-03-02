@@ -1,6 +1,6 @@
 # SafariBooks
 Download and generate *EPUB* of your favorite books from [*Safari Books Online*](https://www.safaribooksonline.com) library.  
-Use this program only for *personal* and/or *educational* purpose.  
+I'm not responsible for the use of this program, this is only for *personal* and *educational* purpose.  
 
 ## Overview:
   * [Requirements & Setup](#requirements--setup)
