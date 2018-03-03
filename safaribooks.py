@@ -660,12 +660,16 @@ class SafariBooks:
 
     @staticmethod
     def escape_dirname(dirname, clean_space=False):
-        if ":" in dirname and dirname.index(":") > 15:
-            dirname = dirname.split(":")[0]
+        if ":" in dirname:
+            if dirname.index(":") > 15:
+                dirname = dirname.split(":")[0]
 
-        for ch in ['\\', '/', '<', '>', '`', '\'', '"', '*', '?', '|']:
+            elif "win" in sys.platform:
+                dirname = dirname.replace(":", ",")
+
+        for ch in ['~', '#', '%', '&', '*', '{', '}', '\\', '<', '>', '?', '/', '`', '\'', '"', '|', '+']:
             if ch in dirname:
-                dirname = dirname.replace(ch, "")
+                dirname = dirname.replace(ch, "_")
 
         return dirname if not clean_space else dirname.replace(" ", "")
 
