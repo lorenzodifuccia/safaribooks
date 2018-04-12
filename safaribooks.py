@@ -53,6 +53,10 @@ class Display:
         self.state_status = Value("i", 0)
         sys.excepthook = self.unhandled_exception
 
+    def unregister(self):
+        self.logger.handlers[0].close()
+        sys.excepthook = sys.__excepthook__
+
     def log(self, message):
         self.logger.info(str(message))
 
@@ -97,10 +101,10 @@ class Display:
 
     def intro(self):
         output = self.SH_YELLOW + """
-       ____     ___         _ 
+       ____     ___         _
       / __/__ _/ _/__ _____(_)
-     _\ \/ _ `/ _/ _ `/ __/ / 
-    /___/\_,_/_/ \_,_/_/ /_/  
+     _\ \/ _ `/ _/ _ `/ __/ /
+    /___/\_,_/_/ \_,_/_/ /_/
       / _ )___  ___  / /__ ___
      / _  / _ \/ _ \/  '_/(_-<
     /____/\___/\___/_/\_\/___/
@@ -298,8 +302,8 @@ class SafariBooks:
         self.book_title = self.book_info["title"]
         self.base_url = self.book_info["web_url"]
 
-        self.clean_book_title = self.escape_dirname(self.book_title) + " ({0})".format(
-            self.escape_dirname(", ".join(a["name"] for a in self.book_info["authors"]), clean_space=True)
+        self.clean_book_title = "".join(self.escape_dirname(self.book_title).split(",")[:2]) + " ({0})".format(
+            self.escape_dirname(", ".join(a["name"] for a in self.book_info["authors"][:2]), clean_space=True)
         )
 
         books_dir = os.path.join(PATH, "Books")
@@ -349,7 +353,8 @@ class SafariBooks:
         if not args.no_cookies:
             json.dump(self.cookies, open(COOKIES_FILE, "w"))
 
-        self.display.done(self.clean_book_title + ".epub")
+        self.display.done(os.path.join(self.BOOK_PATH, self.book_id + ".epub"))
+        self.display.unregister()
 
         if not self.display.in_error and not args.log:
             os.remove(self.display.log_file)
@@ -551,17 +556,18 @@ class SafariBooks:
 
     @staticmethod
     def get_cover(html_root):
-        images = html_root.xpath("//img[contains(@id, 'cover') or "
+        images = html_root.xpath("//img[contains(@id, 'cover') or contains(@class, 'cover') or"
                                  "contains(@name, 'cover') or contains(@src, 'cover')]")
         if len(images):
             return images[0]
 
-        divs = html_root.xpath("//div[contains(@id, 'cover') or "
+        divs = html_root.xpath("//div[contains(@id, 'cover') or contains(@class, 'cover') or"
                                "contains(@name, 'cover') or contains(@src, 'cover')]//img")
         if len(divs):
             return divs[0]
 
-        a = html_root.xpath("//a[contains(@id, 'cover') or contains(@name, 'cover') or contains(@src, 'cover')]//img")
+        a = html_root.xpath("//a[contains(@id, 'cover') or contains(@class, 'cover') or"
+                            "contains(@name, 'cover') or contains(@src, 'cover')]//img")
         if len(a):
             return a[0]
 
@@ -945,13 +951,11 @@ class SafariBooks:
         )
 
         zip_file = os.path.join(PATH, "Books", self.book_id)
-        if os.path.isfile(zip_file + ".epub"):
-            os.remove(zip_file + ".epub")
         if os.path.isfile(zip_file + ".zip"):
             os.remove(zip_file + ".zip")
 
         shutil.make_archive(zip_file, 'zip', self.BOOK_PATH)
-        os.rename(zip_file + ".zip", os.path.join(self.BOOK_PATH, self.clean_book_title) + ".epub")
+        os.rename(zip_file + ".zip", os.path.join(self.BOOK_PATH, self.book_id) + ".epub")
 
 
 # MAIN
