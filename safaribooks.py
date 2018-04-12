@@ -869,7 +869,7 @@ class SafariBooks:
                              for sub in self.book_info["subjects"])
 
         return self.CONTENT_OPF.format(
-            (self.book_info["isbn"] if len(self.book_info["isbn"]) else self.book_id),
+            (self.book_info["isbn"] if self.book_info["isbn"] else self.book_id),
             escape(self.book_title),
             authors,
             escape(self.book_info["description"]),
@@ -924,7 +924,7 @@ class SafariBooks:
 
         navmap, _, max_depth = self.parse_toc(response)
         return self.TOC_NCX.format(
-            (self.book_info["isbn"] if len(self.book_info["isbn"]) else self.book_id),
+            (self.book_info["isbn"] if self.book_info["isbn"] else self.book_id),
             max_depth,
             self.book_title,
             ", ".join(aut["name"] for aut in self.book_info["authors"]),
