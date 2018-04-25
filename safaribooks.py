@@ -302,9 +302,8 @@ class SafariBooks:
         self.book_title = self.book_info["title"]
         self.base_url = self.book_info["web_url"]
 
-        self.clean_book_title = "".join(self.escape_dirname(self.book_title).split(",")[:2]) + " ({0})".format(
-            self.escape_dirname(", ".join(a["name"] for a in self.book_info["authors"][:2]), clean_space=True)
-        )
+        self.clean_book_title = "".join(self.escape_dirname(self.book_title).split(",")[:2]) \
+                                + " ({0})".format(self.book_id)
 
         books_dir = os.path.join(PATH, "Books")
         if not os.path.isdir(books_dir):
