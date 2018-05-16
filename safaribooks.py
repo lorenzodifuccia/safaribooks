@@ -8,7 +8,7 @@ import logging
 import argparse
 import requests
 import traceback
-from lxml import html
+from lxml import html, etree
 from html import escape
 from random import random
 from multiprocessing import Process, Queue, Value
@@ -169,7 +169,7 @@ class Display:
         return message
 
 
-class WinQueue(list):  # TODO: error while use Process in Windows: can't pickle _thread.RLock objects
+class WinQueue(list):  # TODO: error while use `process` in Windows: can't pickle _thread.RLock objects
     def put(self, el):
         self.append(el)
 
@@ -555,18 +555,22 @@ class SafariBooks:
 
     @staticmethod
     def get_cover(html_root):
-        images = html_root.xpath("//img[contains(@id, 'cover') or contains(@class, 'cover') or"
-                                 "contains(@name, 'cover') or contains(@src, 'cover')]")
+        lowercase_ns = etree.FunctionNamespace(None)
+        lowercase_ns["lower-case"] = lambda _, n: n[0].lower() if n and len(n) else ""
+
+        images = html_root.xpath("//img[contains(lower-case(@id), 'cover') or contains(lower-case(@class), 'cover') or"
+                                 "contains(lower-case(@name), 'cover') or contains(lower-case(@src), 'cover') or"
+                                 "contains(lower-case(@alt), 'cover')]")
         if len(images):
             return images[0]
 
-        divs = html_root.xpath("//div[contains(@id, 'cover') or contains(@class, 'cover') or"
-                               "contains(@name, 'cover') or contains(@src, 'cover')]//img")
+        divs = html_root.xpath("//div[contains(lower-case(@id), 'cover') or contains(lower-case(@class), 'cover') or"
+                               "contains(lower-case(@name), 'cover') or contains(lower-case(@src), 'cover')]//img")
         if len(divs):
             return divs[0]
 
-        a = html_root.xpath("//a[contains(@id, 'cover') or contains(@class, 'cover') or"
-                            "contains(@name, 'cover') or contains(@src, 'cover')]//img")
+        a = html_root.xpath("//a[contains(lower-case(@id), 'cover') or contains(lower-case(@class), 'cover') or"
+                            "contains(lower-case(@name), 'cover') or contains(lower-case(@src), 'cover')]//img")
         if len(a):
             return a[0]
 
