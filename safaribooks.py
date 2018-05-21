@@ -280,7 +280,7 @@ class SafariBooks:
 
         else:
             self.display.info("Logging into Safari Books Online...", state=True)
-            self.do_login(*[c.replace("'", "").replace('"', "") for c in args.cred])
+            self.do_login(*args.cred)
             if not args.no_cookies:
                 json.dump(self.cookies, open(COOKIES_FILE, "w"))
 
@@ -401,6 +401,20 @@ class SafariBooks:
             self.update_cookies(response.cookies)
 
         return response
+
+    @staticmethod
+    def parse_cred(cred):
+        if ":" not in cred:
+            return False
+
+        sep = cred.index(":")
+        new_cred = ["", ""]
+        new_cred[0] = cred[:sep].strip("'").strip('"')
+        if "@" not in new_cred[0]:
+            return False
+
+        new_cred[1] = cred[sep + 1:]
+        return new_cred
 
     def do_login(self, email, password):
         response = self.requests_provider(self.BASE_URL)
@@ -962,48 +976,49 @@ class SafariBooks:
 
 
 # MAIN
-arguments = argparse.ArgumentParser(prog="safaribooks.py",
-                                    description="Download and generate an EPUB of your favorite books"
-                                                " from Safari Books Online.",
-                                    add_help=False,
-                                    allow_abbrev=False)
+if __name__ == "__main__":
+    arguments = argparse.ArgumentParser(prog="safaribooks.py",
+                                        description="Download and generate an EPUB of your favorite books"
+                                                    " from Safari Books Online.",
+                                        add_help=False,
+                                        allow_abbrev=False)
 
-arguments.add_argument(
-    "--cred", metavar="<EMAIL:PASS>", default=False,
-    help="Credentials used to perform the auth login on Safari Books Online."
-         " Es. ` --cred \"account_mail@mail.com:password01\" `."
-)
-arguments.add_argument(
-    "--no-cookies", dest="no_cookies", action='store_true',
-    help="Prevent your session data to be saved into `cookies.json` file."
-)
-arguments.add_argument(
-    "--no-kindle", dest="no_kindle", action='store_true',
-    help="Remove some CSS rules that block overflow on `table` and `pre` elements."
-         " Use this option if you're not going to export the EPUB to E-Readers like Amazon Kindle."
-)
-arguments.add_argument(
-    "--preserve-log", dest="log", action='store_true', help="Leave the `info_XXXXXXXXXXXXX.log`"
-                                                            " file even if there isn't any error."
-)
-arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
-arguments.add_argument(
-    "bookid", metavar='<BOOK ID>',
-    help="Book digits ID that you want to download. You can find it in the URL (X-es):"
-         " `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`"
-)
+    arguments.add_argument(
+        "--cred", metavar="<EMAIL:PASS>", default=False,
+        help="Credentials used to perform the auth login on Safari Books Online."
+             " Es. ` --cred \"account_mail@mail.com:password01\" `."
+    )
+    arguments.add_argument(
+        "--no-cookies", dest="no_cookies", action='store_true',
+        help="Prevent your session data to be saved into `cookies.json` file."
+    )
+    arguments.add_argument(
+        "--no-kindle", dest="no_kindle", action='store_true',
+        help="Remove some CSS rules that block overflow on `table` and `pre` elements."
+             " Use this option if you're not going to export the EPUB to E-Readers like Amazon Kindle."
+    )
+    arguments.add_argument(
+        "--preserve-log", dest="log", action='store_true', help="Leave the `info_XXXXXXXXXXXXX.log`"
+                                                                " file even if there isn't any error."
+    )
+    arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
+    arguments.add_argument(
+        "bookid", metavar='<BOOK ID>',
+        help="Book digits ID that you want to download. You can find it in the URL (X-es):"
+             " `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`"
+    )
 
-args_parsed = arguments.parse_args()
+    args_parsed = arguments.parse_args()
 
-if args_parsed.cred:
-    cred = args_parsed.cred.split(":")
-    if len(cred) != 2 or "@" not in cred[0]:
-        arguments.error("invalid credential: %s" % args_parsed.cred)
+    if args_parsed.cred:
+        cred = SafariBooks.parse_cred(args_parsed.cred)
+        if not cred:
+            arguments.error("invalid credential: %s" % args_parsed.cred)
 
-    args_parsed.cred = cred
+        args_parsed.cred = cred
 
-else:
-    if args_parsed.no_cookies:
-        arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
+    else:
+        if args_parsed.no_cookies:
+            arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
 
-SafariBooks(args_parsed)
+    SafariBooks(args_parsed)
