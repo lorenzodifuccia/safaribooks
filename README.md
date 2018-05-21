@@ -70,10 +70,12 @@ optional arguments:
 ```
   
 The first time you'll use the program, you'll have to specify your Safari Books Online account credentials. 
-For the next times you'll download a book, before session expires, you can omit the credential, because the program save your session cookies in a file called `cookies.json` (see file format [`here`](/../../issues/2#issuecomment-367726544)). 
+For the next times you'll download a book, before session expires, you can omit the credential, because the program save your session cookies in a file called `cookies.json` (for **SSO** look file format [`here`](/../../issues/2#issuecomment-367726544)). 
   
 Pay attention if you use a shared PC, because everyone that has access to your files can steal your session. 
-If you don't want to cache the cookies, just use the `--no-cookies` option and provide all the time your `--cred`.  
+If you don't want to cache the cookies, just use the `--no-cookies` option and provide all the time your `--cred`.
+
+You can configure proxies by setting on your system the environment variables `HTTP_PROXY` and `HTTPS_PROXY`.
 
 The program default options are thought for ensure best compatibilities for who want to export the `EPUB` to E-Readers like Amazon Kindle. If you want to do it, I suggest you to convert the `EPUB` to `AZW3` with [Calibre](https://calibre-ebook.com/).  
 You can also convert the book to `MOBI` and if you'll do it with Calibre be sure to select `Ignore margins` in the conversion options:  
