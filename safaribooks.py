@@ -181,7 +181,7 @@ class SafariBooks:
 
     HEADERS = {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-        "accept-encoding": "gzip, deflate, br",
+        "accept-encoding": "gzip, deflate",
         "accept-language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7",
         "cache-control": "no-cache",
         "cookie": "",
@@ -780,8 +780,7 @@ class SafariBooks:
                 self.display.error("Error trying to retrieve this CSS: %s\n    From: %s" % (css_file, url))
 
             with open(css_file, 'wb') as s:
-                for chunk in response.iter_content(1024):
-                    s.write(chunk)
+                s.write(response.content)
 
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
