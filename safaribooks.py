@@ -88,7 +88,7 @@ class Display:
         self.out(output)
 
         self.save_last_request()
-        sys.exit(128)
+        sys.exit(1)
 
     def unhandled_exception(self, _, o, tb):
         self.log("".join(traceback.format_tb(tb)))
@@ -523,7 +523,7 @@ class SafariBooks:
 
     def get_html(self, url):
         response = self.requests_provider(url)
-        if response == 0:
+        if response == 0 or response.status_code != 200:
             self.display.exit(
                 "Crawler: error trying to retrieve this page: %s (%s)\n    From: %s" %
                 (self.filename, self.chapter_title, url)
