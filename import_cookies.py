@@ -28,7 +28,6 @@ def import_cookie(jar, header):
 
 
 def import_cookies(jar, header):
-    print("Importing values from '{0}'".format(header))
     values = header.split(' ')
     for value in values:
         import_cookie(jar, value)
