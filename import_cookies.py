@@ -11,6 +11,9 @@ def die(message):
 
 
 def import_cookie(jar, header):
+    header = header.strip()
+    if len(header) == 0:
+        return jar
     fields = header.split('=')
     if len(fields) != 2:
         die("Error importing: '{0}'. Expected 1 equal sign but found {1}."
