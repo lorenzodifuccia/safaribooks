@@ -417,7 +417,7 @@ class SafariBooks:
         return new_cred
 
     def do_login(self, email, password):
-        response = self.requests_provider("https://www.safaribooksonline.com/accounts/login")
+        response = self.requests_provider(self.LOGIN_URL)
         if response == 0:
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
 
