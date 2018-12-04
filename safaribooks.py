@@ -417,7 +417,7 @@ class SafariBooks:
         return new_cred
 
     def do_login(self, email, password):
-        response = self.requests_provider(self.BASE_URL)
+        response = self.requests_provider(self.LOGIN_URL)
         if response == 0:
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
 
@@ -441,7 +441,7 @@ class SafariBooks:
             self.LOGIN_URL,
             post=True,
             data=(
-                ("csrfmiddlewaretoken", ""), ("csrfmiddlewaretoken", csrf),
+                ("csrfmiddlewaretoken", csrf),
                 ("email", email), ("password1", password),
                 ("is_login_form", "true"), ("leaveblank", ""),
                 ("dontchange", "http://")
