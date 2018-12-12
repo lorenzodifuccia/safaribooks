@@ -149,7 +149,7 @@ class Display:
                   "    If you like it, please * this project on GitHub to make it known:\n"
                   "        https://github.com/lorenzodifuccia/safaribooks\n"
                   "    e don't forget to renew your Safari Books Online subscription:\n"
-                  "        https://www.safaribooksonline.com/signup/\n\n" % epub_file +
+                  "        https://learning.oreilly.com/signup/\n\n" % epub_file +
                   self.SH_BG_RED + "[!]" + self.SH_DEFAULT + " Bye!!")
 
     @staticmethod
@@ -158,7 +158,7 @@ class Display:
         if "detail" in response and "Not found" in response["detail"]:
             message += "book's not present in Safari Books Online.\n" \
                        "    The book identifier is the digits that you can find in the URL:\n" \
-                       "    `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`"
+                       "    `https://learning.oreilly.com/library/view/book-name/XXXXXXXXXXXXX/`"
 
         else:
             os.remove(COOKIES_FILE)
@@ -186,13 +186,13 @@ class SafariBooks:
         "cache-control": "no-cache",
         "cookie": "",
         "pragma": "no-cache",
-        "referer": "https://www.safaribooksonline.com/home/",
+        "referer": "https://learning.oreilly.com/home/",
         "upgrade-insecure-requests": "1",
         "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
                       "Chrome/62.0.3202.94 Safari/537.36"
     }
 
-    BASE_URL = "https://www.safaribooksonline.com"
+    BASE_URL = "https://learning.oreilly.com"
     LOGIN_URL = BASE_URL + "/accounts/login/"
     API_TEMPLATE = BASE_URL + "/api/v1/book/{0}/"
 
@@ -364,7 +364,7 @@ class SafariBooks:
         return " ".join(["{0}={1};".format(k, v) for k, v in self.cookies.items()])
 
     def return_headers(self, url):
-        if "safaribooksonline" in urlsplit(url).netloc:
+        if "oreilly" in urlsplit(url).netloc:
             self.HEADERS["cookie"] = self.return_cookies()
 
         else:
@@ -1004,7 +1004,7 @@ if __name__ == "__main__":
     arguments.add_argument(
         "bookid", metavar='<BOOK ID>',
         help="Book digits ID that you want to download. You can find it in the URL (X-es):"
-             " `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`"
+             " `https://learning.oreilly.com/library/view/book-name/XXXXXXXXXXXXX/`"
     )
 
     args_parsed = arguments.parse_args()
