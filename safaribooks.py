@@ -186,13 +186,14 @@ class SafariBooks:
         "cache-control": "no-cache",
         "cookie": "",
         "pragma": "no-cache",
-        "referer": "https://www.safaribooksonline.com/home/",
+        "referer": "https://learning.oreilly.com/home/",
         "upgrade-insecure-requests": "1",
         "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
                       "Chrome/62.0.3202.94 Safari/537.36"
     }
 
-    BASE_URL = "https://www.safaribooksonline.com"
+    # BASE_URL = "https://www.safaribooksonline.com"
+    BASE_URL = "https://learning.oreilly.com"
     LOGIN_URL = BASE_URL + "/accounts/login/"
     API_TEMPLATE = BASE_URL + "/api/v1/book/{0}/"
 
@@ -364,7 +365,7 @@ class SafariBooks:
         return " ".join(["{0}={1};".format(k, v) for k, v in self.cookies.items()])
 
     def return_headers(self, url):
-        if "safaribooksonline" in urlsplit(url).netloc:
+        if "oreilly" in urlsplit(url).netloc:
             self.HEADERS["cookie"] = self.return_cookies()
 
         else:
@@ -441,10 +442,9 @@ class SafariBooks:
             self.LOGIN_URL,
             post=True,
             data=(
-                ("csrfmiddlewaretoken", ""), ("csrfmiddlewaretoken", csrf),
+                ("next", ""), ("csrfmiddlewaretoken", csrf),
                 ("email", email), ("password1", password),
-                ("is_login_form", "true"), ("leaveblank", ""),
-                ("dontchange", "http://")
+                ("login", "Sign+In")
             ),
             allow_redirects=False
         )
