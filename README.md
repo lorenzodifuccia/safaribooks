@@ -10,7 +10,7 @@ I'm not responsible for the use of this program, this is only for *personal* and
 
 ## Requirements & Setup:
 ```shell
-$ git clone https://github.com/lorenzodifuccia/safaribooks.git
+$ git clone https://github.com/farzad1120/safaribooks.git
 Cloning into 'safaribooks'...
 
 $ cd safaribooks/
@@ -125,7 +125,7 @@ In the other hand, if you're not going to export the `EPUB`, you can use the `--
     [*] Done: Test-Driven Development with Python, 2nd Edition.epub                 
 
         If you like it, please * this project on GitHub to make it known:
-            https://github.com/lorenzodifuccia/safaribooks
+            https://github.com/farzad1120/safaribooks
         e don't forget to renew your Safari Books Online subscription:
             https://www.safaribooksonline.com/signup/
 
