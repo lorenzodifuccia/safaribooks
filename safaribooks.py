@@ -22,7 +22,6 @@ SAFARI_BASE_HOST = "learning.oreilly.com"
 SAFARI_BASE_URL = "https://" + SAFARI_BASE_HOST
 
 
-
 class Display:
     BASE_FORMAT = logging.Formatter(
         fmt="[%(asctime)s] %(message)s",
@@ -229,7 +228,7 @@ class SafariBooks:
                     "</container>"
 
     # Format: ID, Title, Authors, Description, Subjects, Publisher, Rights, Date, CoverId, MANIFEST, SPINE, CoverUrl
-    CONTENT_OPF = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" \
+    CONTENT_OPF = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" \
                   "<package xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"bookid\" version=\"2.0\" >\n" \
                   "<metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\" " \
                   " xmlns:opf=\"http://www.idpf.org/2007/opf\">\n"\
@@ -253,7 +252,7 @@ class SafariBooks:
                   "</package>"
 
     # Format: ID, Depth, Title, Author, NAVMAP
-    TOC_NCX = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n" \
+    TOC_NCX = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\" ?>\n" \
               "<!DOCTYPE ncx PUBLIC \"-//NISO//DTD ncx 2005-1//EN\"" \
               " \"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd\">\n" \
               "<ncx xmlns=\"http://www.daisy.org/z3986/2005/ncx/\" version=\"2005-1\">\n" \
@@ -1013,11 +1012,11 @@ if __name__ == "__main__":
     args_parsed = arguments.parse_args()
 
     if args_parsed.cred:
-        cred = SafariBooks.parse_cred(args_parsed.cred)
-        if not cred:
+        parsed_cred = SafariBooks.parse_cred(args_parsed.cred)
+        if not parsed_cred:
             arguments.error("invalid credential: %s" % args_parsed.cred)
 
-        args_parsed.cred = cred
+        args_parsed.cred = parsed_cred
 
     else:
         if args_parsed.no_cookies:
