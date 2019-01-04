@@ -1,6 +1,7 @@
 # SafariBooks
 Download and generate *EPUB* of your favorite books from [*Safari Books Online*](https://www.safaribooksonline.com) library.  
 I'm not responsible for the use of this program, this is only for *personal* and *educational* purpose.  
+Before any usage please read the *O'Reilly*'s [Terms of Service](https://learning.oreilly.com/terms/).  
 
 ## Overview:
   * [Requirements & Setup](#requirements--setup)
