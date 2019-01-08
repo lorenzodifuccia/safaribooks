@@ -208,7 +208,7 @@ class SafariBooks:
                    "<head>\n" \
                    "{0}\n" \
                    "<style type=\"text/css\">" \
-                   "body{{background-color:#fbfbfb!important;margin:1em;}}" \
+                   "body{{background-color:transparent!important;margin:1em;}}" \
                    "#sbo-rt-content *{{text-indent:0pt!important;}}#sbo-rt-content .bq{{margin-right:1em!important;}}"
 
     KINDLE_HTML = "#sbo-rt-content *{{word-wrap:break-word!important;" \
