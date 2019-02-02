@@ -12,7 +12,7 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'com.lorenzodifuccia.safaribooks'
+NAME = 'safaribooks'
 DESCRIPTION = 'Download and generate EPUB of your favorite books from Safari Books Online library.'
 URL = 'https://github.com/lorenzodifuccia/safaribooks'
 EMAIL = 'me@example.com'

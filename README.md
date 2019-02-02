@@ -11,21 +11,7 @@ Before any usage please read the *O'Reilly*'s [Terms of Service](https://learnin
 
 ## Requirements & Setup:
 ```shell
-$ git clone https://github.com/lorenzodifuccia/safaribooks.git
-Cloning into 'safaribooks'...
-
-$ cd safaribooks/
-$ pip3 install -r requirements.txt
-
-OR
-
-$ pipenv install && pipenv shell
-```  
-
-The program depends of only two **Python 3** modules:
-```python3
-lxml>=4.1.1
-requests>=2.18.4
+pip install safaribooks
 ```
   
 ## Usage:
