@@ -15,7 +15,7 @@ from setuptools import find_packages, setup, Command
 NAME = 'safaribooks'
 DESCRIPTION = 'Download and generate EPUB of your favorite books from Safari Books Online library.'
 URL = 'https://github.com/lorenzodifuccia/safaribooks'
-EMAIL = 'me@example.com'
+EMAIL = 'lorenzo.difuccia@gmail.com'
 AUTHOR = 'Lorenzo Di Fuccia'
 REQUIRES_PYTHON = '>=3.6.0'
 VERSION = None
@@ -57,6 +57,8 @@ else:
 class UploadCommand(Command):
     """Support setup.py upload."""
 
+    os.system('pip install twine')
+
     description = 'Build and publish the package.'
     user_options = []
 
@@ -87,6 +89,10 @@ class UploadCommand(Command):
         self.status('Pushing git tags…')
         os.system('git tag v{0}'.format(about['__version__']))
         os.system('git push --tags')
+
+        os.system('rm -rf build/')
+        os.system('rm -rf dist/')
+        os.system('rm -rf safaribooks.egg.info/')
 
         sys.exit()
 
