@@ -92,7 +92,7 @@ class UploadCommand(Command):
 
         os.system('rm -rf build/')
         os.system('rm -rf dist/')
-        os.system('rm -rf safaribooks.egg.info/')
+        os.system('rm -rf safaribooks.egg-info/')
 
         sys.exit()
 
