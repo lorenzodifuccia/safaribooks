@@ -208,10 +208,11 @@ class SafariBooks:
                    "<head>\n" \
                    "{0}\n" \
                    "<style type=\"text/css\">" \
-                   "body{{background-color:#fbfbfb!important;margin:1em;}}" \
+                   "body{{margin:1em;}}" \
                    "#sbo-rt-content *{{text-indent:0pt!important;}}#sbo-rt-content .bq{{margin-right:1em!important;}}"
 
-    KINDLE_HTML = "#sbo-rt-content *{{word-wrap:break-word!important;" \
+    KINDLE_HTML = "body{{background-color:transparent!important;}}" \
+                  "#sbo-rt-content *{{word-wrap:break-word!important;" \
                   "word-break:break-word!important;}}#sbo-rt-content table,#sbo-rt-content pre" \
                   "{{overflow-x:unset!important;overflow:unset!important;" \
                   "overflow-y:unset!important;white-space:pre-wrap!important;}}"
