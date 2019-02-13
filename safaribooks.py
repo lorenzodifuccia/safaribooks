@@ -61,10 +61,10 @@ class Display:
         sys.excepthook = sys.__excepthook__
 
     def log(self, message):
-        self.logger.info(str(message).encode("utf-8", "replace"))
+        self.logger.info(message.encode("utf-8", "replace"))
 
     def out(self, put):
-        sys.stdout.write("\r" + " " * self.columns + "\r" + put + "\n")
+        sys.stdout.write("\r" + " " * self.columns + "\r" + put.encode("utf-8", "replace") + "\n")
 
     def info(self, message, state=False):
         self.log(message)
