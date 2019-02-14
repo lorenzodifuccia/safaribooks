@@ -85,6 +85,18 @@ You can also convert the book to `MOBI` and if you'll do it with Calibre be sure
 
 In the other hand, if you're not going to export the `EPUB`, you can use the `--no-kindle` option to remove the CSS that blocks overflow on `table` and `pre` elements, see below in the examples.  
   
+## Docker
+
+If you don't have or want to setup a python environment but have `docker` installed, you might want to run `safaribooks` within a container. After cloning this repository, the following command will be enough to download whatever `<BOOK ID>` you provide.
+
+```shell
+$ docker build . -t safaribooks && \
+  docker run --rm -it -v $(pwd)/Books:/safaribooks/Books safaribooks \
+    --cred "account_mail@mail.com:password01" <BOOK ID>
+```
+
+The above will run build a `safaribooks` docker image locally and run it. Please note the `-v` argument: it'll make the downloaded books available outside of the container. In this example, it'll create a directory called `./Books` on your current directory.
+
 ## Examples:
   * ## Download [Test-Driven Development with Python, 2nd Edition](https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/):  
     ```shell
