@@ -8,6 +8,7 @@ Before any usage please read the *O'Reilly*'s [Terms of Service](https://learnin
   * [Usage](#usage)
   * [Example: Download *Test-Driven Development with Python, 2nd Edition*](#download-test-driven-development-with-python-2nd-edition)
   * [Example: Use or not the `--no-kindle` option](#use-or-not-the---no-kindle-option)
+  * [Example: Import cookies](#import-cookies)
 
 ## Requirements & Setup:
 ```shell
@@ -71,7 +72,7 @@ optional arguments:
 ```
   
 The first time you use the program, you'll have to specify your Safari Books Online account credentials (look [`here`](/../../issues/15) for special character).
-The next times you'll download a book, before session expires, you can omit the credential, because the program save your session cookies in a file called `cookies.json` (for **SSO** look the file format [`here`](/../../issues/2#issuecomment-367726544)). 
+The next times you'll download a book, before session expires, you can omit the credential, because the program save your session cookies in a file called `cookies.json` (for **SSO** see [Example: Import cookies](#import-cookies)). 
   
 Pay attention if you use a shared PC, because everyone that has access to your files can steal your session. 
 If you don't want to cache the cookies, just use the `--no-cookies` option and provide all time your `--cred`.
@@ -144,6 +145,15 @@ In the other hand, if you're not going to export the `EPUB`, you can use the `--
     
     ![NoKindle Option](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_example02_NoKindle.png "Version compare")  
     
+  * ## Import cookies
+    To import cookies from a browser, which is especially useful for SSO users, log in 
+    to Safari Books Online and then open the Web Inspector.  Click the Network panel 
+    and then click a request.  Copy the value of the cookies header and pass it to the 
+    import_cookies.py script:
+    ```bash
+    $ python3 import_cookies.py 'sessionid=28cb00fc5fefca1c33677383b7c2499f; salesforce_id=c22b5131a048c89949719ddfc77a9401; csrfsafari=NAowChgKB1Nwb3RpZnkSABoGmAEByAEB; BrowserCookie=c6691600-bbf6-4c96-b721-af081ff879d8; corp_sessionid=f2be05e433a0e5883920f34bcf3ce83a; logged_in=y;'
+    ```
+    The import_cookies.py script will convert the header value into JSON and save it to cookies.json.
 ---  
   
 ## Thanks!!
