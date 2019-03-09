@@ -806,10 +806,10 @@ class SafariBooks:
                                               stream=True)
             if response == 0:
                 self.display.error("Error trying to retrieve this image: %s\n    From: %s" % (image_name, url))
-
-            with open(image_path, 'wb') as img:
-                for chunk in response.iter_content(1024):
-                    img.write(chunk)
+            else:
+              with open(image_path, 'wb') as img:
+                  for chunk in response.iter_content(1024):
+                      img.write(chunk)
 
         self.images_done_queue.put(1)
         self.display.state(len(self.images), self.images_done_queue.qsize())
@@ -894,7 +894,7 @@ class SafariBooks:
             escape(self.book_info["description"]),
             subjects,
             ", ".join(escape(pub["name"]) for pub in self.book_info["publishers"]),
-            escape(self.book_info["rights"]),
+            escape(self.book_info["rights"]) if self.book_info["rights"] else "",
             self.book_info["issued"],
             self.cover,
             "\n".join(manifest),
