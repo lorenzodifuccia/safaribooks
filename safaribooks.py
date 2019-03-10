@@ -555,7 +555,7 @@ class SafariBooks:
                 if "cover" in link or "images" in link or "graphics" in link or \
                         link[-3:] in ["jpg", "peg", "png", "gif"]:
                     link = urljoin(self.base_url, link)
-                    if link not in self.images:
+                    if link not in self.images and not link.startswith('mailto:'):
                         self.images.append(link)
                         self.display.log("Crawler: found a new image at %s" % link)
 
@@ -806,10 +806,9 @@ class SafariBooks:
                                               stream=True)
             if response == 0:
                 self.display.error("Error trying to retrieve this image: %s\n    From: %s" % (image_name, url))
-            else:
-              with open(image_path, 'wb') as img:
-                  for chunk in response.iter_content(1024):
-                      img.write(chunk)
+            with open(image_path, 'wb') as img:
+                for chunk in response.iter_content(1024):
+                    img.write(chunk)
 
         self.images_done_queue.put(1)
         self.display.state(len(self.images), self.images_done_queue.qsize())
