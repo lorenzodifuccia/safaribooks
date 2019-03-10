@@ -552,10 +552,11 @@ class SafariBooks:
     def link_replace(self, link):
         if link:
             if not self.url_is_absolute(link):
-                if "cover" in link or "images" in link or "graphics" in link or \
-                        link[-3:] in ["jpg", "peg", "png", "gif"]:
+                if ("cover" in link or "images" in link or "graphics" in link or \
+                        link[-3:] in ["jpg", "peg", "png", "gif"]) \
+                        and not link.startswith("mailto:"):
                     link = urljoin(self.base_url, link)
-                    if link not in self.images and not link.startswith('mailto:'):
+                    if link not in self.images:
                         self.images.append(link)
                         self.display.log("Crawler: found a new image at %s" % link)
 
