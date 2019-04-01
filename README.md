@@ -34,7 +34,7 @@ It's really simple to use, just choose a book from the library and replace in th
   * `email:password` with your own. 
 
 ```shell
-$ python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
+$ python3 safaribooks.py --cred "account_mail@mail.com" XXXXXXXXXXXXX
 ```
 
 The ID is the digits that you find in the URL of the book description page:  
@@ -44,7 +44,7 @@ Like: `https://www.safaribooksonline.com/library/view/test-driven-development-wi
 #### Program options:
 ```shell
 $ python3 safaribooks.py --help
-usage: safaribooks.py [--cred <EMAIL:PASS>] [--no-cookies] [--no-kindle]
+usage: safaribooks.py [--cred <EMAIL>] [--no-cookies] [--no-kindle]
                       [--preserve-log] [--help]
                       <BOOK ID>
 
@@ -57,9 +57,9 @@ positional arguments:
                        name/XXXXXXXXXXXXX/`
 
 optional arguments:
-  --cred <EMAIL:PASS>  Credentials used to perform the auth login on Safari
+  --cred <EMAIL>  Credentials used to perform the auth login on Safari
                        Books Online.
-                       Es. ` --cred "account_mail@mail.com:password01" `.
+                       Es. ` --cred "account_mail@mail.com" `.
   --no-cookies         Prevent your session data to be saved into
                        `cookies.json` file.
   --no-kindle          Remove some CSS rules that block overflow on `table`
@@ -88,7 +88,7 @@ In the other hand, if you're not going to export the `EPUB`, you can use the `--
 ## Examples:
   * ## Download [Test-Driven Development with Python, 2nd Edition](https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/):  
     ```shell
-    $ python3 safaribooks.py --cred "XXXX@gmail.com:XXXXX" 9781491958698
+    $ python3 safaribooks.py --cred "XXXX@gmail.com" 9781491958698
 
            ____     ___         _ 
           / __/__ _/ _/__ _____(_)
