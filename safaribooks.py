@@ -8,6 +8,7 @@ import logging
 import argparse
 import requests
 import traceback
+import getpass
 from lxml import html, etree
 from html import escape
 from random import random
@@ -988,7 +989,7 @@ if __name__ == "__main__":
     arguments.add_argument(
         "--cred", metavar="<EMAIL:PASS>", default=False,
         help="Credentials used to perform the auth login on Safari Books Online."
-             " Es. ` --cred \"account_mail@mail.com:password01\" `."
+             " Es. ` --cred \"account_mail@mail.com\" `."
     )
     arguments.add_argument(
         "--no-cookies", dest="no_cookies", action='store_true',
@@ -1013,7 +1014,9 @@ if __name__ == "__main__":
     args_parsed = arguments.parse_args()
 
     if args_parsed.cred:
-        parsed_cred = SafariBooks.parse_cred(args_parsed.cred)
+        passwd = getpass.getpass()
+        user_cred = f"{args_parsed.cred}:{passwd}"
+        parsed_cred = SafariBooks.parse_cred(user_cred)
         if not parsed_cred:
             arguments.error("invalid credential: %s" % args_parsed.cred)
 
