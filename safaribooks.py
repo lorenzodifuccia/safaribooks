@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 # coding: utf-8
 import os
+import re
 import sys
 import json
 import shutil
 import logging
 import argparse
-import requests
 import traceback
+import datetime
+import requests
+from requests import Request
 from lxml import html, etree
 from html import escape
 from random import random
@@ -191,6 +194,7 @@ class SafariBooks:
     LOGIN_ENTRY_URL = SAFARI_BASE_URL + "/login/unified/?next=/home/"
 
     API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
+    COLLECTIONS_TEMPLATE = SAFARI_BASE_URL + "/api/v2/collections/{0}"
 
     HEADERS = {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
@@ -276,10 +280,13 @@ class SafariBooks:
         "</ncx>"
 
     def __init__(self, args):
+        self.session = requests.Session()
         self.args = args
         self.cookies = {}
         self.jwt = {}
-        self.display = Display("info_%s.log" % ''.join(escape(bookid) for bookid in args.bookids))
+        self.books_dir = "Books"
+        self.book_ids = args.bookids
+        self.display = Display("info_%s.log" % datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
         self.display.intro()
         if not args.cred:
             if not os.path.isfile(COOKIES_FILE):
@@ -293,10 +300,10 @@ class SafariBooks:
             self.do_login(*args.cred)
             if not args.no_cookies:
                 json.dump(self.cookies, open(COOKIES_FILE, "w"))
-
-        for bookid in args.bookids:
-            print(bookid)
-
+        if args.playlist is not None:
+            self.playlist_id = args.playlist
+            self.book_ids = self.get_playlist_books()
+        for bookid in self.book_ids:
             self.book_id = bookid
             self.api_url = self.API_TEMPLATE.format(self.book_id)
 
@@ -318,9 +325,9 @@ class SafariBooks:
             self.clean_book_title = "".join(self.escape_dirname(self.book_title).split(",")[:2]) \
                 + " ({0})".format(self.book_id)
 
-            books_dir = os.path.join(PATH, "Books")
+            books_dir = os.path.join(PATH, self.books_dir)
             if not os.path.isdir(books_dir):
-                os.mkdir(books_dir)
+                os.makedirs(books_dir, exist_ok=True)
 
             self.BOOK_PATH = os.path.join(books_dir, self.clean_book_title)
             self.css_path = ""
@@ -373,13 +380,35 @@ class SafariBooks:
 
         sys.exit(0)
 
+    def get_playlist_books(self):
+        url = self.COLLECTIONS_TEMPLATE.format(self.playlist_id)
+        response = self.requests_provider(url)
+        if response == 0:
+            self.display.exit("API: unable to retrieve playlist.")
+
+        response = response.json()
+
+        if not isinstance(response, dict) or len(response.keys()) == 1:
+            self.display.exit(self.display.api_error(response))
+
+        if "content" not in response or not len(response["content"]):
+            self.display.exit("API: unable to retrieve playlist items.")
+
+        base_dir = "Playlists"
+        pdir = response.get("name")
+        self.books_dir = os.path.join(PATH, base_dir, self.escape_dirname(pdir))
+
+        ourns = [book.get("ourn") for book in response.get("content")]
+        ids = [re.search('urn:orm:book:([^:]*)(?::.+)', ourn).group(1) for ourn in ourns]
+
+        return ids
+
     def return_cookies(self):
         return " ".join(["{0}={1};".format(k, v) for k, v in self.cookies.items()])
 
     def return_headers(self, url):
         if ORLY_BASE_HOST in urlsplit(url).netloc:
             self.HEADERS["cookie"] = self.return_cookies()
-
         else:
             self.HEADERS["cookie"] = ""
 
@@ -391,17 +420,14 @@ class SafariBooks:
                 cookie.name: cookie.value
             })
 
-    def requests_provider(
-            self, url, post=False, data=None, perfom_redirect=True, update_cookies=True, update_referer=True, **kwargs
-    ):
+    def requests_provider(self, url, method='GET', data=None, perform_redirect=True,
+                          update_cookies=True, update_referer=True, **kwargs):
         try:
-            response = getattr(requests, "post" if post else "get")(
-                url,
-                headers=self.return_headers(url),
-                data=data,
-                allow_redirects=False,
-                **kwargs
-            )
+            headers = self.return_headers(url)
+
+            request = Request(method, url, data=data, headers=headers, allow_redirects=False)
+            prepared = self.session.prepare_request(request)
+            response = self.session.send(prepared, **kwargs)
 
             self.display.last_request = (
                 url, data, kwargs, response.status_code, "\n".join(
@@ -452,7 +478,7 @@ class SafariBooks:
 
         response = self.requests_provider(
             self.LOGIN_URL,
-            post=True,
+            method='POST',
             json={
                 "email": email,
                 "password": password,
@@ -1021,9 +1047,13 @@ if __name__ == "__main__":
     )
     arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
     arguments.add_argument(
-        "bookids", metavar='<BOOK ID>', nargs='+',
+        "bookids", metavar='<BOOK ID>', nargs='*',
         help="Book digits IDs that you want to download. You can find it in the URL (X-es):"
         " `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`"
+    )
+    arguments.add_argument(
+        "--playlist", dest="playlist",
+        help="Playlist from which you want to download all books"
     )
 
     args_parsed = arguments.parse_args()
@@ -1038,5 +1068,8 @@ if __name__ == "__main__":
     else:
         if args_parsed.no_cookies:
             arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
+
+    if not args_parsed.playlist and len(args_parsed.bookids) == 0:
+        arguments.error("Either a playlist ID or at least one BOOK ID must be specified")
 
     SafariBooks(args_parsed)

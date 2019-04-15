@@ -44,8 +44,9 @@ Like: `https://www.safaribooksonline.com/library/view/test-driven-development-wi
 #### Program options:
 ```shell
 $ python3 safaribooks.py --help
-usage: safaribooks.py [--cred <EMAIL:PASS>] [--no-cookies] [--no-kindle]
-                      [--preserve-log] [--help]
+usage: safaribooks.py [--cred <EMAIL:PASS>] [--playlist ID]
+                      [--no-cookies] [--no-kindle] [--preserve-log]
+                      [--help]
                       <BOOK ID> <BOOK ID> ...
 
 Download and generate EPUB of your favorite books from Safari Books Online.
@@ -61,6 +62,8 @@ optional arguments:
   --cred <EMAIL:PASS>  Credentials used to perform the auth login on Safari
                        Books Online.
                        Es. ` --cred "account_mail@mail.com:password01" `.
+  --playlist ID        Download an entire playlist of books at once.
+                       Overrides any positional book ids provided.
   --no-cookies         Prevent your session data to be saved into
                        `cookies.json` file.
   --no-kindle          Remove some CSS rules that block overflow on `table`
@@ -144,12 +147,6 @@ In the other hand, if you're not going to export the `EPUB`, you can use the `--
     On the left book created with `--no-kindle` option, on the right without (default):
 
     ![NoKindle Option](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_example02_NoKindle.png "Version compare")
-
-## TODOs
-
-* Make downloading of multiple books at the same time asynchronous
-* Allow users to specify conversion formats when Calibre is installed
-  Command-line format would be `--formats +epub +mobi +pdf ...` with epub by default enabled if none are specified.
 
 ---
 
