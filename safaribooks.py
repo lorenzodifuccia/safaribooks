@@ -399,8 +399,11 @@ class SafariBooks:
         self.books_dir = os.path.join(PATH, base_dir, self.escape_dirname(pdir))
 
         ourns = [book.get("ourn") for book in response.get("content")]
-        ids = [re.search('urn:orm:book:([^:]*)(?::.+)', ourn).group(1) for ourn in ourns]
-
+        ids = []
+        for ourn in ourns:
+            result = re.search('urn:orm:book:([^:]*)(?::.+)*', ourn)
+            if result:
+                ids.append(result.group(1))
         return ids
 
     def return_cookies(self):
