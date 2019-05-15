@@ -182,7 +182,7 @@ class WinQueue(list):  # TODO: error while use `process` in Windows: can't pickl
 
 class SafariBooks:
 
-    LOGIN_URL = SAFARI_BASE_URL + "/accounts/login/"
+    LOGIN_URL = "https://www.oreilly.com/member/auth/login/"
     API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
 
     HEADERS = {
@@ -274,6 +274,8 @@ class SafariBooks:
         self.display.intro()
 
         self.cookies = {}
+
+        self.session = None
 
         if not args.cred:
             if not os.path.isfile(COOKIES_FILE):
@@ -384,12 +386,15 @@ class SafariBooks:
 
     def requests_provider(self, url, post=False, data=None, update_cookies=True, **kwargs):
         try:
-            response = getattr(requests, "post" if post else "get")(
-                url,
-                headers=self.return_headers(url),
-                data=data,
-                **kwargs
-            )
+            if not self.session:
+                self.get_session(data=data)
+
+            response = getattr(self.session, "post" if post else "get")(
+                    url,
+                    # headers=self.return_headers(url),
+                    data=data,
+                    **kwargs
+                    )
 
             self.display.last_request = (
                 url, data, kwargs, response.status_code, "\n".join(
@@ -406,6 +411,33 @@ class SafariBooks:
 
         return response
 
+    def get_login_header(self):
+        return {"content-type": "application/json"}
+
+    def get_session(self, data=None):
+        try:
+            s = requests.Session()
+            # Save data and header in session:
+            s.data = data
+            s.headers = self.get_login_header()
+
+            # post credentials to login form
+            login_response = s.post(self.LOGIN_URL,
+                                    data=data,
+                                    )
+
+            # follow redirect
+            s.get(json.loads(login_response.content)['redirect_uri'])
+
+            self.session = s
+
+        except (requests.ConnectionError, requests.ConnectTimeout, requests.RequestException) as request_exception:
+            self.display.error(str(request_exception))
+            return 0
+
+        return True
+
+
     @staticmethod
     def parse_cred(cred):
         if ":" not in cred:
@@ -421,41 +453,17 @@ class SafariBooks:
         return new_cred
 
     def do_login(self, email, password):
-        response = self.requests_provider(self.LOGIN_URL)
-        if response == 0:
-            self.display.exit("Login: unable to reach Safari Books Online. Try again...")
-
-        csrf = []
-        try:
-            csrf = html.fromstring(response.text).xpath("//input[@name='csrfmiddlewaretoken'][@value]")
-
-        except (html.etree.ParseError, html.etree.ParserError) as parsing_error:
-            self.display.error(parsing_error)
-            self.display.exit(
-                "Login: error trying to parse the home of Safari Books Online."
-            )
-
-        if not len(csrf):
-            self.display.exit("Login: no CSRF Token found in the page."
-                              " Unable to continue the login."
-                              " Try again...")
-
-        csrf = csrf[0].attrib["value"]
         response = self.requests_provider(
             self.LOGIN_URL,
             post=True,
-            data=(
-                ("csrfmiddlewaretoken", csrf),
-                ("email", email), ("password1", password),
-                ("login", "Sign In"), ("next", "")
-            ),
-            allow_redirects=False
-        )
+            data=json.dumps({"email": email, "password": str(password)}),
+            )
 
         if response == 0:
             self.display.exit("Login: unable to perform auth to Safari Books Online.\n    Try again...")
 
-        if response.status_code != 302:
+
+        if response.status_code != 200:
             try:
                 error_page = html.fromstring(response.text)
                 errors_message = error_page.xpath("//ul[@class='errorlist']//li/text()")
@@ -466,6 +474,7 @@ class SafariBooks:
                 self.display.exit("Login: unable to perform auth login to Safari Books Online.\n" +
                                   self.display.SH_YELLOW + "[*]" + self.display.SH_DEFAULT + " Details:\n"
                                   "%s" % "\n".join(messages if len(messages) else ["    Unexpected error!"]))
+
             except (html.etree.ParseError, html.etree.ParserError) as parsing_error:
                 self.display.error(parsing_error)
                 self.display.exit(
@@ -986,7 +995,7 @@ if __name__ == "__main__":
                                         allow_abbrev=False)
 
     arguments.add_argument(
-        "--cred", metavar="<EMAIL:PASS>", default=False,
+        "--cred", metavar="<EMAIL:PASS>",
         help="Credentials used to perform the auth login on Safari Books Online."
              " Es. ` --cred \"account_mail@mail.com:password01\" `."
     )
