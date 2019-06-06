@@ -390,12 +390,15 @@ class SafariBooks:
                 cookie.name: cookie.value
             })
 
-    def requests_provider(self, url, post=False, data=None, update_cookies=True, update_referer=False, **kwargs):
+    def requests_provider(
+            self, url, post=False, data=None, perfom_redirect=True, update_cookies=True, update_referer=True, **kwargs
+    ):
         try:
             response = getattr(requests, "post" if post else "get")(
                 url,
                 headers=self.return_headers(url),
                 data=data,
+                allow_redirects=False,
                 **kwargs
             )
 
@@ -414,7 +417,11 @@ class SafariBooks:
 
         if update_referer:
             # TODO Update Referer HTTP Header
-            pass
+            self.HEADERS["referer"] = response.request.url
+
+        if response.is_redirect and perfom_redirect:
+            return self.requests_provider(response.next.url, post, None, perfom_redirect, update_cookies, update_referer)
+            # TODO How about **kwargs?
 
         return response
 
@@ -433,19 +440,7 @@ class SafariBooks:
         return new_cred
 
     def do_login(self, email, password):
-        response = self.requests_provider(self.LOGIN_ENTRY_URL, allow_redirects=False)
-        if response == 0:
-            self.display.exit("Login: unable to reach Safari Books Online. Try again...")
-        elif not response.is_redirect:
-            self.display.exit("Login: error? LOGIN-UPDATE-01")
-
-        response = self.requests_provider(response.next.url, allow_redirects=False)
-        if response == 0:
-            self.display.exit("Login: unable to reach Safari Books Online. Try again...")
-        elif not response.is_redirect:
-            self.display.error("Login: error? LOGIN-UPDATE-02")
-
-        response = self.requests_provider(response.next.url, allow_redirects=False)
+        response = self.requests_provider(self.LOGIN_ENTRY_URL)
         if response == 0:
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
 
@@ -461,7 +456,7 @@ class SafariBooks:
                 "password": password,
                 "redirect_uri": redirect_uri
             },
-            allow_redirects=False
+            perfom_redirect=False
         )
 
         if response == 0:
@@ -486,23 +481,9 @@ class SafariBooks:
                 )
 
         self.jwt = response.json()  # TODO: save JWT Tokens and use the refresh_token to restore user session
-        response = self.requests_provider(self.jwt["redirect_uri"], allow_redirects=False)
+        response = self.requests_provider(self.jwt["redirect_uri"])
         if response == 0:
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
-        elif not response.is_redirect:
-            self.display.exit("Login: error? LOGIN-UPDATE-03")
-
-        response = self.requests_provider(response.next.url, allow_redirects=False)
-        if response == 0:
-            self.display.exit("Login: unable to reach Safari Books Online. Try again...")
-        elif not response.is_redirect:
-            self.display.exit("Login: error? LOGIN-UPDATE-04")
-
-        response = self.requests_provider(response.next.url)
-        if response == 0:
-            self.display.exit("Login: unable to reach Safari Books Online. Try again...")
-        elif not response.ok:
-            self.display.exit("Login: error? LOGIN-UPDATE-05")
 
     def get_book_info(self):
         response = self.requests_provider(self.api_url)
