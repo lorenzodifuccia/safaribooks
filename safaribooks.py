@@ -424,13 +424,13 @@ class SafariBooks:
             })
 
     def requests_provider(self, url, method='GET', data=None, perform_redirect=True,
-                          update_cookies=True, update_referer=True, **kwargs):
+                          update_cookies=True, update_referer=True, json={}, **kwargs):
         try:
             headers = self.return_headers(url)
 
-            request = Request(method, url, data=data, headers=headers, allow_redirects=False)
+            request = Request(method, url, data=data, headers=headers, json=json)
             prepared = self.session.prepare_request(request)
-            response = self.session.send(prepared, **kwargs)
+            response = self.session.send(prepared, allow_redirects=perform_redirect, **kwargs)
 
             self.display.last_request = (
                 url, data, kwargs, response.status_code, "\n".join(
@@ -450,8 +450,8 @@ class SafariBooks:
             # TODO How about Origin?
             self.HEADERS["referer"] = response.request.url
 
-        if response.is_redirect and perfom_redirect:
-            return self.requests_provider(response.next.url, post, None, perfom_redirect, update_cookies, update_referer)
+        if response.is_redirect and perform_redirect:
+            return self.requests_provider(response.next.url, method, None, perform_redirect, update_cookies, update_referer)
             # TODO How about **kwargs?
 
         return response
@@ -474,10 +474,14 @@ class SafariBooks:
         response = self.requests_provider(self.LOGIN_ENTRY_URL)
         if response == 0:
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
+        # print(response.request.path_url)
 
-        redirect_uri = response.request.path_url[response.request.path_url.index("redirect_uri"):]  # TODO try...catch
+        # redirect_uri = response.request.path_url.split("redirect_uri", 1)[1]
+        redirect_uri = response.request.path_url[response.request.path_url.index("redirect_uri"):]
+        # try...catch
         redirect_uri = redirect_uri[:redirect_uri.index("&")]
         redirect_uri = "https://api.oreilly.com%2Fapi%2Fv1%2Fauth%2Fopenid%2Fauthorize%3F" + redirect_uri
+        print(redirect_uri)
 
         response = self.requests_provider(
             self.LOGIN_URL,
@@ -487,7 +491,7 @@ class SafariBooks:
                 "password": password,
                 "redirect_uri": redirect_uri
             },
-            perfom_redirect=False
+            perform_redirect=False
         )
 
         if response == 0:
