@@ -398,13 +398,25 @@ class SafariBooks:
         pdir = response.get("name")
         self.books_dir = os.path.join(PATH, base_dir, self.escape_dirname(pdir))
 
-        ourns = [book.get("ourn") for book in response.get("content")]
-        ids = []
-        for ourn in ourns:
-            result = re.search('urn:orm:book:([^:]*)(?::.+)*', ourn)
-            if result:
-                ids.append(result.group(1))
+        ids = [self.get_book_id(book)
+               for book in response.get("content",{})
+               if self.get_book_id(book) is not None]
+        print(ids)
         return ids
+
+    def get_book_id(self, book):
+        if book.get("ourn"):
+            result = re.search('urn:orm:book:([^:]*)(?::.+)*', book.get("ourn"))
+            if result:
+                return result.group(1)
+        elif book.get("metadata", {}):
+            return book.get("metadata", {}).get("identifier", None)
+        else:
+            api_url = book.get("api_url")
+            result = re.search('/api/v[0-9]+/book/([^/]*)/?.*', api_url)
+            if result:
+                return result.group(1)
+        return None
 
     def return_cookies(self):
         return " ".join(["{0}={1};".format(k, v) for k, v in self.cookies.items()])
@@ -474,14 +486,11 @@ class SafariBooks:
         response = self.requests_provider(self.LOGIN_ENTRY_URL)
         if response == 0:
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
-        # print(response.request.path_url)
 
-        # redirect_uri = response.request.path_url.split("redirect_uri", 1)[1]
         redirect_uri = response.request.path_url[response.request.path_url.index("redirect_uri"):]
         # try...catch
         redirect_uri = redirect_uri[:redirect_uri.index("&")]
         redirect_uri = "https://api.oreilly.com%2Fapi%2Fv1%2Fauth%2Fopenid%2Fauthorize%3F" + redirect_uri
-        print(redirect_uri)
 
         response = self.requests_provider(
             self.LOGIN_URL,
