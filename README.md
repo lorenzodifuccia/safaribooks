@@ -25,7 +25,7 @@ $ pipenv install && pipenv shell
 The program depends of only two **Python 3** modules:
 ```python3
 lxml>=4.1.1
-requests>=2.18.4
+requests>=2.20.0
 ```
   
 ## Usage:
