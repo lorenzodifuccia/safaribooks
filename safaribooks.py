@@ -70,7 +70,11 @@ class Display:
         self.logger.info(str(message))  # TODO: "utf-8", "replace"
 
     def out(self, put):
-        sys.stdout.write("\r" + " " * self.columns + "\r" + str(put, "utf-8", "replace") + "\n")
+        if isinstance(put,bytes):
+            put = str(put, "utf-8", "replace")
+        else:
+            put = str(put)
+        sys.stdout.write("\r" + " " * self.columns + "\r" + put + "\n")
 
     def info(self, message, state=False):
         self.log(message)
