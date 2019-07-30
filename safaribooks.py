@@ -68,9 +68,9 @@ class Display:
 
     def log(self, message):
     	try:
-    		self.logger.info(str(message))  # TODO: "utf-8", "replace"
+            self.logger.info(str(message))  # TODO: "utf-8", "replace"
     	except Exception as e:
-    		self.logger.error(e)
+            self.logger.error(e)
         
     def out(self, put):
         sys.stdout.write("\r" + " " * self.columns + "\r" + str(put) + "\n")
