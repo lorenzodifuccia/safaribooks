@@ -67,24 +67,33 @@ class Display:
         sys.excepthook = sys.__excepthook__
 
     def log(self, message):
-        self.logger.info(str(message))  # TODO: "utf-8", "replace"
-
+    	try:
+            self.logger.info(str(message))  # TODO: "utf-8", "replace"
+    	except Exception as e:
+            #self.logger.error(e)
+            self.logger.info("LOGGING ERROR")
+        
     def out(self, put):
         sys.stdout.write("\r" + " " * self.columns + "\r" + str(put) + "\n")
 
     def info(self, message, state=False):
-        self.log(message)
-        output = (self.SH_YELLOW + "[*]" + self.SH_DEFAULT if not state else
-                  self.SH_BG_YELLOW + "[-]" + self.SH_DEFAULT) + " %s" % message
-        self.out(output)
+        try:
+            self.log(message)
+            output = (self.SH_YELLOW + "[*]" + self.SH_DEFAULT if not state else
+                      self.SH_BG_YELLOW + "[-]" + self.SH_DEFAULT) + " %s" % message
+            self.out(output)
+        except:
+            pass
 
     def error(self, error):
-        if not self.in_error:
-            self.in_error = True
-
-        self.log(error)
-        output = self.SH_BG_RED + "[#]" + self.SH_DEFAULT + " %s" % error
-        self.out(output)
+        try:
+            if not self.in_error:
+                self.in_error = True
+            self.log(error)
+            output = self.SH_BG_RED + "[#]" + self.SH_DEFAULT + " %s" % error
+            self.out(output)
+        except:
+            pass
 
     def exit(self, error):
         self.error(str(error))
@@ -170,7 +179,7 @@ class Display:
                        "    `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`"
 
         else:
-            os.remove(COOKIES_FILE)
+            #os.remove(COOKIES_FILE)
             message += "Out-of-Session%s.\n" % (" (%s)" % response["detail"]) if "detail" in response else "" +\
                        Display.SH_YELLOW + "[+]" + Display.SH_DEFAULT + \
                        " Use the `--cred` option in order to perform the auth login to Safari Books Online."
@@ -391,7 +400,7 @@ class SafariBooks:
             })
 
     def requests_provider(
-            self, url, post=False, data=None, perfom_redirect=True, update_cookies=True, update_referer=True, **kwargs
+            self, url, post=False, data=None, verify=False, perfom_redirect=True, update_cookies=False, update_referer=True, **kwargs
     ):
         try:
             response = getattr(requests, "post" if post else "get")(
@@ -399,6 +408,8 @@ class SafariBooks:
                 headers=self.return_headers(url),
                 data=data,
                 allow_redirects=False,
+                verify=False,
+                timeout=6000,
                 **kwargs
             )
 
@@ -454,10 +465,10 @@ class SafariBooks:
             post=True,
             json={
                 "email": email,
-                "password": password,
-                "redirect_uri": redirect_uri
+                "password": password
             },
-            perfom_redirect=False
+            perfom_redirect=False,
+            update_cookies=True
         )
 
         if response == 0:
