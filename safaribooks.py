@@ -13,6 +13,7 @@ from html import escape
 from random import random
 from multiprocessing import Process, Queue, Value
 from urllib.parse import urljoin, urlsplit, urlparse
+from PIL import Image
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -819,14 +820,32 @@ class SafariBooks:
                                               stream=True)
             if response == 0:
                 self.display.error("Error trying to retrieve this image: %s\n    From: %s" % (image_name, url))
-
-            with open(image_path, 'wb') as img:
+            
+            with open(image_path, 'wb') as image_file:
                 for chunk in response.iter_content(1024):
-                    img.write(chunk)
-
+                    image_file.write(chunk)
+            
+            self._resize_image(image_path)
+        
         self.images_done_queue.put(1)
         self.display.state(len(self.images), self.images_done_queue.qsize())
-
+        
+    def _resize_image(self, image_path):
+        image_max_size = self.args.image_max_size
+        image_quality = self.args.image_quality
+        if image_max_size == 0 or image_quality == 0:
+            # No resize or changing quality
+            return
+        image = Image.open(image_path)
+        
+        if image_max_size > 0:
+            # Resize image if it's bigger than (image_max_size x image_max_size)
+            image.thumbnail((image_max_size, image_max_size))
+        if image_quality > 0:
+            image.save(image_path, quality=image_quality)
+        else:
+            image.save(image_path)
+    
     def _start_multiprocessing(self, operation, full_queue):
         if len(full_queue) > 5:
             for i in range(0, len(full_queue), 5):
