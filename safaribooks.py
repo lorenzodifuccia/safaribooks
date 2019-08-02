@@ -1008,6 +1008,14 @@ if __name__ == "__main__":
         help="Prevent your session data to be saved into `cookies.json` file."
     )
     arguments.add_argument(
+        "--image-max-size", metavar="<NUMBER>", dest="image_max_size", default=False,
+        help="Resize image if the image width/height is large than max size. 0 (default) for no resize"
+    )
+    arguments.add_argument(
+        "--image-quality", metavar="<NUMBER>", dest="image_quality", default=False,
+        help="Compress JPEG images with given quality. 0 (default) for keeping the original image's quality"
+    )
+    arguments.add_argument(
         "--no-kindle", dest="no_kindle", action='store_true',
         help="Remove some CSS rules that block overflow on `table` and `pre` elements."
              " Use this option if you're not going to export the EPUB to E-Readers like Amazon Kindle."
@@ -1035,5 +1043,19 @@ if __name__ == "__main__":
     else:
         if args_parsed.no_cookies:
             arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
-
+    
+    if args_parsed.image_max_size:
+        if not args_parsed.image_max_size.isdigit():
+            arguments.error("invalid size: %s" % args_parsed.image_max_size)
+        args_parsed.image_max_size = int(args_parsed.image_max_size)
+    else:
+        args_parsed.image_max_size = 0
+        
+    if args_parsed.image_quality:
+        if not args_parsed.image_quality.isdigit():
+            arguments.error("invalid quality: %s" % args_parsed.image_quality)
+        args_parsed.image_quality = int(args_parsed.image_quality)
+    else:
+        args_parsed.image_quality = 0
+        
     SafariBooks(args_parsed)
