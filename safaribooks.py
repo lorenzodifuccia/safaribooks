@@ -824,8 +824,11 @@ class SafariBooks:
             with open(image_path, 'wb') as image_file:
                 for chunk in response.iter_content(1024):
                     image_file.write(chunk)
-            
-            self._resize_image(image_path)
+            try:
+                self._resize_image(image_path)
+            except:
+                # There are some image file which cannot open. Should we delete it?
+                pass
         
         self.images_done_queue.put(1)
         self.display.state(len(self.images), self.images_done_queue.qsize())
