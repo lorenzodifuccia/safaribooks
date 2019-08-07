@@ -9,7 +9,7 @@ Before any usage please read the *O'Reilly*'s [Terms of Service](https://learnin
   * [Example: Download *Test-Driven Development with Python, 2nd Edition*](#download-test-driven-development-with-python-2nd-edition)
   * [Example: Use or not the `--no-kindle` option](#use-or-not-the---no-kindle-option)
 
-## Safari Database Index - 20190807 (donated by [BEE Blockchain Foundation](https://github.com/beeblockchainfoundation/safaribooks/releases/tag/20190808))
+## Safari Database Index - 20190807
 > Tip: You can search Safari Database Index using `search in this repository` function provided by Github with your favorite topic like `JAVA` or `PYTHON`.        
   * Download the [CSV file](/learning-index.csv) or [HTML file](/learning-index-html.zip) or [Access DB file](/learning-index-accdb.zip) which contains all videos, books, learningpaths of oreilly
   * Choose your favorite books by csv libraries such as `pandas`
