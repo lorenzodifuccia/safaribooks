@@ -386,9 +386,10 @@ class SafariBooks:
 
     def update_cookies(self, jar):
         for cookie in jar:
-            self.cookies.update({
-                cookie.name: cookie.value
-            })
+            if cookie.name != 'sessionid':
+                self.cookies.update({
+                    cookie.name: cookie.value
+                })
 
     def requests_provider(
             self, url, post=False, data=None, perfom_redirect=True, update_cookies=True, update_referer=True, **kwargs
