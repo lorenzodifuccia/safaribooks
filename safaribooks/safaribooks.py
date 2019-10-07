@@ -990,7 +990,7 @@ class SafariBooks:
         os.rename(zip_file + ".zip", os.path.join(self.BOOK_PATH, self.book_id) + ".epub")
 
 def run():
-    arguments = argparse.ArgumentParser(prog="safaribooks.py",
+    arguments = argparse.ArgumentParser(prog="safaribooks",
                                         description="Download and generate an EPUB of your favorite books"
                                                     " from Safari Books Online.",
                                         add_help=False,
