@@ -15,7 +15,7 @@ $ git clone https://github.com/lorenzodifuccia/safaribooks.git
 Cloning into 'safaribooks'...
 
 $ cd safaribooks/
-$ pip3 install -r requirements.txt
+$ pip3 install .
 
 OR
 
@@ -34,7 +34,7 @@ It's really simple to use, just choose a book from the library and replace in th
   * `email:password` with your own. 
 
 ```shell
-$ python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
+$ safaribooks --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
 ```
 
 The ID is the digits that you find in the URL of the book description page:  
@@ -43,8 +43,8 @@ Like: `https://www.safaribooksonline.com/library/view/test-driven-development-wi
   
 #### Program options:
 ```shell
-$ python3 safaribooks.py --help
-usage: safaribooks.py [--cred <EMAIL:PASS>] [--no-cookies] [--no-kindle]
+$ safaribooks --help
+usage: safaribooks [--cred <EMAIL:PASS>] [--no-cookies] [--no-kindle]
                       [--preserve-log] [--help]
                       <BOOK ID>
 
@@ -88,7 +88,7 @@ In the other hand, if you're not going to export the `EPUB`, you can use the `--
 ## Examples:
   * ## Download [Test-Driven Development with Python, 2nd Edition](https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/):  
     ```shell
-    $ python3 safaribooks.py --cred "XXXX@gmail.com:XXXXX" 9781491958698
+    $ safaribooks --cred "XXXX@gmail.com:XXXXX" 9781491958698
 
            ____     ___         _ 
           / __/__ _/ _/__ _____(_)
@@ -138,7 +138,7 @@ In the other hand, if you're not going to export the `EPUB`, you can use the `--
  
   * ## Use or not the `--no-kindle` option:
     ```bash
-    $ python3 safaribooks.py --no-kindle 9781491958698
+    $ safaribooks --no-kindle 9781491958698
     ```  
     On the left book created with `--no-kindle` option, on the right without (default):  
     
