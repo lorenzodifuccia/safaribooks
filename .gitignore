@@ -2,3 +2,4 @@ Books/
 
 cookies.json
 *.log
+*.egg-info

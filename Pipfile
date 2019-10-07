@@ -8,6 +8,7 @@ name = "pypi"
 
 lxml = "*"
 requests = "*"
+"safaribooks" = {path = ".", editable = true}
 
 [dev-packages]
 

@@ -81,6 +81,10 @@
             "index": "pypi",
             "version": "==2.20.0"
         },
+        "safaribooks": {
+            "editable": true,
+            "path": "."
+        },
         "urllib3": {
             "hashes": [
                 "sha256:4c291ca23bbb55c76518905869ef34bdd5f0e46af7afe6861e8375643ffee1a0",
