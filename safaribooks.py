@@ -70,7 +70,13 @@ class Display:
         self.logger.info(str(message))  # TODO: "utf-8", "replace"
 
     def out(self, put):
-        sys.stdout.write("\r" + " " * self.columns + "\r" + str(put, "utf-8", "replace") + "\n")
+        pattern = "\r{!s}\r{!s}\n"
+        try:
+            s = pattern.format(
+                " " * self.columns, str(put, "utf-8", "replace"))
+        except TypeError:
+            s = pattern.format(" " * self.columns, put)
+        sys.stdout.write(s)
 
     def info(self, message, state=False):
         self.log(message)
@@ -417,7 +423,7 @@ class SafariBooks:
 
         if update_referer:
             # TODO Update Referer HTTP Header
-            # TODO How about Origin? 
+            # TODO How about Origin?
             self.HEADERS["referer"] = response.request.url
 
         if response.is_redirect and perfom_redirect:
