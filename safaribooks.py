@@ -4,6 +4,7 @@ import os
 import sys
 import json
 import shutil
+import getpass
 import logging
 import argparse
 import requests
@@ -40,6 +41,8 @@ class Display:
     SH_BG_YELLOW = "\033[43m" if "win" not in sys.platform else ""
 
     def __init__(self, log_file):
+        self.output_dir = ""
+        self.output_dir_set = False
         self.log_file = os.path.join(PATH, log_file)
 
         self.logger = logging.getLogger("SafariBooks")
@@ -62,6 +65,11 @@ class Display:
         self.state_status = Value("i", 0)
         sys.excepthook = self.unhandled_exception
 
+    def set_output_dir(self, output_dir):
+        self.info("Output directory:\n    %s" % output_dir)
+        self.output_dir = output_dir
+        self.output_dir_set = True
+
     def unregister(self):
         self.logger.handlers[0].close()
         sys.excepthook = sys.__excepthook__
@@ -72,10 +80,11 @@ class Display:
     def out(self, put):
         pattern = "\r{!s}\r{!s}\n"
         try:
-            s = pattern.format(
-                " " * self.columns, str(put, "utf-8", "replace"))
+            s = pattern.format(" " * self.columns, str(put, "utf-8", "replace"))
+
         except TypeError:
             s = pattern.format(" " * self.columns, put)
+
         sys.stdout.write(s)
 
     def info(self, message, state=False):
@@ -94,10 +103,12 @@ class Display:
 
     def exit(self, error):
         self.error(str(error))
-        output = (self.SH_YELLOW + "[+]" + self.SH_DEFAULT +
-                  " Please delete all the `<BOOK NAME>/OEBPS/*.xhtml`"
-                  " files and restart the program.")
-        self.out(output)
+
+        if self.output_dir_set:
+            output = (self.SH_YELLOW + "[+]" + self.SH_DEFAULT +
+                      " Please delete the output directory '" + self.output_dir + "'"
+                      " and restart the program.")
+            self.out(output)
 
         output = self.SH_BG_RED + "[!]" + self.SH_DEFAULT + " Aborting..."
         self.out(output)
@@ -115,15 +126,22 @@ class Display:
                      .format(*self.last_request))
 
     def intro(self):
-        output = self.SH_YELLOW + """
-       ____     ___         _
-      / __/__ _/ _/__ _____(_)
-     _\ \/ _ `/ _/ _ `/ __/ /
-    /___/\_,_/_/ \_,_/_/ /_/
-      / _ )___  ___  / /__ ___
-     / _  / _ \/ _ \/  '_/(_-<
-    /____/\___/\___/_/\_\/___/
-""" + self.SH_DEFAULT
+        output = self.SH_YELLOW + ("""
+       ____     ___         _     
+      / __/__ _/ _/__ _____(_)    
+     _\ \/ _ `/ _/ _ `/ __/ /     
+    /___/\_,_/_/ \_,_/_/ /_/      
+      / _ )___  ___  / /__ ___    
+     / _  / _ \/ _ \/  '_/(_-<    
+    /____/\___/\___/_/\_\/___/    
+""" if random() > 0.5 else """
+ ██████╗     ██████╗ ██╗  ██╗   ██╗██████╗ 
+██╔═══██╗    ██╔══██╗██║  ╚██╗ ██╔╝╚════██╗
+██║   ██║    ██████╔╝██║   ╚████╔╝   ▄███╔╝
+██║   ██║    ██╔══██╗██║    ╚██╔╝    ▀▀══╝ 
+╚██████╔╝    ██║  ██║███████╗██║     ██╗   
+ ╚═════╝     ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝                                           
+""") + self.SH_DEFAULT
         output += "\n" + "~" * (self.columns // 2)
 
         self.out(output)
@@ -179,7 +197,7 @@ class Display:
             os.remove(COOKIES_FILE)
             message += "Out-of-Session%s.\n" % (" (%s)" % response["detail"]) if "detail" in response else "" +\
                        Display.SH_YELLOW + "[+]" + Display.SH_DEFAULT + \
-                       " Use the `--cred` option in order to perform the auth login to Safari Books Online."
+                       " Use the `--cred` or `--login` options in order to perform the auth login to Safari."
 
         return message
 
@@ -292,7 +310,7 @@ class SafariBooks:
         if not args.cred:
             if not os.path.isfile(COOKIES_FILE):
                 self.display.exit("Login: unable to find cookies file.\n"
-                                  "    Please use the --cred option to perform the login.")
+                                  "    Please use the `--cred` or `--login` options to perform the login.")
 
             self.cookies = json.load(open(COOKIES_FILE))
 
@@ -328,10 +346,10 @@ class SafariBooks:
             os.mkdir(books_dir)
 
         self.BOOK_PATH = os.path.join(books_dir, self.clean_book_title)
+        self.display.set_output_dir(self.BOOK_PATH)
         self.css_path = ""
         self.images_path = ""
         self.create_dirs()
-        self.display.info("Output directory:\n    %s" % self.BOOK_PATH)
 
         self.chapter_title = ""
         self.filename = ""
@@ -376,8 +394,6 @@ class SafariBooks:
         if not self.display.in_error and not args.log:
             os.remove(self.display.log_file)
 
-        sys.exit(0)
-
     def return_cookies(self):
         return " ".join(["{0}={1};".format(k, v) for k, v in self.cookies.items()])
 
@@ -392,7 +408,7 @@ class SafariBooks:
 
     def update_cookies(self, jar):
         for cookie in jar:
-            if cookie.name != 'sessionid':
+            if cookie.name != 'sessionid':  # TODO
                 self.cookies.update({
                     cookie.name: cookie.value
                 })
@@ -570,7 +586,7 @@ class SafariBooks:
         return bool(urlparse(url).netloc)
 
     def link_replace(self, link):
-        if link:
+        if link and not link.startswith("mailto"):
             if not self.url_is_absolute(link):
                 if "cover" in link or "images" in link or "graphics" in link or \
                         link[-3:] in ["jpg", "peg", "png", "gif"]:
@@ -770,9 +786,10 @@ class SafariBooks:
                 if not self.display.book_ad_info and \
                         next_chapter not in self.book_chapters[:self.book_chapters.index(next_chapter)]:
                     self.display.info(
-                        "File `%s` already exists.\n"
-                        "    If you want to download again all the book%s,\n"
-                        "    please delete the `<BOOK NAME>/OEBPS/*.xhtml` files and restart the program." %
+                        ("File `%s` already exists.\n"
+                         "    If you want to download again all the book%s,\n"
+                         "    please delete the output directory '" + self.BOOK_PATH + "' and restart the program.")
+                        %
                         (
                             self.filename.replace(".html", ".xhtml"),
                             " (especially because you selected the `--no-kindle` option)"
@@ -790,10 +807,10 @@ class SafariBooks:
         css_file = os.path.join(self.css_path, "Style{0:0>2}.css".format(self.css.index(url)))
         if os.path.isfile(css_file):
             if not self.display.css_ad_info.value and url not in self.css[:self.css.index(url)]:
-                self.display.info("File `%s` already exists.\n"
-                                  "    If you want to download again all the CSSs,\n"
-                                  "    please delete the `<BOOK NAME>/OEBPS/*.xhtml` and `<BOOK NAME>/OEBPS/Styles/*`"
-                                  " files and restart the program." %
+                self.display.info(("File `%s` already exists.\n"
+                                   "    If you want to download again all the CSSs,\n"
+                                   "    please delete the output directory '" + self.BOOK_PATH + "'"
+                                   " and restart the program.") %
                                   css_file)
                 self.display.css_ad_info.value = 1
 
@@ -813,10 +830,10 @@ class SafariBooks:
         image_path = os.path.join(self.images_path, image_name)
         if os.path.isfile(image_path):
             if not self.display.images_ad_info.value and url not in self.images[:self.images.index(url)]:
-                self.display.info("File `%s` already exists.\n"
-                                  "    If you want to download again all the images,\n"
-                                  "    please delete the `<BOOK NAME>/OEBPS/*.xhtml` and `<BOOK NAME>/OEBPS/Images/*`"
-                                  " files and restart the program." %
+                self.display.info(("File `%s` already exists.\n"
+                                   "    If you want to download again all the images,\n"
+                                   "    please delete the output directory '" + self.BOOK_PATH + "'"
+                                   " and restart the program.") %
                                   image_name)
                 self.display.images_ad_info.value = 1
 
@@ -862,7 +879,7 @@ class SafariBooks:
         if self.display.book_ad_info == 2:
             self.display.info("Some of the book contents were already downloaded.\n"
                               "    If you want to be sure that all the images will be downloaded,\n"
-                              "    please delete the `<BOOK NAME>/OEBPS/*.xhtml` files and restart the program.")
+                              "    please delete the output direcotry '" + self.BOOK_PATH + "' and restart the program.")
 
         self.display.state_status.value = -1
 
@@ -914,7 +931,7 @@ class SafariBooks:
             escape(self.book_info["description"]),
             subjects,
             ", ".join(escape(pub["name"]) for pub in self.book_info["publishers"]),
-            escape(self.book_info["rights"]),
+            escape(self.book_info["rights"]) if self.book_info["rights"] else "",
             self.book_info["issued"],
             self.cover,
             "\n".join(manifest),
@@ -1005,11 +1022,17 @@ if __name__ == "__main__":
                                         add_help=False,
                                         allow_abbrev=False)
 
-    arguments.add_argument(
+    login_arg_group = arguments.add_mutually_exclusive_group()
+    login_arg_group.add_argument(
         "--cred", metavar="<EMAIL:PASS>", default=False,
         help="Credentials used to perform the auth login on Safari Books Online."
              " Es. ` --cred \"account_mail@mail.com:password01\" `."
     )
+    login_arg_group.add_argument(
+        "--login", action='store_true',
+        help="Prompt for credentials used to perform the auth login on Safari Books Online."
+    )
+
     arguments.add_argument(
         "--no-cookies", dest="no_cookies", action='store_true',
         help="Prevent your session data to be saved into `cookies.json` file."
@@ -1032,10 +1055,22 @@ if __name__ == "__main__":
 
     args_parsed = arguments.parse_args()
 
-    if args_parsed.cred:
-        parsed_cred = SafariBooks.parse_cred(args_parsed.cred)
+    if args_parsed.cred or args_parsed.login:
+        email = ""
+        pre_cred = ""
+
+        if args_parsed.cred:
+            pre_cred = args_parsed.cred
+
+        else:
+            email = input("Email: ")
+            passwd = getpass.getpass("Password: ")
+            pre_cred = email + ":" + passwd
+
+        parsed_cred = SafariBooks.parse_cred(pre_cred)
+
         if not parsed_cred:
-            arguments.error("invalid credential: %s" % args_parsed.cred)
+            arguments.error("invalid credential: %s" % (args_parsed.cred if args_parsed.cred else (email + ":*******")))
 
         args_parsed.cred = parsed_cred
 
@@ -1044,3 +1079,4 @@ if __name__ == "__main__":
             arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
 
     SafariBooks(args_parsed)
+    sys.exit(0)
