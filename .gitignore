@@ -1,3 +1,8 @@
+.idea/
+.vscode/
+.venv/
+.env/
+
 Books/
 
 cookies.json
