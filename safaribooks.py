@@ -2,6 +2,7 @@
 # coding: utf-8
 import os
 import sys
+import re
 import json
 import shutil
 import getpass
@@ -406,12 +407,17 @@ class SafariBooks:
 
         return self.HEADERS
 
-    def update_cookies(self, jar):
+    def update_cookies(self, jar, set_cookie_header):
         for cookie in jar:
-            if cookie.name != 'sessionid':  # TODO
-                self.cookies.update({
-                    cookie.name: cookie.value
-                })
+            self.cookies.update({
+                cookie.name: cookie.value
+            })
+        orm_rt_cookie_search_result = re.search(r'orm-rt=(\S*)', set_cookie_header)
+        if orm_rt_cookie_search_result:
+            self.cookies["orm-rt"] = orm_rt_cookie_search_result.group(1)
+        orm_jwt_cookie_search_result = re.search(r'orm-jwt=(\S*)', set_cookie_header)
+        if orm_jwt_cookie_search_result:
+            self.cookies["orm-jwt"] = orm_jwt_cookie_search_result.group(1)
 
     def requests_provider(
             self, url, post=False, data=None, perfom_redirect=True, update_cookies=True, update_referer=True, **kwargs
@@ -436,7 +442,7 @@ class SafariBooks:
             return 0
 
         if update_cookies:
-            self.update_cookies(response.cookies)
+            self.update_cookies(response.cookies, response.headers.get("Set-Cookie", ""))
 
         if update_referer:
             # TODO Update Referer HTTP Header
