@@ -15,19 +15,12 @@ from random import random
 from multiprocessing import Process, Queue, Value
 from urllib.parse import urljoin, urlsplit, urlparse
 
-
 PATH = os.path.dirname(os.path.realpath(__file__))
-COOKIES_FILE = os.path.join(PATH, "cookies.json")
 
-ORLY_BASE_HOST = "oreilly.com"  # PLEASE INSERT URL HERE
+SAFARI_BASE_URL = "https://learning.oreilly.com"
 
-SAFARI_BASE_HOST = "learning." + ORLY_BASE_HOST
-API_ORIGIN_HOST = "api." + ORLY_BASE_HOST
-
-ORLY_BASE_URL = "https://www." + ORLY_BASE_HOST
-SAFARI_BASE_URL = "https://" + SAFARI_BASE_HOST
-API_ORIGIN_URL = "https://" + API_ORIGIN_HOST
-
+CLIENT_SECRET = "f52b3e30b68c1820adb08609c799cb6da1c29975"
+CLIENT_ID = "446a8a270214734f42a7"
 
 class Display:
     BASE_FORMAT = logging.Formatter(
@@ -194,7 +187,6 @@ class Display:
                        "    `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`"
 
         else:
-            os.remove(COOKIES_FILE)
             message += "Out-of-Session%s.\n" % (" (%s)" % response["detail"]) if "detail" in response else "" +\
                        Display.SH_YELLOW + "[+]" + Display.SH_DEFAULT + \
                        " Use the `--cred` or `--login` options in order to perform the auth login to Safari."
@@ -211,24 +203,9 @@ class WinQueue(list):  # TODO: error while use `process` in Windows: can't pickl
 
 
 class SafariBooks:
-    LOGIN_URL = ORLY_BASE_URL + "/member/auth/login/"
-    LOGIN_ENTRY_URL = SAFARI_BASE_URL + "/login/unified/?next=/home/"
+    LOGIN_ENTRY_URL = SAFARI_BASE_URL + "/oauth2/access_token/"
 
     API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
-
-    HEADERS = {
-        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-        "accept-encoding": "gzip, deflate",
-        "accept-language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7",
-        "cache-control": "no-cache",
-        "cookie": "",
-        "pragma": "no-cache",
-        "origin": SAFARI_BASE_URL,
-        "referer": LOGIN_ENTRY_URL,
-        "upgrade-insecure-requests": "1",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                      "Chrome/60.0.3112.113 Safari/537.36"
-    }
 
     BASE_01_HTML = "<!DOCTYPE html>\n" \
                    "<html lang=\"en\" xml:lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\"" \
@@ -304,21 +281,11 @@ class SafariBooks:
         self.display = Display("info_%s.log" % escape(args.bookid))
         self.display.intro()
 
-        self.cookies = {}
-        self.jwt = {}
-
         if not args.cred:
-            if not os.path.isfile(COOKIES_FILE):
-                self.display.exit("Login: unable to find cookies file.\n"
-                                  "    Please use the `--cred` or `--login` options to perform the login.")
-
-            self.cookies = json.load(open(COOKIES_FILE))
-
+            self.display.exit("Please use the `--cred` or `--login` options to perform the login.")
         else:
             self.display.info("Logging into Safari Books Online...", state=True)
             self.do_login(*args.cred)
-            if not args.no_cookies:
-                json.dump(self.cookies, open(COOKIES_FILE, "w"))
 
         self.book_id = args.bookid
         self.api_url = self.API_TEMPLATE.format(self.book_id)
@@ -385,69 +352,32 @@ class SafariBooks:
         self.display.info("Creating EPUB file...", state=True)
         self.create_epub()
 
-        if not args.no_cookies:
-            json.dump(self.cookies, open(COOKIES_FILE, "w"))
-
         self.display.done(os.path.join(self.BOOK_PATH, self.book_id + ".epub"))
         self.display.unregister()
 
         if not self.display.in_error and not args.log:
             os.remove(self.display.log_file)
 
-    def return_cookies(self):
-        return " ".join(["{0}={1};".format(k, v) for k, v in self.cookies.items()])
-
-    def return_headers(self, url):
-        if ORLY_BASE_HOST in urlsplit(url).netloc:
-            self.HEADERS["cookie"] = self.return_cookies()
-
-        else:
-            self.HEADERS["cookie"] = ""
-
-        return self.HEADERS
-
-    def update_cookies(self, jar):
-        for cookie in jar:
-            if cookie.name != 'sessionid':  # TODO
-                self.cookies.update({
-                    cookie.name: cookie.value
-                })
-
-    def requests_provider(
-            self, url, post=False, data=None, perfom_redirect=True, update_cookies=True, update_referer=True, **kwargs
-    ):
+    def fetch_resource(self, url, **kwargs):
+        headers = {
+            "authorization": "Bearer " + self.access_token
+        }
         try:
-            response = getattr(requests, "post" if post else "get")(
+            response = getattr(requests, "get")(
                 url,
-                headers=self.return_headers(url),
-                data=data,
-                allow_redirects=False,
+                headers=headers,
                 **kwargs
             )
 
             self.display.last_request = (
-                url, data, kwargs, response.status_code, "\n".join(
+                url, response.status_code, "\n".join(
                     ["\t{}: {}".format(*h) for h in response.headers.items()]
                 ), response.text
             )
-
+            return response
         except (requests.ConnectionError, requests.ConnectTimeout, requests.RequestException) as request_exception:
             self.display.error(str(request_exception))
             return 0
-
-        if update_cookies:
-            self.update_cookies(response.cookies)
-
-        if update_referer:
-            # TODO Update Referer HTTP Header
-            # TODO How about Origin?
-            self.HEADERS["referer"] = response.request.url
-
-        if response.is_redirect and perfom_redirect:
-            return self.requests_provider(response.next.url, post, None, perfom_redirect, update_cookies, update_referer)
-            # TODO How about **kwargs?
-
-        return response
 
     @staticmethod
     def parse_cred(cred):
@@ -464,23 +394,15 @@ class SafariBooks:
         return new_cred
 
     def do_login(self, email, password):
-        response = self.requests_provider(self.LOGIN_ENTRY_URL)
-        if response == 0:
-            self.display.exit("Login: unable to reach Safari Books Online. Try again...")
-
-        redirect_uri = response.request.path_url[response.request.path_url.index("redirect_uri"):]  # TODO try...catch
-        redirect_uri = redirect_uri[:redirect_uri.index("&")]
-        redirect_uri = "https://api.oreilly.com%2Fapi%2Fv1%2Fauth%2Fopenid%2Fauthorize%3F" + redirect_uri
-
-        response = self.requests_provider(
-            self.LOGIN_URL,
-            post=True,
-            json={
-                "email": email,
-                "password": password,
-                "redirect_uri": redirect_uri
-            },
-            perfom_redirect=False
+        response = getattr(requests, "post")(
+            self.LOGIN_ENTRY_URL,
+            data={
+                "client_id" : CLIENT_ID,
+                "client_secret" : CLIENT_SECRET,
+                "grant_type" : "password",
+                "username": email,
+                "password": password
+            }
         )
 
         if response == 0:
@@ -504,13 +426,10 @@ class SafariBooks:
                     " trying to parse the login details of Safari Books Online. Try again..."
                 )
 
-        self.jwt = response.json()  # TODO: save JWT Tokens and use the refresh_token to restore user session
-        response = self.requests_provider(self.jwt["redirect_uri"])
-        if response == 0:
-            self.display.exit("Login: unable to reach Safari Books Online. Try again...")
+        self.access_token = response.json()["access_token"]
 
     def get_book_info(self):
-        response = self.requests_provider(self.api_url)
+        response = self.fetch_resource(self.api_url)
         if response == 0:
             self.display.exit("API: unable to retrieve book info.")
 
@@ -524,7 +443,7 @@ class SafariBooks:
         return response
 
     def get_book_chapters(self, page=1):
-        response = self.requests_provider(urljoin(self.api_url, "chapter/?page=%s" % page))
+        response = self.fetch_resource(urljoin(self.api_url, "chapter/?page=%s" % page))
         if response == 0:
             self.display.exit("API: unable to retrieve book chapters.")
 
@@ -548,7 +467,7 @@ class SafariBooks:
         return result + (self.get_book_chapters(page + 1) if response["next"] else [])
 
     def get_default_cover(self):
-        response = self.requests_provider(self.book_info["cover"], update_cookies=False, stream=True)
+        response = self.fetch_resource(self.book_info["cover"], stream=True)
         if response == 0:
             self.display.error("Error trying to retrieve the cover: %s" % self.book_info["cover"])
             return False
@@ -561,7 +480,7 @@ class SafariBooks:
         return "default_cover." + file_ext
 
     def get_html(self, url):
-        response = self.requests_provider(url)
+        response = self.fetch_resource(url)
         if response == 0 or response.status_code != 200:
             self.display.exit(
                 "Crawler: error trying to retrieve this page: %s (%s)\n    From: %s" %
@@ -815,7 +734,7 @@ class SafariBooks:
                 self.display.css_ad_info.value = 1
 
         else:
-            response = self.requests_provider(url, update_cookies=False)
+            response = self.fetch_resource(url)
             if response == 0:
                 self.display.error("Error trying to retrieve this CSS: %s\n    From: %s" % (css_file, url))
 
@@ -838,9 +757,7 @@ class SafariBooks:
                 self.display.images_ad_info.value = 1
 
         else:
-            response = self.requests_provider(urljoin(SAFARI_BASE_URL, url),
-                                              update_cookies=False,
-                                              stream=True)
+            response = self.fetch_resource(urljoin(SAFARI_BASE_URL, url), stream=True)
             if response == 0:
                 self.display.error("Error trying to retrieve this image: %s\n    From: %s" % (image_name, url))
 
@@ -963,7 +880,7 @@ class SafariBooks:
         return r, c, mx
 
     def create_toc(self):
-        response = self.requests_provider(urljoin(self.api_url, "toc/"))
+        response = self.fetch_resource(urljoin(self.api_url, "toc/"))
         if response == 0:
             self.display.exit("API: unable to retrieve book chapters. "
                               "Don't delete any files, just run again this program"
@@ -1032,11 +949,6 @@ if __name__ == "__main__":
         "--login", action='store_true',
         help="Prompt for credentials used to perform the auth login on Safari Books Online."
     )
-
-    arguments.add_argument(
-        "--no-cookies", dest="no_cookies", action='store_true',
-        help="Prevent your session data to be saved into `cookies.json` file."
-    )
     arguments.add_argument(
         "--no-kindle", dest="no_kindle", action='store_true',
         help="Remove some CSS rules that block overflow on `table` and `pre` elements."
@@ -1073,10 +985,6 @@ if __name__ == "__main__":
             arguments.error("invalid credential: %s" % (args_parsed.cred if args_parsed.cred else (email + ":*******")))
 
         args_parsed.cred = parsed_cred
-
-    else:
-        if args_parsed.no_cookies:
-            arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
 
     SafariBooks(args_parsed)
     sys.exit(0)
