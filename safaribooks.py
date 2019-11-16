@@ -28,6 +28,7 @@ API_ORIGIN_HOST = "api." + ORLY_BASE_HOST
 ORLY_BASE_URL = "https://www." + ORLY_BASE_HOST
 SAFARI_BASE_URL = "https://" + SAFARI_BASE_HOST
 API_ORIGIN_URL = "https://" + API_ORIGIN_HOST
+PROFILE_URL = SAFARI_BASE_URL + "/profile/"
 
 
 class Display:
@@ -321,6 +322,8 @@ class SafariBooks:
             if not args.no_cookies:
                 json.dump(self.cookies, open(COOKIES_FILE, "w"))
 
+        self.check_login()
+
         self.book_id = args.bookid
         self.api_url = self.API_TEMPLATE.format(self.book_id)
 
@@ -511,6 +514,19 @@ class SafariBooks:
         response = self.requests_provider(self.jwt["redirect_uri"])
         if response == 0:
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
+
+
+    def check_login(self):
+        response = self.requests_provider(PROFILE_URL, perfom_redirect=False)
+
+        if response == 0:
+            self.display.exit("Login: unable to reach Safari Books Online. Try again...")
+
+        if response.status_code != 200:
+            self.display.exit("Authentication issue: unable to access profile page.")
+
+        self.display.info("Successfully authenticated.", state=True)
+
 
     def get_book_info(self):
         response = self.requests_provider(self.api_url)
