@@ -10,6 +10,7 @@ import argparse
 import requests
 import traceback
 import re
+from http.cookies import SimpleCookie
 from lxml import html, etree
 from html import escape
 from random import random
@@ -301,6 +302,8 @@ class SafariBooks:
               "<navMap>{4}</navMap>\n" \
               "</ncx>"
 
+    COOKIE_FLOAT_MAX_AGE_PATTERN = re.compile(r'(max-age=\d*)\.\d*', re.IGNORECASE)
+
     def __init__(self, args):
         self.args = args
         self.display = Display("info_%s.log" % escape(args.bookid))
@@ -410,14 +413,11 @@ class SafariBooks:
 
         return self.HEADERS
 
-    def update_cookies(self, jar, set_cookie_header):
-        for cookie in jar:
-            self.cookies.update({
-                cookie.name: cookie.value
-            })
-        orm_rt_cookie_search_result = re.search(r'orm-rt=(\S*)', set_cookie_header)
-        if orm_rt_cookie_search_result:
-            self.cookies["orm-rt"] = orm_rt_cookie_search_result.group(1)
+    def update_cookies(self, set_cookie_headers):
+        for morsel in set_cookie_headers:
+            morsel_without_float_max_age = self.COOKIE_FLOAT_MAX_AGE_PATTERN.sub(r'\1', morsel)
+            for name, parsed_morsel in SimpleCookie(morsel_without_float_max_age).items():
+                self.cookies[name] = parsed_morsel.value
 
     def requests_provider(
             self, url, post=False, data=None, perfom_redirect=True, update_cookies=True, update_referer=True, **kwargs
@@ -442,7 +442,7 @@ class SafariBooks:
             return 0
 
         if update_cookies:
-            self.update_cookies(response.cookies, response.headers.get("Set-Cookie", ""))
+            self.update_cookies(response.raw.headers.getlist("Set-Cookie"))
 
         if update_referer:
             # TODO Update Referer HTTP Header
