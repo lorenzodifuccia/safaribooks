@@ -15,7 +15,7 @@ from lxml import html, etree
 from html import escape
 from random import random
 from multiprocessing import Process, Queue, Value
-from urllib.parse import urljoin, urlsplit, urlparse
+from urllib.parse import urljoin, urlparse, parse_qs, quote_plus
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -219,20 +219,6 @@ class SafariBooks:
 
     API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
 
-    HEADERS = {
-        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-        "accept-encoding": "gzip, deflate",
-        "accept-language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7",
-        "cache-control": "no-cache",
-        "cookie": "",
-        "pragma": "no-cache",
-        "origin": SAFARI_BASE_URL,
-        "referer": LOGIN_ENTRY_URL,
-        "upgrade-insecure-requests": "1",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                      "Chrome/60.0.3112.113 Safari/537.36"
-    }
-
     BASE_01_HTML = "<!DOCTYPE html>\n" \
                    "<html lang=\"en\" xml:lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\"" \
                    " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" \
@@ -309,7 +295,7 @@ class SafariBooks:
         self.display = Display("info_%s.log" % escape(args.bookid))
         self.display.intro()
 
-        self.cookies = {}
+        self.session = requests.Session()
         self.jwt = {}
 
         if not args.cred:
@@ -317,13 +303,13 @@ class SafariBooks:
                 self.display.exit("Login: unable to find cookies file.\n"
                                   "    Please use the `--cred` or `--login` options to perform the login.")
 
-            self.cookies = json.load(open(COOKIES_FILE))
+            self.session.cookies.update(json.load(open(COOKIES_FILE)))
 
         else:
             self.display.info("Logging into Safari Books Online...", state=True)
             self.do_login(*args.cred)
             if not args.no_cookies:
-                json.dump(self.cookies, open(COOKIES_FILE, "w"))
+                json.dump(self.session.cookies.get_dict(), open(COOKIES_FILE, 'w'))
 
         self.check_login()
 
@@ -393,7 +379,7 @@ class SafariBooks:
         self.create_epub()
 
         if not args.no_cookies:
-            json.dump(self.cookies, open(COOKIES_FILE, "w"))
+            json.dump(self.session.cookies.get_dict(), open(COOKIES_FILE, "w"))
 
         self.display.done(os.path.join(self.BOOK_PATH, self.book_id + ".epub"))
         self.display.unregister()
@@ -401,35 +387,17 @@ class SafariBooks:
         if not self.display.in_error and not args.log:
             os.remove(self.display.log_file)
 
-    def return_cookies(self):
-        return " ".join(["{0}={1};".format(k, v) for k, v in self.cookies.items()])
-
-    def return_headers(self, url):
-        if ORLY_BASE_HOST in urlsplit(url).netloc:
-            self.HEADERS["cookie"] = self.return_cookies()
-
-        else:
-            self.HEADERS["cookie"] = ""
-
-        return self.HEADERS
-
-    def update_cookies(self, set_cookie_headers):
+    def update_cookie_jar_with_float_max_age_cookies(self, set_cookie_headers):
         for morsel in set_cookie_headers:
             morsel_without_float_max_age = self.COOKIE_FLOAT_MAX_AGE_PATTERN.sub(r'\1', morsel)
-            for name, parsed_morsel in SimpleCookie(morsel_without_float_max_age).items():
-                self.cookies[name] = parsed_morsel.value
+            if morsel_without_float_max_age != morsel:
+                for name, parsed_morsel in SimpleCookie(morsel_without_float_max_age).items():
+                    self.session.cookies.set(name, parsed_morsel)
 
-    def requests_provider(
-            self, url, post=False, data=None, perfom_redirect=True, update_cookies=True, update_referer=True, **kwargs
-    ):
+    def requests_provider(self, url, post=False, data=None, perfom_redirect=True, **kwargs):
         try:
-            response = getattr(requests, "post" if post else "get")(
-                url,
-                headers=self.return_headers(url),
-                data=data,
-                allow_redirects=False,
-                **kwargs
-            )
+            response = getattr(self.session, "post" if post else "get")(url, data=data, allow_redirects=False, **kwargs)
+            self.update_cookie_jar_with_float_max_age_cookies(response.raw.headers.getlist("Set-Cookie"))
 
             self.display.last_request = (
                 url, data, kwargs, response.status_code, "\n".join(
@@ -441,16 +409,8 @@ class SafariBooks:
             self.display.error(str(request_exception))
             return 0
 
-        if update_cookies:
-            self.update_cookies(response.raw.headers.getlist("Set-Cookie"))
-
-        if update_referer:
-            # TODO Update Referer HTTP Header
-            # TODO How about Origin?
-            self.HEADERS["referer"] = response.request.url
-
         if response.is_redirect and perfom_redirect:
-            return self.requests_provider(response.next.url, post, None, perfom_redirect, update_cookies, update_referer)
+            return self.requests_provider(response.next.url, post, None, perfom_redirect)
             # TODO How about **kwargs?
 
         return response
@@ -474,9 +434,8 @@ class SafariBooks:
         if response == 0:
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
 
-        redirect_uri = response.request.path_url[response.request.path_url.index("redirect_uri"):]  # TODO try...catch
-        redirect_uri = redirect_uri[:redirect_uri.index("&")]
-        redirect_uri = "https://api.oreilly.com%2Fapi%2Fv1%2Fauth%2Fopenid%2Fauthorize%3F" + redirect_uri
+        next_parameter = parse_qs(urlparse(response.request.url).query)['next'][0]
+        redirect_uri = f'{API_ORIGIN_URL}{quote_plus(next_parameter)}'
 
         response = self.requests_provider(
             self.LOGIN_URL,
@@ -567,7 +526,7 @@ class SafariBooks:
         return result + (self.get_book_chapters(page + 1) if response["next"] else [])
 
     def get_default_cover(self):
-        response = self.requests_provider(self.book_info["cover"], update_cookies=False, stream=True)
+        response = self.requests_provider(self.book_info["cover"], stream=True)
         if response == 0:
             self.display.error("Error trying to retrieve the cover: %s" % self.book_info["cover"])
             return False
@@ -834,7 +793,7 @@ class SafariBooks:
                 self.display.css_ad_info.value = 1
 
         else:
-            response = self.requests_provider(url, update_cookies=False)
+            response = self.requests_provider(url)
             if response == 0:
                 self.display.error("Error trying to retrieve this CSS: %s\n    From: %s" % (css_file, url))
 
@@ -857,9 +816,7 @@ class SafariBooks:
                 self.display.images_ad_info.value = 1
 
         else:
-            response = self.requests_provider(urljoin(SAFARI_BASE_URL, url),
-                                              update_cookies=False,
-                                              stream=True)
+            response = self.requests_provider(urljoin(SAFARI_BASE_URL, url), stream=True)
             if response == 0:
                 self.display.error("Error trying to retrieve this image: %s\n    From: %s" % (image_name, url))
 
