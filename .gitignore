@@ -2,6 +2,7 @@
 .vscode/
 .venv/
 .env/
+venv
 
 Books/
 
