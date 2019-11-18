@@ -394,7 +394,7 @@ class SafariBooks:
                 for name, parsed_morsel in SimpleCookie(morsel_without_float_max_age).items():
                     self.session.cookies.set(name, parsed_morsel)
 
-    def requests_provider(self, url, post=False, data=None, perfom_redirect=True, **kwargs):
+    def requests_provider(self, url, post=False, data=None, perform_redirect=True, **kwargs):
         try:
             response = getattr(self.session, "post" if post else "get")(url, data=data, allow_redirects=False, **kwargs)
             self.update_cookie_jar_with_float_max_age_cookies(response.raw.headers.getlist("Set-Cookie"))
@@ -409,8 +409,8 @@ class SafariBooks:
             self.display.error(str(request_exception))
             return 0
 
-        if response.is_redirect and perfom_redirect:
-            return self.requests_provider(response.next.url, post, None, perfom_redirect)
+        if response.is_redirect and perform_redirect:
+            return self.requests_provider(response.next.url, post, None, perform_redirect)
             # TODO How about **kwargs?
 
         return response
@@ -445,7 +445,7 @@ class SafariBooks:
                 "password": password,
                 "redirect_uri": redirect_uri
             },
-            perfom_redirect=False
+            perform_redirect=False
         )
 
         if response == 0:
@@ -476,7 +476,7 @@ class SafariBooks:
 
 
     def check_login(self):
-        response = self.requests_provider(PROFILE_URL, perfom_redirect=False)
+        response = self.requests_provider(PROFILE_URL, perform_redirect=False)
 
         if response == 0:
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
