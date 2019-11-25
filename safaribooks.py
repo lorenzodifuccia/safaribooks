@@ -161,7 +161,9 @@ class Display:
             return "n/d"
 
     def book_info(self, info):
-        description = self.parse_description(info["description"] if info["description"] else 'No description provided').replace("\n", " ")
+        if info["description"] is None:
+          info["description"] = info["title"]
+        description = self.parse_description(info["description"]).replace("\n", " ")
         for t in [
             ("Title", info["title"]), ("Authors", ", ".join(aut["name"] for aut in info["authors"])),
             ("Identifier", info["identifier"]), ("ISBN", info["isbn"]),
