@@ -161,7 +161,7 @@ class Display:
             return "n/d"
 
     def book_info(self, info):
-        description = self.parse_description(info["description"]).replace("\n", " ")
+        description = (self.parse_description(info["description"] or "") or '').replace("\n", " ")
         for t in [
             ("Title", info["title"]), ("Authors", ", ".join(aut["name"] for aut in info["authors"])),
             ("Identifier", info["identifier"]), ("ISBN", info["isbn"]),
@@ -933,7 +933,7 @@ class SafariBooks:
             (self.book_info["isbn"] if self.book_info["isbn"] else self.book_id),
             escape(self.book_title),
             authors,
-            escape(self.book_info["description"]),
+            escape(self.book_info["description"] or ''),
             subjects,
             ", ".join(escape(pub["name"]) for pub in self.book_info["publishers"]),
             escape(self.book_info["rights"]) if self.book_info["rights"] else "",
