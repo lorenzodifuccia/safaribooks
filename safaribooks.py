@@ -153,6 +153,9 @@ class Display:
         self.out(output)
 
     def parse_description(self, desc):
+        if not desc:
+            return "n/d"
+        
         try:
             return html.fromstring(desc).text_content()
 
