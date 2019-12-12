@@ -601,8 +601,9 @@ class SafariBooks:
                         link[-3:] in ["jpg", "peg", "png", "gif"]:
                     link = urljoin(self.base_url, link)
                     if link not in self.images:
-                        self.images.append(link)
-                        self.display.log("Crawler: found a new image at %s" % link)
+                        if (".jpg" or ".gif" or ".png" or ".jpeg" or ".svg") in link:
+                            self.images.append(link)
+                            self.display.log("Crawler: found a new image at %s" % link)
 
                     image = link.split("/")[-1]
                     return "Images/" + image
