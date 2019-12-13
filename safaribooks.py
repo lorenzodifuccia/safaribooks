@@ -493,7 +493,7 @@ class SafariBooks:
                 self.display.exit(
                     "Login: unable to perform auth login to Safari Books Online.\n" + self.display.SH_YELLOW +
                     "[*]" + self.display.SH_DEFAULT + " Details:\n" + "%s" % "\n".join(
-                        messages if len(messages) else ["    Unexpected error!"])
+                        messages if len(messages) else ["    Unexpected error: %s" % response.text])
                 )
             except (html.etree.ParseError, html.etree.ParserError) as parsing_error:
                 self.display.error(parsing_error)
