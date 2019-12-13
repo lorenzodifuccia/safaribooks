@@ -827,6 +827,7 @@ class SafariBooks:
             response = self.requests_provider(url)
             if response == 0:
                 self.display.error("Error trying to retrieve this CSS: %s\n    From: %s" % (css_file, url))
+                return
 
             with open(css_file, 'wb') as s:
                 s.write(response.content)
