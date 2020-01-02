@@ -850,6 +850,7 @@ class SafariBooks:
             response = self.requests_provider(urljoin(SAFARI_BASE_URL, url), stream=True)
             if response == 0:
                 self.display.error("Error trying to retrieve this image: %s\n    From: %s" % (image_name, url))
+                return
 
             with open(image_path, 'wb') as img:
                 for chunk in response.iter_content(1024):
