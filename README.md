@@ -28,6 +28,15 @@ lxml>=4.1.1
 requests>=2.20.0
 ```
   
+## Vagrant:
+Quick setup a Vagrant based VM if you want to use the program in a sandbox
+```
+vagrant up
+vagrant ssh
+cd /vagrant
+```
+Then see [Usage](#usage) section
+
 ## Usage:
 It's really simple to use, just choose a book from the library and replace in the following command:
   * X-es with its ID, 

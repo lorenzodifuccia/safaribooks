@@ -7,3 +7,4 @@ Books/
 
 cookies.json
 *.log
+.vagrant
