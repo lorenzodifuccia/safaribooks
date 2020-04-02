@@ -812,7 +812,7 @@ class SafariBooks:
                     self.display.book_ad_info = 2
 
             else:
-                self.save_page_html(self.parse_html(self.get_html(next_chapter["web_url"]), first_page))
+                self.save_page_html(self.parse_html(self.get_html(next_chapter["content"]), first_page))
 
             self.display.state(len_books, len_books - len(self.chapters_queue))
 
