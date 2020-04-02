@@ -529,6 +529,10 @@ class SafariBooks:
 
         if "last_chapter_read" in response:
             del response["last_chapter_read"]
+            
+        for key, value in response.items():
+            if value is None:
+                response[key] = 'n/a'
 
         return response
 
