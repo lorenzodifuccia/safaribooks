@@ -28,7 +28,7 @@ API_ORIGIN_HOST = "api." + ORLY_BASE_HOST
 ORLY_BASE_URL = "https://www." + ORLY_BASE_HOST
 SAFARI_BASE_URL = "https://" + SAFARI_BASE_HOST
 API_ORIGIN_URL = "https://" + API_ORIGIN_HOST
-PROFILE_URL = SAFARI_BASE_URL + "/profile/"
+PROFILE_URL = SAFARI_BASE_URL + "/home/"
 
 
 class Display:
@@ -377,6 +377,9 @@ class SafariBooks:
             cover_html = self.parse_html(
                 html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)), True
             )
+            cover_css = self.parse_css(
+                html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover))
+            )			
 
             self.book_chapters = [{
                 "filename": "default_cover.xhtml",
@@ -384,7 +387,7 @@ class SafariBooks:
             }] + self.book_chapters
 
             self.filename = self.book_chapters[0]["filename"]
-            self.save_page_html(cover_html)
+            self.save_page_html([cover_css,cover_html])
 
         self.css_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
@@ -642,7 +645,7 @@ class SafariBooks:
 
         return None
 
-    def parse_html(self, root, first_page=False):
+    def parse_css(self, root):
         if random() > 0.8:
             if len(root.xpath("//div[@class='controls']/a/text()")):
                 self.display.exit(self.display.api_error(" "))
@@ -686,6 +689,19 @@ class SafariBooks:
                         "Parser: error trying to parse one CSS found in this page: %s (%s)" %
                         (self.filename, self.chapter_title)
                     )
+        return page_css
+
+    def parse_html(self, root, first_page=False):
+        if random() > 0.8:
+            if len(root.xpath("//div[@class='controls']/a/text()")):
+                self.display.exit(self.display.api_error(" "))
+
+        book_content = root.xpath("//div[@id='sbo-rt-content']")
+        if not len(book_content):
+            self.display.exit(
+                "Parser: book content's corrupted or not present: %s (%s)" %
+                (self.filename, self.chapter_title)
+            )
 
         # TODO: add all not covered tag for `link_replace` function
         svg_image_tags = root.xpath("//image")
@@ -731,7 +747,7 @@ class SafariBooks:
                 (self.filename, self.chapter_title)
             )
 
-        return page_css, xhtml
+        return xhtml
 
     @staticmethod
     def escape_dirname(dirname, clean_space=False):
@@ -812,8 +828,9 @@ class SafariBooks:
                     self.display.book_ad_info = 2
 
             else:
-                self.save_page_html(self.parse_html(self.get_html(next_chapter["content"]), first_page))
-
+                cover_css = self.parse_css(self.get_html(next_chapter["web_url"]))
+                cover_html = self.parse_html(self.get_html(next_chapter["content"]), first_page)
+                self.save_page_html([cover_css,cover_html])
             self.display.state(len_books, len_books - len(self.chapters_queue))
 
     def _thread_download_css(self, url):
