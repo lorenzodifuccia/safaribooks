@@ -379,7 +379,7 @@ class SafariBooks:
             )
             cover_css = self.parse_css(
                 html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover))
-            )			
+            )
 
             self.book_chapters = [{
                 "filename": "default_cover.xhtml",
