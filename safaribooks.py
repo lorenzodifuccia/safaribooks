@@ -14,7 +14,7 @@ import traceback
 from html import escape
 from random import random
 from lxml import html, etree
-from multiprocessing import Process, Queue, Value
+from multiprocessing import Queue, Value
 from urllib.parse import urljoin, urlparse, parse_qs, quote_plus
 
 
@@ -212,14 +212,6 @@ class Display:
         return message
 
 
-class WinQueue(list):  # TODO: error while use `process` in Windows: can't pickle _thread.RLock objects
-    def put(self, el):
-        self.append(el)
-
-    def qsize(self):
-        return self.__len__()
-
-
 class SafariBooks:
     LOGIN_URL = ORLY_BASE_URL + "/member/auth/login/"
     LOGIN_ENTRY_URL = SAFARI_BASE_URL + "/login/unified/?next=/home/"
@@ -387,10 +379,10 @@ class SafariBooks:
             self.filename = self.book_chapters[0]["filename"]
             self.save_page_html(cover_html)
 
-        self.css_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
+        self.css_done_queue = Queue(0) 
         self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
         self.collect_css()
-        self.images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
+        self.images_done_queue = Queue(0) 
         self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
         self.collect_images()
 
@@ -873,14 +865,7 @@ class SafariBooks:
 
     def collect_css(self):
         self.display.state_status.value = -1
-
-        if "win" in sys.platform:
-            # TODO
-            for css_url in self.css:
-                self._thread_download_css(css_url)
-
-        else:
-            self._start_parallel_download(self._thread_download_css, self.css)
+        self._start_parallel_download(self._thread_download_css, self.css)
 
     def collect_images(self):
         if self.display.book_ad_info == 2:
@@ -888,16 +873,8 @@ class SafariBooks:
                               "    If you want to be sure that all the images will be downloaded,\n"
                               "    please delete the output direcotry '" + self.BOOK_PATH +
                               "' and restart the program.")
-
         self.display.state_status.value = -1
-
-        if "win" in sys.platform:
-            # TODO
-            for image_url in self.images:
-                self._thread_download_images(image_url)
-
-        else:
-            self._start_parallel_download(self._thread_download_images, self.images)
+        self._start_parallel_download(self._thread_download_images, self.images)
 
     def create_content_opf(self):
         self.css = next(os.walk(self.css_path))[2]
