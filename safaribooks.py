@@ -30,6 +30,10 @@ SAFARI_BASE_URL = "https://" + SAFARI_BASE_HOST
 API_ORIGIN_URL = "https://" + API_ORIGIN_HOST
 PROFILE_URL = SAFARI_BASE_URL + "/profile/"
 
+# DEBUG
+USE_PROXY = True
+PROXIES = {"https": "https://127.0.0.1:8080"}
+
 
 class Display:
     BASE_FORMAT = logging.Formatter(
@@ -312,13 +316,17 @@ class SafariBooks:
         self.display.intro()
 
         self.session = requests.Session()
+        if USE_PROXY:  # DEBUG
+            self.session.proxies = PROXIES
+            self.session.verify = False
+
         self.session.headers.update(self.HEADERS)
 
         self.jwt = {}
 
         if not args.cred:
             if not os.path.isfile(COOKIES_FILE):
-                self.display.exit("Login: unable to find cookies file.\n"
+                self.display.exit("Login: unable to find `cookies.json` file.\n"
                                   "    Please use the `--cred` or `--login` options to perform the login.")
 
             self.session.cookies.update(json.load(open(COOKIES_FILE)))
@@ -364,6 +372,7 @@ class SafariBooks:
 
         self.chapter_title = ""
         self.filename = ""
+        self.chapter_stylesheets = []
         self.css = []
         self.images = []
 
@@ -655,9 +664,17 @@ class SafariBooks:
             )
 
         page_css = ""
+        if len(self.chapter_stylesheets):
+            for chapter_css_url in self.chapter_stylesheets:
+                if chapter_css_url not in self.css:
+                    self.css.append(chapter_css_url)
+                    self.display.log("Crawler: found a new CSS at %s" % chapter_css_url)
+
+                page_css += "<link href=\"Styles/Style{0:0>2}.css\" " \
+                            "rel=\"stylesheet\" type=\"text/css\" />\n".format(self.css.index(chapter_css_url))
+
         stylesheet_links = root.xpath("//link[@rel='stylesheet']")
         if len(stylesheet_links):
-            stylesheet_count = 0
             for s in stylesheet_links:
                 css_url = urljoin("https:", s.attrib["href"]) if s.attrib["href"][:2] == "//" \
                     else urljoin(self.base_url, s.attrib["href"])
@@ -667,8 +684,7 @@ class SafariBooks:
                     self.display.log("Crawler: found a new CSS at %s" % css_url)
 
                 page_css += "<link href=\"Styles/Style{0:0>2}.css\" " \
-                            "rel=\"stylesheet\" type=\"text/css\" />\n".format(stylesheet_count)
-                stylesheet_count += 1
+                            "rel=\"stylesheet\" type=\"text/css\" />\n".format(self.css.index(css_url))
 
         stylesheets = root.xpath("//style")
         if len(stylesheets):
@@ -795,6 +811,14 @@ class SafariBooks:
             self.chapter_title = next_chapter["title"]
             self.filename = next_chapter["filename"]
 
+            # Stylesheets
+            self.chapter_stylesheets = []
+            if "stylesheets" in next_chapter and len(next_chapter["stylesheets"]):
+                self.chapter_stylesheets.extend(x["url"] for x in next_chapter["stylesheets"])
+
+            if "site_styles" in next_chapter and len(next_chapter["site_styles"]):
+                self.chapter_stylesheets.extend(next_chapter["site_styles"])
+
             if os.path.isfile(os.path.join(self.BOOK_PATH, "OEBPS", self.filename.replace(".html", ".xhtml"))):
                 if not self.display.book_ad_info and \
                         next_chapter not in self.book_chapters[:self.book_chapters.index(next_chapter)]:
@@ -879,13 +903,9 @@ class SafariBooks:
     def collect_css(self):
         self.display.state_status.value = -1
 
-        if "win" in sys.platform:
-            # TODO
-            for css_url in self.css:
-                self._thread_download_css(css_url)
-
-        else:
-            self._start_multiprocessing(self._thread_download_css, self.css)
+        # "self._start_multiprocessing" seems to cause problem. Switching to mono-thread download.
+        for css_url in self.css:
+            self._thread_download_css(css_url)
 
     def collect_images(self):
         if self.display.book_ad_info == 2:
@@ -896,13 +916,9 @@ class SafariBooks:
 
         self.display.state_status.value = -1
 
-        if "win" in sys.platform:
-            # TODO
-            for image_url in self.images:
-                self._thread_download_images(image_url)
-
-        else:
-            self._start_multiprocessing(self._thread_download_images, self.images)
+        # "self._start_multiprocessing" seems to cause problem. Switching to mono-thread download.
+        for image_url in self.images:
+            self._thread_download_images(image_url)
 
     def create_content_opf(self):
         self.css = next(os.walk(self.css_path))[2]
