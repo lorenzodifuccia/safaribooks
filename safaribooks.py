@@ -5,6 +5,7 @@ import os
 import sys
 import json
 import shutil
+import asyncio
 import getpass
 import logging
 import argparse
@@ -863,18 +864,12 @@ class SafariBooks:
         self.images_done_queue.put(1)
         self.display.state(len(self.images), self.images_done_queue.qsize())
 
-    def _start_multiprocessing(self, operation, full_queue):
-        if len(full_queue) > 5:
-            for i in range(0, len(full_queue), 5):
-                self._start_multiprocessing(operation, full_queue[i:i + 5])
 
-        else:
-            process_queue = [Process(target=operation, args=(arg,)) for arg in full_queue]
-            for proc in process_queue:
-                proc.start()
+    def _start_parallel_download(self, operation, work):
+        loop = asyncio.get_event_loop()
+        futures = [loop.run_in_executor(None, operation, job) for job in work]
+        loop.run_until_complete(asyncio.gather(*futures))
 
-            for proc in process_queue:
-                proc.join()
 
     def collect_css(self):
         self.display.state_status.value = -1
@@ -885,7 +880,7 @@ class SafariBooks:
                 self._thread_download_css(css_url)
 
         else:
-            self._start_multiprocessing(self._thread_download_css, self.css)
+            self._start_parallel_download(self._thread_download_css, self.css)
 
     def collect_images(self):
         if self.display.book_ad_info == 2:
@@ -902,7 +897,7 @@ class SafariBooks:
                 self._thread_download_images(image_url)
 
         else:
-            self._start_multiprocessing(self._thread_download_images, self.images)
+            self._start_parallel_download(self._thread_download_images, self.images)
 
     def create_content_opf(self):
         self.css = next(os.walk(self.css_path))[2]
