@@ -72,8 +72,9 @@ optional arguments:
   --help               Show this help message.
 ```
   
-The first time you use the program, you'll have to specify your Safari Books Online account credentials (look [`here`](/../../issues/15) for special character).
-The next times you'll download a book, before session expires, you can omit the credential, because the program save your session cookies in a file called `cookies.json` (for **SSO** look the file format [`here`](/../../issues/2#issuecomment-367726544)). 
+The first time you use the program, you'll have to specify your Safari Books Online account credentials (look [`here`](/../../issues/15) for special character).  
+The next times you'll download a book, before session expires, you can omit the credential, because the program save your session cookies in a file called `cookies.json`.  
+For **SSO**, please use the `sso_cookies.py` program in order to create the `cookies.json` file from the SSO cookies retrieved by your browser session (please follow [`these steps`](/../../issues/150#issuecomment-555423085)).  
   
 Pay attention if you use a shared PC, because everyone that has access to your files can steal your session. 
 If you don't want to cache the cookies, just use the `--no-cookies` option and provide all time your `--cred` to perform `--login`.
