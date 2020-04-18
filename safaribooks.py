@@ -393,6 +393,7 @@ class SafariBooks:
         self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
         self.collect_css()
         self.images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
+        self.collect_images_link()
         self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
         self.collect_images()
 
@@ -609,13 +610,8 @@ class SafariBooks:
                         link = link[3:]
 
                     link = urljoin(self.base_url, link)
-                    if link not in self.images:
-                        self.images.append(link)
-                        self.display.log("Crawler: found a new image at %s" % link)
-
                     image = link.split("/")[-1]
                     return "Images/" + image
-
                 return link.replace(".html", ".xhtml")
 
             else:
@@ -907,6 +903,15 @@ class SafariBooks:
             for css_url in self.css:
                 self._thread_download_css(css_url)
 
+    def collect_images_link(self):
+        for book_chapter in self.book_chapters:
+            if "images" in book_chapter:
+                for image_link in book_chapter["images"]:
+                    image_url = urljoin(self.base_url, image_link)
+                    if image_url not in self.images:
+                        self.images.append(image_url)
+                        self.display.log("Crawler: found a new image at %s" % image_url)
+
     def collect_images(self):
         if self.display.book_ad_info == 2:
             self.display.info("Some of the book contents were already downloaded.\n"
@@ -915,15 +920,8 @@ class SafariBooks:
                               "' and restart the program.")
 
         self.display.state_status.value = -1
-
-        if "win" in sys.platform:
-            # TODO
-            for image_url in self.images:
-                self._thread_download_images(image_url)
-
-        else:
-            for image_url in self.images:
-                self._thread_download_images(image_url)
+        for image_url in self.images:
+            self._thread_download_images(image_url)
 
     def create_content_opf(self):
         self.css = next(os.walk(self.css_path))[2]
