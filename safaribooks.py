@@ -16,7 +16,6 @@ from lxml import html, etree
 from multiprocessing import Process, Queue, Value
 from urllib.parse import urljoin, urlparse, parse_qs, quote_plus
 
-
 PATH = os.path.dirname(os.path.realpath(__file__))
 COOKIES_FILE = os.path.join(PATH, "cookies.json")
 
@@ -113,7 +112,7 @@ class Display:
         if self.output_dir_set:
             output = (self.SH_YELLOW + "[+]" + self.SH_DEFAULT +
                       " Please delete the output directory '" + self.output_dir + "'"
-                      " and restart the program.")
+                                                                                  " and restart the program.")
             self.out(output)
 
         output = self.SH_BG_RED + "[!]" + self.SH_DEFAULT + " Aborting..."
@@ -155,7 +154,7 @@ class Display:
     def parse_description(self, desc):
         if not desc:
             return "n/d"
-        
+
         try:
             return html.fromstring(desc).text_content()
 
@@ -205,8 +204,8 @@ class Display:
         else:
             os.remove(COOKIES_FILE)
             message += "Out-of-Session%s.\n" % (" (%s)" % response["detail"]) if "detail" in response else "" + \
-                       Display.SH_YELLOW + "[+]" + Display.SH_DEFAULT + \
-                       " Use the `--cred` or `--login` options in order to perform the auth login to Safari."
+                                                                                                           Display.SH_YELLOW + "[+]" + Display.SH_DEFAULT + \
+                                                                                                           " Use the `--cred` or `--login` options in order to perform the auth login to Safari."
 
         return message
 
@@ -366,29 +365,12 @@ class SafariBooks:
         self.filename = ""
         self.css = []
         self.images = []
+        self.cover = None
 
         self.display.info("Downloading book contents... (%s chapters)" % len(self.book_chapters), state=True)
         self.BASE_HTML = self.BASE_01_HTML + (self.KINDLE_HTML if not args.no_kindle else "") + self.BASE_02_HTML
 
-        self.cover = False
         self.get()
-        if not self.cover:
-            self.cover = self.get_default_cover()
-            cover_html = self.parse_html(
-                html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)), True
-            )
-            cover_css = self.parse_css(
-                html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover))
-            )
-
-            self.book_chapters = [{
-                "filename": "default_cover.xhtml",
-                "title": "Cover"
-            }] + self.book_chapters
-
-            self.filename = self.book_chapters[0]["filename"]
-            self.save_page_html([cover_css,cover_html])
-
         self.css_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
         self.collect_css()
@@ -533,7 +515,7 @@ class SafariBooks:
 
         if "last_chapter_read" in response:
             del response["last_chapter_read"]
-            
+
         for key, value in response.items():
             if value is None:
                 response[key] = 'n/a'
@@ -564,8 +546,8 @@ class SafariBooks:
         result += response["results"]
         return result + (self.get_book_chapters(page + 1) if response["next"] else [])
 
-    def get_default_cover(self):
-        response = self.requests_provider(self.book_info["cover"], stream=True)
+    def get_cover_image(self, url):
+        response = self.requests_provider(url, stream=True)
         if response == 0:
             self.display.error("Error trying to retrieve the cover: %s" % self.book_info["cover"])
             return False
@@ -605,13 +587,8 @@ class SafariBooks:
     def link_replace(self, link):
         if link and not link.startswith("mailto"):
             if not self.url_is_absolute(link):
-                if "cover" in link or "images" in link or "graphics" in link or link[-3:] in ["jpg", "peg", "png", "gif"]:
-                    if link[:2] == "..":
-                        link = link[3:]
-
-                    link = urljoin(self.base_url, link)
-                    image = link.split("/")[-1]
-                    return "Images/" + image
+                if "cover" in link or "images" in link or "graphics" in link or link[-3:] in["jpg", "peg", "png","gif"]:
+                    return "Images/" + self.compose_absolute_url(link).split("/")[-1]
                 return link.replace(".html", ".xhtml").split("/")[-1]
 
             else:
@@ -619,6 +596,11 @@ class SafariBooks:
                     return self.link_replace(link.split(self.book_id)[-1])
 
         return link
+
+    def compose_absolute_url(self, link):
+        if link[:2] == "..":
+            link = link[3:]
+        return urljoin(self.base_url, link)
 
     @staticmethod
     def get_cover(html_root):
@@ -798,20 +780,16 @@ class SafariBooks:
 
     def get(self):
         len_books = len(self.book_chapters)
-
-        for _ in range(len_books):
+        for book_chapter in self.book_chapters:
             if not len(self.chapters_queue):
                 return
-
-            first_page = len_books == len(self.chapters_queue)
 
             next_chapter = self.chapters_queue.pop(0)
             self.chapter_title = next_chapter["title"]
             self.filename = next_chapter["filename"]
 
-            if os.path.isfile(os.path.join(self.BOOK_PATH, "OEBPS", self.filename.replace(".html", ".xhtml"))):
-                if not self.display.book_ad_info and \
-                        next_chapter not in self.book_chapters[:self.book_chapters.index(next_chapter)]:
+            if self.is_file_already_exist(self.filename):
+                if not self.display.book_ad_info and next_chapter not in self.book_chapters[:self.book_chapters.index(next_chapter)]:
                     self.display.info(
                         ("File `%s` already exists.\n"
                          "    If you want to download again all the book%s,\n"
@@ -826,10 +804,52 @@ class SafariBooks:
                     self.display.book_ad_info = 2
 
             else:
-                cover_css = self.parse_css(self.get_html(next_chapter["web_url"]))
-                cover_html = self.parse_html(self.get_html(next_chapter["content"]), first_page)
-                self.save_page_html([cover_css,cover_html])
-            self.display.state(len_books, len_books - len(self.chapters_queue))
+                if self.is_cover_page(book_chapter):
+                    self.cover = self.compose_absolute_url(book_chapter["images"][0])
+                    self.add_to_images_collection(self.cover)
+                    cover_html = self.parse_html(
+                        html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)),
+                        True
+                    )
+                    cover_css = self.parse_css(
+                        html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover))
+                    )
+                    self.book_chapters = [{
+                        "filename": "default_cover.xhtml",
+                        "title": "Cover"
+                    }] + self.book_chapters
+                else:
+                    cover_css = self.parse_css(self.get_html(next_chapter["web_url"]))
+                    cover_html = self.parse_html(self.get_html(next_chapter["content"]), False)
+
+                self.save_page_html([cover_css, cover_html])
+                self.display.state(len_books, len_books - len(self.chapters_queue))
+
+        if self.cover is None:
+            self.get_default_fallback_cover()
+
+    def is_file_already_exist(self, filename):
+        return os.path.isfile(os.path.join(self.BOOK_PATH, "OEBPS", filename.replace(".html", ".xhtml")))
+
+    def get_default_fallback_cover(self):
+        self.cover = self.compose_absolute_url(self.book_info["cover"])
+        self.add_to_images_collection(self.cover)
+        cover_html = self.parse_html(
+            html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)),
+            True
+        )
+        cover_css = self.parse_css(
+            html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover))
+        )
+        self.book_chapters = [{
+            "filename": "default_cover.xhtml",
+            "title": "Cover"
+        }] + self.book_chapters
+        self.save_page_html([cover_css, cover_html])
+
+    def is_cover_page(self, book_chapter):
+        return (os.path.splitext(book_chapter["filename"].lower())[0] in ["cover"]) or \
+               (book_chapter["title"].lower() in ["cover"])
 
     def _thread_download_css(self, url):
         css_file = os.path.join(self.css_path, "Style{0:0>2}.css".format(self.css.index(url)))
@@ -838,7 +858,7 @@ class SafariBooks:
                 self.display.info(("File `%s` already exists.\n"
                                    "    If you want to download again all the CSSs,\n"
                                    "    please delete the output directory '" + self.BOOK_PATH + "'"
-                                   " and restart the program.") %
+                                                                                                 " and restart the program.") %
                                   css_file)
                 self.display.css_ad_info.value = 1
 
@@ -861,7 +881,7 @@ class SafariBooks:
                 self.display.info(("File `%s` already exists.\n"
                                    "    If you want to download again all the images,\n"
                                    "    please delete the output directory '" + self.BOOK_PATH + "'"
-                                   " and restart the program.") %
+                                                                                                 " and restart the program.") %
                                   image_name)
                 self.display.images_ad_info.value = 1
 
@@ -893,24 +913,20 @@ class SafariBooks:
 
     def collect_css(self):
         self.display.state_status.value = -1
-
-        if "win" in sys.platform:
-            # TODO
-            for css_url in self.css:
-                self._thread_download_css(css_url)
-
-        else:
-            for css_url in self.css:
-                self._thread_download_css(css_url)
+        for css_url in self.css:
+            self._thread_download_css(css_url)
 
     def collect_images_link(self):
         for book_chapter in self.book_chapters:
             if "images" in book_chapter:
                 for image_link in book_chapter["images"]:
-                    image_url = urljoin(self.base_url, image_link)
-                    if image_url not in self.images:
-                        self.images.append(image_url)
-                        self.display.log("Crawler: found a new image at %s" % image_url)
+                    image_url = self.compose_absolute_url(image_link)
+                    self.add_to_images_collection(image_url)
+
+    def add_to_images_collection(self, image_url):
+        if image_url not in self.images:
+            self.images.append(image_url)
+            self.display.log("Crawler: found a new image at %s" % image_url)
 
     def collect_images(self):
         if self.display.book_ad_info == 2:
@@ -982,9 +998,9 @@ class SafariBooks:
             r += "<navPoint id=\"{0}\" playOrder=\"{1}\">" \
                  "<navLabel><text>{2}</text></navLabel>" \
                  "<content src=\"{3}\"/>".format(
-                    cc["fragment"] if len(cc["fragment"]) else cc["id"], c,
-                    escape(cc["label"]), cc["href"].replace(".html", ".xhtml").split("/")[-1]
-                 )
+                cc["fragment"] if len(cc["fragment"]) else cc["id"], c,
+                escape(cc["label"]), cc["href"].replace(".html", ".xhtml").split("/")[-1]
+            )
 
             if cc["children"]:
                 sr, c, mx = SafariBooks.parse_toc(cc["children"], c, mx)
