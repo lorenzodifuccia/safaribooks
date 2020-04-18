@@ -37,6 +37,22 @@ It's really simple to use, just choose a book from the library and replace in th
 $ python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
 ```
 
+If using SSO to login, following [here](https://github.com/lorenzodifuccia/safaribooks/issues/150#issuecomment-555423085) to get cookies string from chrome and using the function below to transform to json:
+```python3
+import json
+def transform(chrome_cookies):
+    cookies = {}
+    for cookie in chrome_cookies.split(";"):
+        cookie = cookie.strip()
+        key, value = cookie.split("=", 1)
+        cookies[key] = value
+    print(json.dumps(cookies))
+```
+and run with:
+```shell
+$ python3 safaribooks.py XXXXXXXXXXXXX
+```
+
 The ID is the digits that you find in the URL of the book description page:  
 `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`  
 Like: `https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/`  
@@ -152,3 +168,4 @@ In the other hand, if you're not going to export the `EPUB`, you can use the `--
 For any kind of problem, please don't hesitate to open an issue here on *GitHub*.  
   
 *Lorenzo Di Fuccia*
+
