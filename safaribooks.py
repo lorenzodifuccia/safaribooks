@@ -612,7 +612,7 @@ class SafariBooks:
                     link = urljoin(self.base_url, link)
                     image = link.split("/")[-1]
                     return "Images/" + image
-                return link.replace(".html", ".xhtml")
+                return link.replace(".html", ".xhtml").split("/")[-1]
 
             else:
                 if self.book_id in link:
