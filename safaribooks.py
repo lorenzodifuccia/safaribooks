@@ -31,7 +31,7 @@ API_ORIGIN_URL = "https://" + API_ORIGIN_HOST
 PROFILE_URL = SAFARI_BASE_URL + "/profile/"
 
 # DEBUG
-USE_PROXY = True
+USE_PROXY = False
 PROXIES = {"https": "https://127.0.0.1:8080"}
 
 
