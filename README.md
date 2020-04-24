@@ -50,11 +50,15 @@ usage: safaribooks.py [--cred <EMAIL:PASS> | --login] [--no-cookies] [--no-kindl
 
 Download and generate EPUB of your favorite books from Safari Books Online.
 
-positional arguments:
-  <BOOK ID>            Book digits ID that you want to download.
+required arguments(any one of these):
+  --bookid             Book digits ID that you want to download.
                        You can find it in the URL (X-es):
                        `https://www.safaribooksonline.com/library/view/book-
                        name/XXXXXXXXXXXXX/`
+
+  --topic              Topic id, of which you want to download all the books.
+                       You can find it in the URL (X-es):
+                       `https://www.safaribooksonline.com/topics/XXXXXXXXXXXXX/`
 
 optional arguments:
   --cred <EMAIL:PASS>  Credentials used to perform the auth login on Safari
