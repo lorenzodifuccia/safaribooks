@@ -299,13 +299,12 @@ class SafariBooks:
               "</ncx>"
 
     HEADERS = {
-        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-        "accept-encoding": "gzip, deflate",
-        "origin": SAFARI_BASE_URL,
-        "referer": LOGIN_ENTRY_URL,
-        "upgrade-insecure-requests": "1",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                      "Chrome/60.0.3112.113 Safari/537.36"
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Encoding": "gzip, deflate",
+        "Referer": LOGIN_ENTRY_URL,
+        "Upgrade-Insecure-Requests": "1",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/80.0.3987.163 Safari/537.36"
     }
 
     COOKIE_FLOAT_MAX_AGE_PATTERN = re.compile(r'(max-age=\d*\.\d*)', re.IGNORECASE)
@@ -522,8 +521,11 @@ class SafariBooks:
         if response == 0:
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
 
-        if response.status_code != 200:
+        elif response.status_code != 200:
             self.display.exit("Authentication issue: unable to access profile page.")
+
+        elif "user_type\":\"Expired" in response.text:
+            self.display.exit("Authentication issue: account subscription expired.")
 
         self.display.info("Successfully authenticated.", state=True)
 
