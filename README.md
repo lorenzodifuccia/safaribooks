@@ -27,20 +27,43 @@ The program depends of only two **Python 3** modules:
 lxml>=4.1.1
 requests>=2.20.0
 ```
-  
+
+OR 
+
+Using docker
+
+```
+$ cd safaribooks/
+$ docker build . -t safaribooks
+```
+and for using it with docker
+
+```
+$ docker run -v $PWD/Books:/safaribooks/Books safaribooks --cred "account_mail@mail.com:password01" -bookid XXXXXXXXXXXXX
+```
+
 ## Usage:
 It's really simple to use, just choose a book from the library and replace in the following command:
   * X-es with its ID, 
   * `email:password` with your own. 
 
 ```shell
-$ python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
+$ python3 safaribooks.py --cred "account_mail@mail.com:password01" --bookid XXXXXXXXXXXXX
 ```
 
 The ID is the digits that you find in the URL of the book description page:  
 `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`  
 Like: `https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/`  
-  
+
+or
+
+```shell
+$ python3 safaribooks.py --cred "account_mail@mail.com:password01" --topic XXXXXXXXXXXXX
+```
+Topic id, of which you want to download all the books.
+
+You can find it in the URL (X-es): `https://www.safaribooksonline.com/topics/XXXXXXXXXXXXX/`
+
 #### Program options:
 ```shell
 $ python3 safaribooks.py --help
@@ -50,11 +73,15 @@ usage: safaribooks.py [--cred <EMAIL:PASS> | --login] [--no-cookies] [--no-kindl
 
 Download and generate EPUB of your favorite books from Safari Books Online.
 
-positional arguments:
-  <BOOK ID>            Book digits ID that you want to download.
+required arguments(any one of these):
+  --bookid             Book digits ID that you want to download.
                        You can find it in the URL (X-es):
                        `https://www.safaribooksonline.com/library/view/book-
                        name/XXXXXXXXXXXXX/`
+
+  --topic              Topic id, of which you want to download all the books.
+                       You can find it in the URL (X-es):
+                       `https://www.safaribooksonline.com/topics/XXXXXXXXXXXXX/`
 
 optional arguments:
   --cred <EMAIL:PASS>  Credentials used to perform the auth login on Safari
