@@ -614,7 +614,7 @@ class SafariBooks:
             if not self.url_is_absolute(link):
                 if "cover" in link or "images" in link or "graphics" in link or \
                         link[-3:] in ["jpg", "peg", "png", "gif"]:
-                    link = urljoin(self.base_url, link)
+                    link = urljoin(self.base_url + self.book_id + "/", link)
                     if link not in self.images:
                         self.images.append(link)
                         self.display.log("Crawler: found a new image at %s" % link)
