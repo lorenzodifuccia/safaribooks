@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
+import pathlib
 import re
 import os
 import sys
@@ -348,6 +349,8 @@ class SafariBooks:
         self.display.info("Retrieving book chapters...")
         self.book_chapters = self.get_book_chapters()
 
+        self.images = self.extract_image_links(self.book_chapters)
+
         self.chapters_queue = self.book_chapters[:]
 
         if len(self.book_chapters) > sys.getrecursionlimit():
@@ -373,7 +376,6 @@ class SafariBooks:
         self.filename = ""
         self.chapter_stylesheets = []
         self.css = []
-        self.images = []
 
         self.display.info("Downloading book contents... (%s chapters)" % len(self.book_chapters), state=True)
         self.BASE_HTML = self.BASE_01_HTML + (self.KINDLE_HTML if not args.no_kindle else "") + self.BASE_02_HTML
@@ -609,16 +611,15 @@ class SafariBooks:
     def url_is_absolute(url):
         return bool(urlparse(url).netloc)
 
+    @staticmethod
+    def is_image_link(url: str):
+        return pathlib.Path(url).suffix[1:] in ["jpg", "peg", "png", "gif"]
+
     def link_replace(self, link):
         if link and not link.startswith("mailto"):
             if not self.url_is_absolute(link):
-                if "cover" in link or "images" in link or "graphics" in link or \
-                        link[-3:] in ["jpg", "peg", "png", "gif"]:
-                    link = urljoin(self.base_url, link)
-                    if link not in self.images:
-                        self.images.append(link)
-                        self.display.log("Crawler: found a new image at %s" % link)
-
+                if any(x in link for x in ["cover", "images", "graphics"]) or \
+                        self.is_image_link(link):
                     image = link.split("/")[-1]
                     return "Images/" + image
 
@@ -1043,6 +1044,14 @@ class SafariBooks:
 
         shutil.make_archive(zip_file, 'zip', self.BOOK_PATH)
         os.rename(zip_file + ".zip", os.path.join(self.BOOK_PATH, self.book_id) + ".epub")
+
+    @staticmethod
+    def extract_image_links(chapters):
+        imgs = []
+        for chapter in chapters:
+            chapter_imgs = [urljoin(chapter['asset_base_url'], img_url) for img_url in chapter['images']]
+            imgs.extend(chapter_imgs)
+        return imgs
 
 
 # MAIN
