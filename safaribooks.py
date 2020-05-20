@@ -239,11 +239,10 @@ class SafariBooks:
                    "<head>\n" \
                    "{0}\n" \
                    "<style type=\"text/css\">" \
-                   "body{{margin:1em;}}" \
+                   "body{{margin:1em;background-color:transparent!important;}}" \
                    "#sbo-rt-content *{{text-indent:0pt!important;}}#sbo-rt-content .bq{{margin-right:1em!important;}}"
 
-    KINDLE_HTML = "body{{background-color:transparent!important;}}" \
-                  "#sbo-rt-content *{{word-wrap:break-word!important;" \
+    KINDLE_HTML = "#sbo-rt-content *{{word-wrap:break-word!important;" \
                   "word-break:break-word!important;}}#sbo-rt-content table,#sbo-rt-content pre" \
                   "{{overflow-x:unset!important;overflow:unset!important;" \
                   "overflow-y:unset!important;white-space:pre-wrap!important;}}"
@@ -349,8 +348,6 @@ class SafariBooks:
         self.display.info("Retrieving book chapters...")
         self.book_chapters = self.get_book_chapters()
 
-        self.images = self.extract_image_links(self.book_chapters)
-
         self.chapters_queue = self.book_chapters[:]
 
         if len(self.book_chapters) > sys.getrecursionlimit():
@@ -376,9 +373,10 @@ class SafariBooks:
         self.filename = ""
         self.chapter_stylesheets = []
         self.css = []
+        self.images = []
 
         self.display.info("Downloading book contents... (%s chapters)" % len(self.book_chapters), state=True)
-        self.BASE_HTML = self.BASE_01_HTML + (self.KINDLE_HTML if not args.no_kindle else "") + self.BASE_02_HTML
+        self.BASE_HTML = self.BASE_01_HTML + (self.KINDLE_HTML if not args.kindle else "") + self.BASE_02_HTML
 
         self.cover = False
         self.get()
@@ -613,7 +611,7 @@ class SafariBooks:
 
     @staticmethod
     def is_image_link(url: str):
-        return pathlib.Path(url).suffix[1:] in ["jpg", "peg", "png", "gif"]
+        return pathlib.Path(url).suffix[1:].lower() in ["jpg", "jpeg", "png", "gif"]
 
     def link_replace(self, link):
         if link and not link.startswith("mailto"):
@@ -813,6 +811,11 @@ class SafariBooks:
             next_chapter = self.chapters_queue.pop(0)
             self.chapter_title = next_chapter["title"]
             self.filename = next_chapter["filename"]
+
+            # Images
+            if "images" in next_chapter and len(next_chapter["images"]):
+                self.images.extend(urljoin(next_chapter['asset_base_url'], img_url)
+                                   for img_url in next_chapter['images'])
 
             # Stylesheets
             self.chapter_stylesheets = []
@@ -1045,14 +1048,6 @@ class SafariBooks:
         shutil.make_archive(zip_file, 'zip', self.BOOK_PATH)
         os.rename(zip_file + ".zip", os.path.join(self.BOOK_PATH, self.book_id) + ".epub")
 
-    @staticmethod
-    def extract_image_links(chapters):
-        imgs = []
-        for chapter in chapters:
-            chapter_imgs = [urljoin(chapter['asset_base_url'], img_url) for img_url in chapter['images']]
-            imgs.extend(chapter_imgs)
-        return imgs
-
 
 # MAIN
 if __name__ == "__main__":
@@ -1078,9 +1073,9 @@ if __name__ == "__main__":
         help="Prevent your session data to be saved into `cookies.json` file."
     )
     arguments.add_argument(
-        "--no-kindle", dest="no_kindle", action='store_true',
-        help="Remove some CSS rules that block overflow on `table` and `pre` elements."
-             " Use this option if you're not going to export the EPUB to E-Readers like Amazon Kindle."
+        "--kindle", dest="kindle", action='store_true',
+        help="Add some CSS rules that block overflow on `table` and `pre` elements."
+             " Use this option if you're going to export the EPUB to E-Readers like Amazon Kindle."
     )
     arguments.add_argument(
         "--preserve-log", dest="log", action='store_true', help="Leave the `info_XXXXXXXXXXXXX.log`"
@@ -1094,7 +1089,6 @@ if __name__ == "__main__":
     )
 
     args_parsed = arguments.parse_args()
-
     if args_parsed.cred or args_parsed.login:
         user_email = ""
         pre_cred = ""
