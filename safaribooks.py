@@ -759,7 +759,7 @@ class SafariBooks:
             elif "win" in sys.platform:
                 dirname = dirname.replace(":", ",")
 
-        for ch in ['~', '#', '%', '&', '*', '{', '}', '\\', '<', '>', '?', '/', '`', '\'', '"', '|', '+']:
+        for ch in ['~', '#', '%', '&', '*', '{', '}', '\\', '<', '>', '?', '/', '`', '\'', '"', '|', '+', ':']:
             if ch in dirname:
                 dirname = dirname.replace(ch, "_")
 
