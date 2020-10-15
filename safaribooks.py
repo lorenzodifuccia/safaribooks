@@ -830,14 +830,9 @@ class SafariBooks:
                         next_chapter not in self.book_chapters[:self.book_chapters.index(next_chapter)]:
                     self.display.info(
                         ("File `%s` already exists.\n"
-                         "    If you want to download again all the book%s,\n"
+                         "    If you want to download again all the book,\n"
                          "    please delete the output directory '" + self.BOOK_PATH + "' and restart the program.")
-                        %
-                        (
-                            self.filename.replace(".html", ".xhtml"),
-                            " (especially because you selected the `--no-kindle` option)"
-                            if self.args.no_kindle else ""
-                        )
+                         % self.filename.replace(".html", ".xhtml")
                     )
                     self.display.book_ad_info = 2
 
