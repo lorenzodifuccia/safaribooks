@@ -171,13 +171,13 @@ class Display:
     def book_info(self, info):
         description = self.parse_description(info["description"]).replace("\n", " ")
         for t in [
-            ("Title", info["title"]), ("Authors", ", ".join(aut["name"] for aut in info["authors"])),
-            ("Identifier", info["identifier"]), ("ISBN", info["isbn"]),
-            ("Publishers", ", ".join(pub["name"] for pub in info["publishers"])),
+            ("Title", info.get("title", "")), ("Authors", ", ".join(aut["name"] for aut in info.get("authors", ""))),
+            ("Identifier", info.get("identifier", "")), ("ISBN", info.get("isbn", "")),
+            ("Publishers", ", ".join(pub["name"] for pub in info.get("publishers", ""))),
             ("Rights", info.get("rights", "")),
             ("Description", description[:500] + "..." if len(description) >= 500 else description),
-            ("Release Date", info["issued"]),
-            ("URL", info["web_url"])
+            ("Release Date", info.get("issued", "")),
+            ("URL", info.get("web_url", ""))
         ]:
             self.info("{0}{1}{2}: {3}".format(self.SH_YELLOW, t[0], self.SH_DEFAULT, t[1]), True)
 
@@ -955,14 +955,14 @@ class SafariBooks:
                              for sub in self.book_info["subjects"])
 
         return self.CONTENT_OPF.format(
-            (self.book_info["isbn"] if self.book_info["isbn"] else self.book_id),
+            (self.book_info.get("isbn",  self.book_id)),
             escape(self.book_title),
             authors,
-            escape(self.book_info["description"]),
+            escape(self.book_info.get("description", "")),
             subjects,
-            ", ".join(escape(pub["name"]) for pub in self.book_info["publishers"]),
+            ", ".join(escape(pub["name"]) for pub in self.book_info.get("publishers", "")),
             escape(self.book_info.get("rights", "")),
-            self.book_info["issued"],
+            self.book_info.get("issued", ""),
             self.cover,
             "\n".join(manifest),
             "\n".join(spine),
