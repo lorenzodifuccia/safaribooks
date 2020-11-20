@@ -171,9 +171,9 @@ class Display:
     def book_info(self, info):
         description = self.parse_description(info["description"]).replace("\n", " ")
         for t in [
-            ("Title", info.get("title", "")), ("Authors", ", ".join(aut["name"] for aut in info.get("authors", ""))),
+            ("Title", info.get("title", "")), ("Authors", ", ".join(aut.get("name", "") for aut in info.get("authors", []))),
             ("Identifier", info.get("identifier", "")), ("ISBN", info.get("isbn", "")),
-            ("Publishers", ", ".join(pub["name"] for pub in info.get("publishers", ""))),
+            ("Publishers", ", ".join(pub.get("name", "") for pub in info.get("publishers", []))),
             ("Rights", info.get("rights", "")),
             ("Description", description[:500] + "..." if len(description) >= 500 else description),
             ("Release Date", info.get("issued", "")),
@@ -951,8 +951,8 @@ class SafariBooks:
             escape(aut["name"])
         ) for aut in self.book_info["authors"])
 
-        subjects = "\n".join("<dc:subject>{0}</dc:subject>".format(escape(sub["name"]))
-                             for sub in self.book_info["subjects"])
+        subjects = "\n".join("<dc:subject>{0}</dc:subject>".format(escape(sub.get("name", "")))
+                             for sub in self.book_info.get("subjects", []))
 
         return self.CONTENT_OPF.format(
             (self.book_info.get("isbn",  self.book_id)),
@@ -960,7 +960,7 @@ class SafariBooks:
             authors,
             escape(self.book_info.get("description", "")),
             subjects,
-            ", ".join(escape(pub["name"]) for pub in self.book_info.get("publishers", "")),
+            ", ".join(escape(pub.get("name", "")) for pub in self.book_info.get("publishers", [])),
             escape(self.book_info.get("rights", "")),
             self.book_info.get("issued", ""),
             self.cover,
