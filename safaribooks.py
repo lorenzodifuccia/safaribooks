@@ -174,7 +174,7 @@ class Display:
             ("Title", info["title"]), ("Authors", ", ".join(aut["name"] for aut in info["authors"])),
             ("Identifier", info["identifier"]), ("ISBN", info["isbn"]),
             ("Publishers", ", ".join(pub["name"] for pub in info["publishers"])),
-            ("Rights", info["rights"]),
+            ("Rights", info.get("rights", "")),
             ("Description", description[:500] + "..." if len(description) >= 500 else description),
             ("Release Date", info["issued"]),
             ("URL", info["web_url"])
@@ -961,7 +961,7 @@ class SafariBooks:
             escape(self.book_info["description"]),
             subjects,
             ", ".join(escape(pub["name"]) for pub in self.book_info["publishers"]),
-            escape(self.book_info["rights"]) if self.book_info["rights"] else "",
+            escape(self.book_info.get("rights", "")),
             self.book_info["issued"],
             self.cover,
             "\n".join(manifest),
