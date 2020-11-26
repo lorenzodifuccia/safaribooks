@@ -169,7 +169,7 @@ class Display:
             return "n/d"
 
     def book_info(self, info):
-        description = self.parse_description(info["description"]).replace("\n", " ")
+        description = self.parse_description(info.get("description", None)).replace("\n", " ")
         for t in [
             ("Title", info.get("title", "")), ("Authors", ", ".join(aut.get("name", "") for aut in info.get("authors", []))),
             ("Identifier", info.get("identifier", "")), ("ISBN", info.get("isbn", "")),
@@ -948,10 +948,10 @@ class SafariBooks:
                             "media-type=\"text/css\" />".format(i))
 
         authors = "\n".join("<dc:creator opf:file-as=\"{0}\" opf:role=\"aut\">{0}</dc:creator>".format(
-            escape(aut["name"])
-        ) for aut in self.book_info["authors"])
+            escape(aut.get("name", "n/d")])
+        ) for aut in self.book_info.get("authors", []))
 
-        subjects = "\n".join("<dc:subject>{0}</dc:subject>".format(escape(sub.get("name", "")))
+        subjects = "\n".join("<dc:subject>{0}</dc:subject>".format(escape(sub.get("name", "n/d")))
                              for sub in self.book_info.get("subjects", []))
 
         return self.CONTENT_OPF.format(
