@@ -948,7 +948,7 @@ class SafariBooks:
                             "media-type=\"text/css\" />".format(i))
 
         authors = "\n".join("<dc:creator opf:file-as=\"{0}\" opf:role=\"aut\">{0}</dc:creator>".format(
-            escape(aut.get("name", "n/d")])
+            escape(aut.get("name", "n/d"))
         ) for aut in self.book_info.get("authors", []))
 
         subjects = "\n".join("<dc:subject>{0}</dc:subject>".format(escape(sub.get("name", "n/d")))
