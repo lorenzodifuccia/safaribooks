@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  safaribooks:
+    build: .
+    volumes:
+       - ./:/safaribooks
+    working_dir: /safaribooks

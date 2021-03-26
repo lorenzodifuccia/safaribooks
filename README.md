@@ -38,6 +38,12 @@ It's really simple to use, just choose a book from the library and replace in th
 $ python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
 ```
 
+## Usage:
+You can use Docker
+```shell
+$ docker-compose run safaribooks python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
+```
+
 The ID is the digits that you find in the URL of the book description page:  
 `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`  
 Like: `https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/`  
