@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # coding: utf-8
-import pathlib
 import re
 import os
 import sys
 import json
 import shutil
+import pathlib
 import getpass
 import logging
 import argparse
@@ -304,7 +304,7 @@ class SafariBooks:
         "Referer": LOGIN_ENTRY_URL,
         "Upgrade-Insecure-Requests": "1",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                      "Chrome/80.0.3987.163 Safari/537.36"
+                      "Chrome/90.0.4430.212 Safari/537.36"
     }
 
     COOKIE_FLOAT_MAX_AGE_PATTERN = re.compile(r'(max-age=\d*\.\d*)', re.IGNORECASE)
@@ -381,7 +381,7 @@ class SafariBooks:
         self.cover = False
         self.get()
         if not self.cover:
-            self.cover = self.get_default_cover()
+            self.cover = self.get_default_cover() if "cover" in self.book_info else False
             cover_html = self.parse_html(
                 html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)), True
             )
@@ -1013,7 +1013,7 @@ class SafariBooks:
             (self.book_info["isbn"] if self.book_info["isbn"] else self.book_id),
             max_depth,
             self.book_title,
-            ", ".join(aut["name"] for aut in self.book_info["authors"]),
+            ", ".join(aut.get("name", "") for aut in self.book_info.get("authors", [])),
             navmap
         )
 
