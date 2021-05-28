@@ -524,7 +524,7 @@ class SafariBooks:
         elif response.status_code != 200:
             self.display.exit("Authentication issue: unable to access profile page.")
 
-        elif "user_type\":\"Expired" in response.text:
+        elif "user_type\":\"Expired\"" in response.text:
             self.display.exit("Authentication issue: account subscription expired.")
 
         self.display.info("Successfully authenticated.", state=True)
