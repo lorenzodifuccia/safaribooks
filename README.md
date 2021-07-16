@@ -63,6 +63,7 @@ optional arguments:
                        "account_mail@mail.com:password01" `.
   --login              Prompt for credentials used to perform the auth login
                        on Safari Books Online.
+  --proxy PROXY        Add proxy URL and port (e.g. `https://127.0.0.1:8080`)
   --no-cookies         Prevent your session data to be saved into
                        `cookies.json` file.
   --kindle             Add some CSS rules that block overflow on `table` and
