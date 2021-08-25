@@ -1109,6 +1109,23 @@ if __name__ == "__main__":
         if args_parsed.no_cookies:
             arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
 
+    if len(args_parsed.bookid) > 0:
+        bookid_regex = r"['\"]*http[s]?://[a-zA-Z0-9.\-/]+(\d{10,15})/*['\"]*"          # Matches book URL
+        pattern = re.compile(bookid_regex)
+        match = re.search(pattern, args_parsed.bookid)
+        if match:
+            bookID = match.group(1)
+        else:
+            bookID = None
+            arguments.error("Invalid book ID or URL")
+        if str.isdecimal(bookID):
+            args_parsed.bookid = bookID
+        else:
+            arguments.error("Invalid book ID")
+    else:
+        arguments.error("Book ID must not be empty")
+
+
     SafariBooks(args_parsed)
     # Hint: do you want to download more then one book once, initialized more than one instance of `SafariBooks`...
     sys.exit(0)
