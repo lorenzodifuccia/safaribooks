@@ -309,10 +309,11 @@ class SafariBooks:
         self.args = args
         self.display = Display("info_%s.log" % escape(args.bookid))
         self.display.intro()
+        self.args.proxies = args.proxies
 
         self.session = requests.Session()
-        if args_parsed.proxies:
-            self.session.proxies = args_parsed.proxies
+        if self.args.proxies:
+            self.session.proxies = self.args.proxies
             # self.session.verify = False
 
         self.session.headers.update(self.HEADERS)
@@ -1040,8 +1041,7 @@ class SafariBooks:
         os.rename(zip_file + ".zip", os.path.join(self.BOOK_PATH, self.book_id) + ".epub")
 
 
-# MAIN
-if __name__ == "__main__":
+def parse_arguments():
     arguments = argparse.ArgumentParser(prog="safaribooks.py",
                                         description="Download and generate an EPUB of your favorite books"
                                                     " from Safari Books Online.",
@@ -1081,14 +1081,22 @@ if __name__ == "__main__":
         help="Book digits ID that you want to download. You can find it in the URL (X-es):"
              " `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`"
     )
+    return arguments
 
-    args_parsed = arguments.parse_args()
-    if args_parsed.cred or args_parsed.login:
+
+def process_arguments(arguments):
+    """
+    Process and check the arguments
+    :param arguments: arguments
+    :return: Parsed and processed arguements
+    """
+    parsed_args = arguments.parse_args()
+    if parsed_args.cred or parsed_args.login:
         user_email = ""
         pre_cred = ""
 
-        if args_parsed.cred:
-            pre_cred = args_parsed.cred
+        if parsed_args.cred:
+            pre_cred = parsed_args.cred
 
         else:
             user_email = input("Email: ")
@@ -1099,29 +1107,40 @@ if __name__ == "__main__":
 
         if not parsed_cred:
             arguments.error("invalid credential: %s" % (
-                args_parsed.cred if args_parsed.cred else (user_email + ":*******")
+                parsed_args.cred if parsed_args.cred else (user_email + ":*******")
             ))
 
-        args_parsed.cred = parsed_cred
+        parsed_args.cred = parsed_cred
 
     else:
-        if args_parsed.no_cookies:
+        if parsed_args.no_cookies:
             arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
 
-    if args_parsed.proxy:
+    if parsed_args.proxy:
         proxy_regex = r"http[s]?://[a-zA-Z0-9.-]+:\d{4}"          # Matches proxy URL
         pattern = re.compile(proxy_regex)
-        match = re.search(pattern, args_parsed.proxy)
+        match = re.search(pattern, parsed_args.proxy)
         if match:
             result = match.group()
-            args_parsed.proxies = {
+            parsed_args.proxies = {
                 "http": result,
                 "https": result
             }
         else:
             arguments.error(f"Incorrect proxy format (should match the regex: `{proxy_regex}`)")
+    return parsed_args
 
 
-    SafariBooks(args_parsed)
+def main():
+    """
+    Main safaribooks
+    """
+    parsed_args = parse_arguments()
+    args = process_arguments(parsed_args)
+    SafariBooks(args)
     # Hint: do you want to download more then one book once, initialized more than one instance of `SafariBooks`...
     sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
