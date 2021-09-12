@@ -16,6 +16,7 @@ $ git clone https://github.com/lorenzodifuccia/safaribooks.git
 Cloning into 'safaribooks'...
 
 $ cd safaribooks/
+$ python3 -m venv .venv && source .venv/bin/activate
 $ pip3 install -r requirements.txt
 
 OR
