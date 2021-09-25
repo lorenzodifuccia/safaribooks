@@ -553,7 +553,7 @@ class SafariBooks:
             self.display.exit("API: unable to retrieve book chapters.")
 
         response = response.json()
-
+        
         if not isinstance(response, dict) or len(response.keys()) == 1:
             self.display.exit(self.display.api_error(response))
 
@@ -814,7 +814,7 @@ class SafariBooks:
 
             # Images
             if "images" in next_chapter and len(next_chapter["images"]):
-                self.images.extend(urljoin(next_chapter['asset_base_url'], img_url)
+                self.images.extend(urljoin(next_chapter['content'], img_url)
                                    for img_url in next_chapter['images'])
 
             # Stylesheets
@@ -862,6 +862,7 @@ class SafariBooks:
 
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
+
 
     def _thread_download_images(self, url):
         image_name = url.split("/")[-1]
