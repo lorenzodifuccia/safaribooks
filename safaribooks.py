@@ -138,20 +138,20 @@ class Display:
 
     def intro(self):
         output = self.SH_YELLOW + ("""
-       ____     ___         _     
-      / __/__ _/ _/__ _____(_)    
-     _\ \/ _ `/ _/ _ `/ __/ /     
-    /___/\_,_/_/ \_,_/_/ /_/      
-      / _ )___  ___  / /__ ___    
-     / _  / _ \/ _ \/  '_/(_-<    
-    /____/\___/\___/_/\_\/___/    
+       ____     ___         _
+      / __/__ _/ _/__ _____(_)
+     _\ \/ _ `/ _/ _ `/ __/ /
+    /___/\_,_/_/ \_,_/_/ /_/
+      / _ )___  ___  / /__ ___
+     / _  / _ \/ _ \/  '_/(_-<
+    /____/\___/\___/_/\_\/___/
 """ if random() > 0.5 else """
- ██████╗     ██████╗ ██╗  ██╗   ██╗██████╗ 
+ ██████╗     ██████╗ ██╗  ██╗   ██╗██████╗
 ██╔═══██╗    ██╔══██╗██║  ╚██╗ ██╔╝╚════██╗
 ██║   ██║    ██████╔╝██║   ╚████╔╝   ▄███╔╝
-██║   ██║    ██╔══██╗██║    ╚██╔╝    ▀▀══╝ 
-╚██████╔╝    ██║  ██║███████╗██║     ██╗   
- ╚═════╝     ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝                                           
+██║   ██║    ██╔══██╗██║    ╚██╔╝    ▀▀══╝
+╚██████╔╝    ██║  ██║███████╗██║     ██╗
+ ╚═════╝     ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝
 """) + self.SH_DEFAULT
         output += "\n" + "~" * (self.columns // 2)
 
@@ -160,7 +160,7 @@ class Display:
     def parse_description(self, desc):
         if not desc:
             return "n/d"
-        
+
         try:
             return html.fromstring(desc).text_content()
 
@@ -540,7 +540,7 @@ class SafariBooks:
 
         if "last_chapter_read" in response:
             del response["last_chapter_read"]
-            
+
         for key, value in response.items():
             if value is None:
                 response[key] = 'n/a'
@@ -553,7 +553,7 @@ class SafariBooks:
             self.display.exit("API: unable to retrieve book chapters.")
 
         response = response.json()
-        
+
         if not isinstance(response, dict) or len(response.keys()) == 1:
             self.display.exit(self.display.api_error(response))
 
