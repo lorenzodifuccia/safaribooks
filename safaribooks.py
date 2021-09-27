@@ -812,10 +812,19 @@ class SafariBooks:
             self.chapter_title = next_chapter["title"]
             self.filename = next_chapter["filename"]
 
-            # Images
+            asset_base_url = next_chapter['asset_base_url']
+            api_v2_detected = False
+            if 'v2' in next_chapter['content']:
+                asset_base_url = SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{}/files".format(self.book_id)
+                api_v2_detected = True
+
             if "images" in next_chapter and len(next_chapter["images"]):
-                self.images.extend(urljoin(next_chapter['content'], img_url)
-                                   for img_url in next_chapter['images'])
+                for img_url in next_chapter['images']:
+                    if api_v2_detected:
+                        self.images.extend([asset_base_url + '/' + img_url])
+                    else:
+                        self.images.extend(urljoin(next_chapter['asset_base_url'], img_url)
+
 
             # Stylesheets
             self.chapter_stylesheets = []
