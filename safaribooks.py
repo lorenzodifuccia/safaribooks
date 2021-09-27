@@ -823,7 +823,7 @@ class SafariBooks:
                     if api_v2_detected:
                         self.images.extend([asset_base_url + '/' + img_url])
                     else:
-                        self.images.extend(urljoin(next_chapter['asset_base_url'], img_url)
+                        self.images.extend(urljoin(next_chapter['asset_base_url'], img_url))
 
 
             # Stylesheets
