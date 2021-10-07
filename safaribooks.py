@@ -1110,11 +1110,18 @@ if __name__ == "__main__":
             arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
 
     if len(args_parsed.bookid) > 0:
-        bookid_regex = r"['\"]*http[s]?://[a-zA-Z0-9.\-/]+(\d{10,15})/*['\"]*"          # Matches book URL
-        pattern = re.compile(bookid_regex)
-        match = re.search(pattern, args_parsed.bookid)
-        if match:
-            bookID = match.group(1)
+        book_url_regex = r"['\"]*http[s]?://[a-zA-Z0-9.\-/]+(\d{10,15})/*['\"]*"       # Matches book URL
+        pattern = re.compile(book_url_regex)
+        matchURL = re.search(pattern, args_parsed.bookid)
+
+        book_id_regex = r"['\"]*(\d{10,15})/*['\"]*"                                   # Matches book ID
+        pattern = re.compile(book_id_regex)
+        matchID = re.search(pattern, args_parsed.bookid)
+
+        if matchURL:
+            bookID = matchURL.group(1)
+        elif matchID:
+            bookID = matchID.group(1)
         else:
             bookID = None
             arguments.error("Invalid book ID or URL")
