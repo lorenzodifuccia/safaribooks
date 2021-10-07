@@ -309,7 +309,6 @@ class SafariBooks:
         self.args = args
         self.display = Display("info_%s.log" % escape(args.bookid))
         self.display.intro()
-        self.args.proxies = args.proxies
 
         self.session = requests.Session()
         if self.args.proxies:
@@ -1117,7 +1116,7 @@ def process_arguments(arguments):
             arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
 
     if parsed_args.proxy:
-        proxy_regex = r"http[s]?://[a-zA-Z0-9.-]+:\d{4}"          # Matches proxy URL
+        proxy_regex = r"http[s]?://[a-zA-Z0-9.-]+:\d{2,5}"          # Matches proxy URL
         pattern = re.compile(proxy_regex)
         match = re.search(pattern, parsed_args.proxy)
         if match:
