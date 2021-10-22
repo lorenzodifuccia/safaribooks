@@ -821,9 +821,9 @@ class SafariBooks:
             if "images" in next_chapter and len(next_chapter["images"]):
                 for img_url in next_chapter['images']:
                     if api_v2_detected:
-                        self.images.extend([asset_base_url + '/' + img_url])
+                        self.images.append(asset_base_url + '/' + img_url)
                     else:
-                        self.images.extend(urljoin(next_chapter['asset_base_url'], img_url))
+                        self.images.append(urljoin(next_chapter['asset_base_url'], img_url))
 
 
             # Stylesheets
