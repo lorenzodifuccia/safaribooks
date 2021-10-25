@@ -229,6 +229,7 @@ class SafariBooks:
     LOGIN_ENTRY_URL = SAFARI_BASE_URL + "/login/unified/?next=/home/"
 
     API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
+    IMAGES_TEMPLATE = SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{0}/files/"
 
     BASE_01_HTML = "<!DOCTYPE html>\n" \
                    "<html lang=\"en\" xml:lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\"" \
@@ -813,8 +814,9 @@ class SafariBooks:
             self.filename = next_chapter["filename"]
 
             # Images
+            self.image_url = self.IMAGES_TEMPLATE.format(self.book_id)
             if "images" in next_chapter and len(next_chapter["images"]):
-                self.images.extend(urljoin(next_chapter['asset_base_url'], img_url)
+                self.images.extend(urljoin(self.image_url, img_url)
                                    for img_url in next_chapter['images'])
 
             # Stylesheets
