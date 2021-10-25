@@ -816,8 +816,12 @@ class SafariBooks:
             # Images
             self.image_url = self.IMAGES_TEMPLATE.format(self.book_id)
             if "images" in next_chapter and len(next_chapter["images"]):
-                self.images.extend(urljoin(self.image_url, img_url)
-                                   for img_url in next_chapter['images'])
+                if 'v2' in next_chapter['content']:
+                    base_image_url = self.image_url
+                else:
+                    base_image_url = next_chapter['asset_base_url']
+                self.images.extend(urljoin(base_image_url, img_url)
+                                for img_url in next_chapter['images'])
 
             # Stylesheets
             self.chapter_stylesheets = []
