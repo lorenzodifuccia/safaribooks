@@ -912,7 +912,7 @@ class SafariBooks:
         if self.display.book_ad_info == 2:
             self.display.info("Some of the book contents were already downloaded.\n"
                               "    If you want to be sure that all the images will be downloaded,\n"
-                              "    please delete the output direcotry '" + self.BOOK_PATH +
+                              "    please delete the output directory '" + self.BOOK_PATH +
                               "' and restart the program.")
 
         self.display.state_status.value = -1
