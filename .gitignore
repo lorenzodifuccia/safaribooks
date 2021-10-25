@@ -11,3 +11,4 @@ Books/
 cookies.json
 *.log
 *.txt
+*.code-workspace
