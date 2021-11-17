@@ -9,10 +9,11 @@ urllib3 = ">=1.26.5"
 
 lxml = "*"
 requests = "*"
+beautifulsoup4 = "*"
 
 [dev-packages]
 
 
 [requires]
 
-python_version = "3.6"
+python_version = "3.9"
