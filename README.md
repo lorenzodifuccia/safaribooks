@@ -41,7 +41,7 @@ $ python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
 ## Usage:
 You can use Docker
 ```shell
-$ docker-compose run safaribooks python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
+$ docker-compose run safaribooks --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
 ```
 
 The ID is the digits that you find in the URL of the book description page:  
