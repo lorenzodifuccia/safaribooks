@@ -3,9 +3,15 @@ Download and generate *EPUB* of your favorite books from [*Safari Books Online*]
 I'm not responsible for the use of this program, this is only for *personal* and *educational* purpose.  
 Before any usage please read the *O'Reilly*'s [Terms of Service](https://learning.oreilly.com/terms/).  
 
+> ## *Attention needed*
+> *If you are a developer and want to help this project, please take a look to the current [Milestone](https://github.com/lorenzodifuccia/safaribooks/milestone/1)*.  
+> *The Community thanks 🙏🏻*
+
 ## Overview:
   * [Requirements & Setup](#requirements--setup)
   * [Usage](#usage)
+  * [Single Sign-On (SSO), Company, University Login](https://github.com/lorenzodifuccia/safaribooks/issues/150#issuecomment-555423085)
+  * [Calibre EPUB conversion](https://github.com/lorenzodifuccia/safaribooks#calibre-epub-conversion)
   * [Example: Download *Test-Driven Development with Python, 2nd Edition*](#download-test-driven-development-with-python-2nd-edition)
   * [Example: Use or not the `--kindle` option](#use-or-not-the---kindle-option)
 
