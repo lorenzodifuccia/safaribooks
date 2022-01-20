@@ -15,8 +15,7 @@ import safaribooks
 
 def transform(cookies_string):
     cookies = {}
-    for cookie in cookies_string.split(";"):
-        cookie = cookie.strip()
+    for cookie in cookies_string.split("; "):
         key, value = cookie.split("=", 1)
         cookies[key] = value
 
