@@ -3,7 +3,7 @@ Download and generate *EPUB* of your favorite books from [*Safari Books Online*]
 I'm not responsible for the use of this program, this is only for *personal* and *educational* purpose.  
 Before any usage please read the *O'Reilly*'s [Terms of Service](https://learning.oreilly.com/terms/).  
 
-> ## *Attention needed*
+> ## ⚠ *Attention needed* ⚠ 
 > *If you are a developer and want to help this project, please take a look to the current [Milestone](https://github.com/lorenzodifuccia/safaribooks/milestone/1)*.  
 > *The Community thanks 🙏🏻*
 
