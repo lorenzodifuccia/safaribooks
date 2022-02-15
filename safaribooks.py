@@ -3,13 +3,16 @@
 import re
 import os
 import sys
+import copy
 import json
+import time
 import shutil
 import pathlib
 import getpass
 import logging
 import argparse
 import requests
+import functools
 import traceback
 from html import escape
 from random import random
@@ -30,6 +33,12 @@ ORLY_BASE_URL = "https://www." + ORLY_BASE_HOST
 SAFARI_BASE_URL = "https://" + SAFARI_BASE_HOST
 API_ORIGIN_URL = "https://" + API_ORIGIN_HOST
 PROFILE_URL = SAFARI_BASE_URL + "/profile/"
+
+APIV2_PREFIX = "chapter:"
+APIV2_OPT_SEP = r"%2f"
+
+MODERATE = True     # whether to pause between downloads to reduce load on the server
+MODERATE_LEN = 0.3  # how long to pause
 
 # DEBUG
 USE_PROXY = False
@@ -169,14 +178,21 @@ class Display:
             return "n/d"
 
     def book_info(self, info):
-        description = self.parse_description(info.get("description", None)).replace("\n", " ")
+        if APIVER == 1:
+            relkey = "issued"
+            description = info.get("description", None)
+            description = self.parse_description(description).replace("\n", " ")
+        elif APIVER == 2:
+            relkey = "publication_date"
+            description = info.get("descriptions", {})
+            description = description.get("text/plain", None)
         for t in [
             ("Title", info.get("title", "")), ("Authors", ", ".join(aut.get("name", "") for aut in info.get("authors", []))),
             ("Identifier", info.get("identifier", "")), ("ISBN", info.get("isbn", "")),
             ("Publishers", ", ".join(pub.get("name", "") for pub in info.get("publishers", []))),
             ("Rights", info.get("rights", "")),
             ("Description", description[:500] + "..." if len(description) >= 500 else description),
-            ("Release Date", info.get("issued", "")),
+            ("Release Date", info.get(relkey, "")),
             ("URL", info.get("web_url", ""))
         ]:
             self.info("{0}{1}{2}: {3}".format(self.SH_YELLOW, t[0], self.SH_DEFAULT, t[1]), True)
@@ -227,8 +243,12 @@ class WinQueue(list):  # TODO: error while use `process` in Windows: can't pickl
 class SafariBooks:
     LOGIN_URL = ORLY_BASE_URL + "/member/auth/login/"
     LOGIN_ENTRY_URL = SAFARI_BASE_URL + "/login/unified/?next=/home/"
+    
+    APIV1_INFO = SAFARI_BASE_URL + "/api/v1/book/{0}/"
+    API_TEMPLATE = SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{0}/"
+    API_VER_STR = "apiv2"
 
-    API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
+    IMAGES_BASE = "Images/"
 
     BASE_01_HTML = "<!DOCTYPE html>\n" \
                    "<html lang=\"en\" xml:lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\"" \
@@ -240,7 +260,9 @@ class SafariBooks:
                    "{0}\n" \
                    "<style type=\"text/css\">" \
                    "body{{margin:1em;background-color:transparent!important;}}" \
-                   "#sbo-rt-content *{{text-indent:0pt!important;}}#sbo-rt-content .bq{{margin-right:1em!important;}}"
+                   "#sbo-rt-content *{{text-indent:0pt!important;}}#sbo-rt-content .bq{{margin-right:1em!important;}}" \
+                   "img{{height: auto;max-width:100%}}" \
+                   "pre {{background-color:#EEF2F6 !important;padding:0.75em 1.500em !important;}}"
 
     KINDLE_HTML = "#sbo-rt-content *{{word-wrap:break-word!important;" \
                   "word-break:break-word!important;}}#sbo-rt-content table,#sbo-rt-content pre" \
@@ -311,8 +333,25 @@ class SafariBooks:
 
     def __init__(self, args):
         self.args = args
+
+        APIVER = self.args.api
+        if APIVER == 1:
+            SafariBooks.API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
+            SafariBooks.API_VER_STR = "apiv1"
+
         self.display = Display("info_%s.log" % escape(args.bookid))
         self.display.intro()
+            
+        if APIVER == 1:
+            chapter_url_key = "chapter_list"
+            filekey = "filename"
+            fprefix = ""
+        elif APIVER == 2:
+            chapter_url_key = "chapters"
+            filekey = "ourn"
+            fprefix = "ourn:"
+            # cover_re = re.compile("chapter:.*?(%2f){0,1}cover")
+            # toc_re = re.compile("chapter:.*?(%2f){0,1}toc")
 
         self.session = requests.Session()
         if USE_PROXY:  # DEBUG
@@ -346,7 +385,13 @@ class SafariBooks:
         self.display.book_info(self.book_info)
 
         self.display.info("Retrieving book chapters...")
-        self.book_chapters = self.get_book_chapters()
+        self.book_chapters = self.get_book_chapters(self.book_info[chapter_url_key])
+        if APIVER == 2:
+            for c in self.book_chapters:
+                if "cover" in self.get_filename(c):
+                    c_images = c["related_assets"].get("images",[])
+                    if len(c_images) : self.book_info["cover"] = c_images[0]
+                    break
 
         self.chapters_queue = self.book_chapters[:]
 
@@ -374,24 +419,26 @@ class SafariBooks:
         self.chapter_stylesheets = []
         self.css = []
         self.images = []
+        self.images2 = []   # used to record all image links discovered when replacing links
 
         self.display.info("Downloading book contents... (%s chapters)" % len(self.book_chapters), state=True)
-        self.BASE_HTML = self.BASE_01_HTML + (self.KINDLE_HTML if not args.kindle else "") + self.BASE_02_HTML
+        self.BASE_HTML = self.BASE_01_HTML + (self.KINDLE_HTML if args.kindle else "") + self.BASE_02_HTML
 
         self.cover = False
         self.get()
         if not self.cover:
-            self.cover = self.get_default_cover() if "cover" in self.book_info else False
+            self.display.info(f"'cover' field is: {self.cover}")
+            if "cover" in self.book_info : self.cover = self.get_default_cover()
             cover_html = self.parse_html(
-                html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)), True
+                html.fromstring("<div id=\"sbo-rt-content\"><img src=\"{0}\"></div>".format(self.cover)), True
             )
 
             self.book_chapters = [{
-                "filename": "default_cover.xhtml",
+                filekey: f"{fprefix}default_cover.xhtml",
                 "title": "Cover"
             }] + self.book_chapters
 
-            self.filename = self.book_chapters[0]["filename"]
+            self.filename = self.get_filename(self.book_chapters[0])
             self.save_page_html(cover_html)
 
         self.css_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
@@ -412,6 +459,16 @@ class SafariBooks:
 
         if not self.display.in_error and not args.log:
             os.remove(self.display.log_file)
+
+    @staticmethod
+    def get_filename(chapter):
+        if APIVER == 1:
+            return chapter["filename"]
+        elif APIVER == 2:
+            # "ourn" looks like urn:orm:book:XXXXXXXXXXX:chapter:Text%2fcover.xhtml
+            # or urn:orm:book:XXXXXXXXXXX:chapter:cover.xhtm
+            return chapter["ourn"].rsplit(APIV2_PREFIX,1)[-1].rsplit(APIV2_OPT_SEP,1)[-1]
+        return "NONE"
 
     def handle_cookie_update(self, set_cookie_headers):
         for morsel in set_cookie_headers:
@@ -446,6 +503,14 @@ class SafariBooks:
             # TODO How about **kwargs?
 
         return response
+    
+    def local_provider(self, url):
+        self.display.info(f"Using local file {url} instead of URL")
+        with open(url,"r") as locf:
+            response = locf.read()
+            response = json.loads(response)
+        return response
+
 
     @staticmethod
     def parse_cred(cred):
@@ -535,6 +600,7 @@ class SafariBooks:
             self.display.exit("API: unable to retrieve book info.")
 
         response = response.json()
+
         if not isinstance(response, dict) or len(response.keys()) == 1:
             self.display.exit(self.display.api_error(response))
 
@@ -545,10 +611,21 @@ class SafariBooks:
             if value is None:
                 response[key] = 'n/a'
 
+        if APIVER == 2:
+            response2 = self.requests_provider(self.APIV1_INFO.format(self.book_id))
+            if response2 == 0:
+                self.display.exit("API: unable to retrieve v1 book info.")
+
+            response2 = response2.json()
+            for k in ["authors", "subjects", "topics", "rights", "publishers", "web_url"]:
+                if k in response2:
+                    response[k] = response2[k]
+
         return response
 
-    def get_book_chapters(self, page=1):
-        response = self.requests_provider(urljoin(self.api_url, "chapter/?page=%s" % page))
+    def get_book_chapters(self, chapter_url):
+        # response = self.requests_provider(urljoin(self.api_url, "chapter/?page=%s" % page))
+        response = self.requests_provider(chapter_url)
         if response == 0:
             self.display.exit("API: unable to retrieve book chapters.")
 
@@ -563,13 +640,37 @@ class SafariBooks:
         if response["count"] > sys.getrecursionlimit():
             sys.setrecursionlimit(response["count"])
 
+        if APIVER == 1:
+            urntype = "filename"
+        elif APIVER == 2:
+            urntype = "ourn"
+
         result = []
-        result.extend([c for c in response["results"] if "cover" in c["filename"] or "cover" in c["title"]])
+        result.extend([c for c in response["results"] if "cover" in self.get_filename(c)])
         for c in result:
+            # the point here is to move the "cover" chapter to the front of the chapter list,
+            # though this current code will only be successful if the "cover" chapter is
+            # on the first page of chapter info results
+            self.display.log(f'Moving chapter {response["results"].index(c)} with URN {c[urntype]} to the front of the current list')
             del response["results"][response["results"].index(c)]
 
         result += response["results"]
-        return result + (self.get_book_chapters(page + 1) if response["next"] else [])
+        result += (self.get_book_chapters(response["next"]) if response["next"] else [])
+
+        # The point of this next section is to move any "table of contents" chapter to be right after
+        # the "cover", unless the chapter info has "indexed_position" values in it, in which case those
+        # should be used to set the position of each chapter. Note: currently the code does not check
+        # whether the chapter order matches the "indexed_position" values
+        toc_index = -1
+        for ci,c in enumerate(result):
+            if "toc" in self.get_filename(c) or c["title"] == "nav":
+                if c.get("indexed_position",None) is None : toc_index = ci
+                break
+        if toc_index >= 0:
+            self.display.log(f'Moving chapter {toc_index} with URN {c[urntype]}  to the second place of the current list')
+            result.insert(1, result.pop(toc_index))
+
+        return result
 
     def get_default_cover(self):
         response = self.requests_provider(self.book_info["cover"], stream=True)
@@ -610,22 +711,42 @@ class SafariBooks:
         return bool(urlparse(url).netloc)
 
     @staticmethod
+    def is_doc_link(url: str):
+        return any(x in url for x in [".html", ".xhtml", ".pdf"])
+
+    @staticmethod
     def is_image_link(url: str):
-        return pathlib.Path(url).suffix[1:].lower() in ["jpg", "jpeg", "png", "gif"]
+        return any(x in url for x in ["cover", "images", "graphics"]) or (pathlib.Path(url).suffix[1:].lower() in ["jpg", "jpeg", "png", "gif"])
+
+    @staticmethod
+    def str_overlap(a, b):
+        # returns the index in 'b' of the first character that doesn't overlap
+        # with the end of 'a'
+        return max(i for i in range(len(b)+1) if a.endswith(b[:i]))
 
     def link_replace(self, link):
         if link and not link.startswith("mailto"):
             if not self.url_is_absolute(link):
-                if any(x in link for x in ["cover", "images", "graphics"]) or \
-                        self.is_image_link(link):
-                    image = link.split("/")[-1]
-                    return "Images/" + image
+                if not self.is_doc_link(link) and self.is_image_link(link):
+                    image_name, image_path = self.local_image_path(link)
+                    new_link = self.IMAGES_BASE
+                    if image_path : new_link += image_path + "/"
+                    new_link += image_name
+                    full_link = functools.reduce(lambda a, b: a + b[self.str_overlap(a,b):], [self.book_info["url"], "/files/", link])
+                    self.images2.append(full_link)
+                    # self.display.info(f'[Image] Output link: {new_link}, input link: {link}, full link: {full_link}')
+                    return new_link
 
-                return link.replace(".html", ".xhtml")
+                new_link = link.rsplit("/",1)[-1].replace(".html", ".xhtml")
+                # self.display.info(f'[Non-image, relative] Output link: {new_link}, input link: {link}')
+                return new_link
 
-            else:
-                if self.book_id in link:
-                    return self.link_replace(link.split(self.book_id)[-1])
+            else:  # URL is absolute
+                if self.book_info["url"] in link:
+                    # return self.link_replace(link.split(self.book_id)[-1])
+                    new_link = self.link_replace(link.replace(self.book_info["url"],"").lstrip("/"))
+                    # self.display.info(f'[Non-image, absolute] Output link: {new_link}, input link: {link}')
+                    return new_link
 
         return link
 
@@ -649,6 +770,10 @@ class SafariBooks:
                             "contains(lower-case(@name), 'cover') or contains(lower-case(@src), 'cover')]//img")
         if len(a):
             return a[0]
+
+        images = html_root.xpath("//img")
+        if len(images) == 1:
+            return images[0]
 
         return None
 
@@ -776,6 +901,7 @@ class SafariBooks:
         if not os.path.isdir(oebps):
             self.display.book_ad_info = True
             os.makedirs(oebps)
+            self.display.log(f"Created OEBPS directory {oebps}")
 
         self.css_path = os.path.join(oebps, "Styles")
         if os.path.isdir(self.css_path):
@@ -810,29 +936,42 @@ class SafariBooks:
 
             next_chapter = self.chapters_queue.pop(0)
             self.chapter_title = next_chapter["title"]
-            self.filename = next_chapter["filename"]
+            self.filename = self.get_filename(next_chapter)
+            if APIVER == 1:
+                assets_root = next_chapter
+                get_image = lambda x : urljoin(next_chapter['asset_base_url'], x)
+                stylesheet_url = lambda x : x["url"]
+                contentkey = "content"
+            elif APIVER == 2:
+                assets_root = next_chapter.get("related_assets",{})
+                get_image = lambda x : x
+                stylesheet_url = lambda x : x
+                contentkey = "content_url"
 
-            asset_base_url = next_chapter['asset_base_url']
-            api_v2_detected = False
-            if 'v2' in next_chapter['content']:
-                asset_base_url = SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{}/files".format(self.book_id)
-                api_v2_detected = True
+            # asset_base_url = next_chapter['asset_base_url']
+            # api_v2_detected = False
+            # if 'v2' in next_chapter['content']:
+            #     asset_base_url = SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{}/files".format(self.book_id)
+            #     api_v2_detected = True
 
-            if "images" in next_chapter and len(next_chapter["images"]):
-                for img_url in next_chapter['images']:
-                    if api_v2_detected:
-                        self.images.append(asset_base_url + '/' + img_url)
-                    else:
-                        self.images.append(urljoin(next_chapter['asset_base_url'], img_url))
+            # if "images" in next_chapter and len(next_chapter["images"]):
+            #     for img_url in next_chapter['images']:
+            #         if api_v2_detected:
+            #             self.images.append(asset_base_url + '/' + img_url)
+            #         else:
+            #             self.images.append(urljoin(next_chapter['asset_base_url'], img_url))
 
+            # Images
+            if "images" in assets_root and len(assets_root["images"]):
+                self.images.extend(get_image(img_url) for img_url in assets_root['images'])
 
             # Stylesheets
             self.chapter_stylesheets = []
-            if "stylesheets" in next_chapter and len(next_chapter["stylesheets"]):
-                self.chapter_stylesheets.extend(x["url"] for x in next_chapter["stylesheets"])
+            if "stylesheets" in assets_root and len(assets_root["stylesheets"]):
+                self.chapter_stylesheets.extend(stylesheet_url(x) for x in assets_root["stylesheets"])
 
-            if "site_styles" in next_chapter and len(next_chapter["site_styles"]):
-                self.chapter_stylesheets.extend(next_chapter["site_styles"])
+            if "site_styles" in assets_root and len(assets_root["site_styles"]):
+                self.chapter_stylesheets.extend(assets_root["site_styles"])
 
             if os.path.isfile(os.path.join(self.BOOK_PATH, "OEBPS", self.filename.replace(".html", ".xhtml"))):
                 if not self.display.book_ad_info and \
@@ -846,7 +985,9 @@ class SafariBooks:
                     self.display.book_ad_info = 2
 
             else:
-                self.save_page_html(self.parse_html(self.get_html(next_chapter["content"]), first_page))
+                get_url = next_chapter[contentkey]
+                self.save_page_html(self.parse_html(self.get_html(get_url), first_page))
+                if MODERATE : time.sleep(MODERATE_LEN)
 
             self.display.state(len_books, len_books - len(self.chapters_queue))
 
@@ -872,10 +1013,26 @@ class SafariBooks:
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
 
+    def local_image_path(self, full_url):
+        if APIVER == 1:
+            return full_url.split("/")[-1], ""
+        elif APIVER == 2:
+            image_dirs = ["images/","graphics/","assets/"]
+            baseurl = self.book_info["url"].rstrip("/").rsplit("/",1)[1] + "/files/"
+            rel_url = full_url.split(baseurl)[-1].lstrip("/")     # gives something like XXXXX/image.jpeg, XXXXX/ch02/image.png, or files/image.jpeg
+            local_path = rel_url
+            for imd in image_dirs:
+                if local_path[0:len(imd)] == imd:
+                    local_path = local_path[len(imd):]            # image.jpeg or ch02/image.png
+                    break
+            path_parts = local_path.rsplit("/",1)                 # [image.jpeg] or [ch02,image.png]
+            imname = path_parts[-1]
+            impath = path_parts[0] if len(path_parts) > 1 else ""
+            return imname, impath
 
     def _thread_download_images(self, url):
-        image_name = url.split("/")[-1]
-        image_path = os.path.join(self.images_path, image_name)
+        image_name, image_subfolder = self.local_image_path(url)
+        image_path = os.path.join(self.images_path, image_subfolder, image_name)
         if os.path.isfile(image_path):
             if not self.display.images_ad_info.value and url not in self.images[:self.images.index(url)]:
                 self.display.info(("File `%s` already exists.\n"
@@ -891,6 +1048,8 @@ class SafariBooks:
                 self.display.error("Error trying to retrieve this image: %s\n    From: %s" % (image_name, url))
                 return
 
+            # create any necessary subfolders in self.images_path
+            pathlib.Path(os.path.join(self.images_path, image_subfolder)).mkdir(parents=True, exist_ok=True)
             with open(image_path, 'wb') as img:
                 for chunk in response.iter_content(1024):
                     img.write(chunk)
@@ -917,6 +1076,7 @@ class SafariBooks:
         # "self._start_multiprocessing" seems to cause problem. Switching to mono-thread download.
         for css_url in self.css:
             self._thread_download_css(css_url)
+            if MODERATE : time.sleep(MODERATE_LEN)
 
     def collect_images(self):
         if self.display.book_ad_info == 2:
@@ -928,17 +1088,31 @@ class SafariBooks:
         self.display.state_status.value = -1
 
         # "self._start_multiprocessing" seems to cause problem. Switching to mono-thread download.
+        self.images += [x for x in self.images2 if x not in self.images]
         for image_url in self.images:
             self._thread_download_images(image_url)
+            if MODERATE : time.sleep(MODERATE_LEN)
+
+    @staticmethod
+    def get_all_files_from(basedir):
+        files = []
+        dirlist = [basedir]
+        while len(dirlist) > 0:
+            for (dirpath, dirnames, filenames) in os.walk(dirlist.pop()):
+                dirlist.extend(dirnames)
+                files.extend(map(lambda n: os.path.join(*n), zip([dirpath] * len(filenames), filenames)))
+        return [x.replace(basedir,"").lstrip(os.sep) for x in files]
 
     def create_content_opf(self):
-        self.css = next(os.walk(self.css_path))[2]
-        self.images = next(os.walk(self.images_path))[2]
+        # self.css = next(os.walk(self.css_path))[2]
+        # self.images = next(os.walk(self.images_path))[2]
+        self.css = self.get_all_files_from(self.css_path)
+        self.images = self.get_all_files_from(self.images_path)
 
         manifest = []
         spine = []
         for c in self.book_chapters:
-            c["filename"] = c["filename"].replace(".html", ".xhtml")
+            c["filename"] = self.get_filename(c).replace(".html", ".xhtml")
             item_id = escape("".join(c["filename"].split(".")[:-1]))
             manifest.append("<item id=\"{0}\" href=\"{1}\" media-type=\"application/xhtml+xml\" />".format(
                 item_id, c["filename"]
@@ -947,7 +1121,7 @@ class SafariBooks:
 
         for i in set(self.images):
             dot_split = i.split(".")
-            head = "img_" + escape("".join(dot_split[:-1]))
+            head = "img_" + escape("".join(dot_split[:-1]).replace(os.sep,"_"))
             extension = dot_split[-1]
             manifest.append("<item id=\"{0}\" href=\"Images/{1}\" media-type=\"image/{2}\" />".format(
                 head, i, "jpeg" if "jp" in extension else extension
@@ -964,15 +1138,23 @@ class SafariBooks:
         subjects = "\n".join("<dc:subject>{0}</dc:subject>".format(escape(sub.get("name", "n/d")))
                              for sub in self.book_info.get("subjects", []))
 
+        if APIVER == 1:
+            description_root = self.book_info
+            desckey = "description"
+            pubkey = "issued"
+        elif APIVER == 2:
+            description_root = self.book_info.get("descriptions",[])
+            desckey = "text/plain"
+            pubkey = "publication_date"
         return self.CONTENT_OPF.format(
-            (self.book_info.get("isbn",  self.book_id)),
+            (self.book_info.get("isbn", self.book_id)),
             escape(self.book_title),
             authors,
-            escape(self.book_info.get("description", "")),
+            escape(description_root.get(desckey, "")),
             subjects,
             ", ".join(escape(pub.get("name", "")) for pub in self.book_info.get("publishers", [])),
             escape(self.book_info.get("rights", "")),
-            self.book_info.get("issued", ""),
+            self.book_info.get(pubkey, ""),
             self.cover,
             "\n".join(manifest),
             "\n".join(spine),
@@ -981,6 +1163,15 @@ class SafariBooks:
 
     @staticmethod
     def parse_toc(l, c=0, mx=0):
+        if APIVER == 1:
+            # idkey = "id"
+            titlekey = "label"
+            href = lambda cc : cc["href"].replace(".html", ".xhtml").split("/")[-1]
+        elif APIVER == 2:
+            # idkey = "ourn"
+            titlekey = "title"
+            href = lambda cc : SafariBooks.get_filename(cc).replace(".html", ".xhtml") + "#" + cc["fragment"]
+
         r = ""
         for cc in l:
             c += 1
@@ -990,8 +1181,8 @@ class SafariBooks:
             r += "<navPoint id=\"{0}\" playOrder=\"{1}\">" \
                  "<navLabel><text>{2}</text></navLabel>" \
                  "<content src=\"{3}\"/>".format(
-                    cc["fragment"] if len(cc["fragment"]) else cc["id"], c,
-                    escape(cc["label"]), cc["href"].replace(".html", ".xhtml").split("/")[-1]
+                    cc["fragment"], c,
+                    escape(cc[titlekey]), href(cc)
                  )
 
             if cc["children"]:
@@ -1002,12 +1193,13 @@ class SafariBooks:
 
         return r, c, mx
 
-    def create_toc(self):
-        response = self.requests_provider(urljoin(self.api_url, "toc/"))
+    def create_toc(self, toc_url):
+        # response = self.requests_provider(urljoin(self.api_url, "toc/"))
+        response = self.requests_provider(toc_url)
         if response == 0:
             self.display.exit("API: unable to retrieve book chapters. "
-                              "Don't delete any files, just run again this program"
-                              " in order to complete the `.epub` creation!")
+                            "Don't delete any files, just run again this program"
+                            " in order to complete the `.epub` creation!")
 
         response = response.json()
 
@@ -1028,6 +1220,10 @@ class SafariBooks:
         )
 
     def create_epub(self):
+        if APIVER == 1:
+            tockey = "toc"
+        elif APIVER == 2:
+            tockey = "table_of_contents"
         open(os.path.join(self.BOOK_PATH, "mimetype"), "w").write("application/epub+zip")
         meta_info = os.path.join(self.BOOK_PATH, "META-INF")
         if os.path.isdir(meta_info):
@@ -1043,7 +1239,7 @@ class SafariBooks:
             self.create_content_opf().encode("utf-8", "xmlcharrefreplace")
         )
         open(os.path.join(self.BOOK_PATH, "OEBPS", "toc.ncx"), "wb").write(
-            self.create_toc().encode("utf-8", "xmlcharrefreplace")
+            self.create_toc(self.book_info[tockey]).encode("utf-8", "xmlcharrefreplace")
         )
 
         zip_file = os.path.join(PATH, "Books", self.book_id)
@@ -1085,6 +1281,10 @@ if __name__ == "__main__":
     arguments.add_argument(
         "--preserve-log", dest="log", action='store_true', help="Leave the `info_XXXXXXXXXXXXX.log`"
                                                                 " file even if there isn't any error."
+    )
+    arguments.add_argument(
+        "--api", metavar="<API>", default=2,
+        help="Choose the API version for interacting with SafariBooks (default is 2)"
     )
     arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
     arguments.add_argument(
