@@ -12,6 +12,7 @@ import getpass
 import logging
 import argparse
 import requests
+import tinycss2 as tc
 import functools
 import traceback
 from html import escape
@@ -34,6 +35,7 @@ SAFARI_BASE_URL = "https://" + SAFARI_BASE_HOST
 API_ORIGIN_URL = "https://" + API_ORIGIN_HOST
 PROFILE_URL = SAFARI_BASE_URL + "/profile/"
 
+APIVER = 2
 APIV2_PREFIX = "chapter:"
 APIV2_OPT_SEP = r"%2f"
 
@@ -587,7 +589,7 @@ class SafariBooks:
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
 
         elif response.status_code != 200:
-            self.display.exit("Authentication issue: unable to access profile page.")
+            self.display.exit(f"Authentication issue: unable to access profile page (status = {response.status_code}): {PROFILE_URL}")
 
         elif "user_type\":\"Expired\"" in response.text:
             self.display.exit("Authentication issue: account subscription expired.")
@@ -1009,6 +1011,29 @@ class SafariBooks:
 
             with open(css_file, 'wb') as s:
                 s.write(response.content)
+
+            # Download any fonts found in the stylesheet
+            # Format is: @font-face{font-family:ff1;src:url(f1.otf) format("opentype")}
+            srules = tc.parse_stylesheet(response.text)
+            fontfaces = []
+            for rule in srules:
+                if rule.type == 'at-rule' and rule.lower_at_keyword == 'font-face':
+                    fdec = tc.parse_declaration_list(rule.content)
+                    for fd in fdec:
+                        if fd.name == 'src':
+                            for ffield in fd.value:
+                                if ffield.type == 'url':
+                                    fontfaces.append(ffield.value)
+            urlparts = urlparse(url)
+            baseurl = urlparts._replace(path=urlparts.path.rsplit('/',1)[0]).geturl()
+            for ff in fontfaces:
+                furl = baseurl + '/' + ff
+                font_file = os.path.join(self.css_path, ff)
+                fresponse = self.requests_provider(furl)
+                if fresponse == 0:
+                    self.display.error("Error trying to retrieve this font: %s\n    From: %s" % (font_file, furl))
+                with open(font_file, 'wb') as s:
+                    s.write(fresponse.content)
 
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
