@@ -340,6 +340,10 @@ class SafariBooks:
         if APIVER == 1:
             SafariBooks.API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
             SafariBooks.API_VER_STR = "apiv1"
+        
+        MODERATE_LEN = self.args.delay
+        if self.args.delay == 0:
+            MODERATE = False
 
         self.display = Display("info_%s.log" % escape(args.bookid))
         self.display.intro()
@@ -993,7 +997,9 @@ class SafariBooks:
 
             self.display.state(len_books, len_books - len(self.chapters_queue))
 
+
     def _thread_download_css(self, url):
+        status = 'ok'
         css_file = os.path.join(self.css_path, "Style{0:0>2}.css".format(self.css.index(url)))
         if os.path.isfile(css_file):
             if not self.display.css_ad_info.value and url not in self.css[:self.css.index(url)]:
@@ -1003,6 +1009,7 @@ class SafariBooks:
                                    " and restart the program.") %
                                   css_file)
                 self.display.css_ad_info.value = 1
+            status = 'already exists'
 
         else:
             response = self.requests_provider(url)
@@ -1026,9 +1033,11 @@ class SafariBooks:
                                     fontfaces.append(ffield.value)
             urlparts = urlparse(url)
             baseurl = urlparts._replace(path=urlparts.path.rsplit('/',1)[0]).geturl()
+            cssdir = pathlib.Path(self.css_path)
             for ff in fontfaces:
                 furl = baseurl + '/' + ff
-                font_file = os.path.join(self.css_path, ff)
+                font_file = (cssdir / ff).resolve()         # handle paths with '../' in them
+                font_file.parent.mkdir(parents=True, exist_ok=True)     # create directory if needed
                 fresponse = self.requests_provider(furl)
                 if fresponse == 0:
                     self.display.error("Error trying to retrieve this font: %s\n    From: %s" % (font_file, furl))
@@ -1037,6 +1046,8 @@ class SafariBooks:
 
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
+        return status
+
 
     def local_image_path(self, full_url):
         if APIVER == 1:
@@ -1055,7 +1066,9 @@ class SafariBooks:
             impath = path_parts[0] if len(path_parts) > 1 else ""
             return imname, impath
 
+
     def _thread_download_images(self, url):
+        status = 'ok'
         image_name, image_subfolder = self.local_image_path(url)
         image_path = os.path.join(self.images_path, image_subfolder, image_name)
         if os.path.isfile(image_path):
@@ -1066,6 +1079,7 @@ class SafariBooks:
                                    " and restart the program.") %
                                   image_name)
                 self.display.images_ad_info.value = 1
+            status = 'already exists'
 
         else:
             response = self.requests_provider(urljoin(SAFARI_BASE_URL, url), stream=True)
@@ -1081,6 +1095,8 @@ class SafariBooks:
 
         self.images_done_queue.put(1)
         self.display.state(len(self.images), self.images_done_queue.qsize())
+        return status
+
 
     def _start_multiprocessing(self, operation, full_queue):
         if len(full_queue) > 5:
@@ -1100,8 +1116,8 @@ class SafariBooks:
 
         # "self._start_multiprocessing" seems to cause problem. Switching to mono-thread download.
         for css_url in self.css:
-            self._thread_download_css(css_url)
-            if MODERATE : time.sleep(MODERATE_LEN)
+            status = self._thread_download_css(css_url)
+            if status == 'ok' and MODERATE : time.sleep(MODERATE_LEN)
 
     def collect_images(self):
         if self.display.book_ad_info == 2:
@@ -1115,8 +1131,8 @@ class SafariBooks:
         # "self._start_multiprocessing" seems to cause problem. Switching to mono-thread download.
         self.images += [x for x in self.images2 if x not in self.images]
         for image_url in self.images:
-            self._thread_download_images(image_url)
-            if MODERATE : time.sleep(MODERATE_LEN)
+            status = self._thread_download_images(image_url)
+            if status == 'ok' and MODERATE : time.sleep(MODERATE_LEN)
 
     @staticmethod
     def get_all_files_from(basedir):
@@ -1310,6 +1326,11 @@ if __name__ == "__main__":
     arguments.add_argument(
         "--api", metavar="<API>", default=2,
         help="Choose the API version for interacting with SafariBooks (default is 2)"
+    )
+    arguments.add_argument(
+        "--delay", metavar="<DELAYI>", default=0.3,
+        help="Amount of time to wait between file requests. Setting to 0 runs as quickly as possible"
+             " but increases load on the server (which isn't always kind)"
     )
     arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
     arguments.add_argument(
