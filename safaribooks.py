@@ -18,6 +18,7 @@ import traceback
 from html import escape
 from random import random
 from lxml import html, etree
+from bs4 import BeautifulSoup as bs
 from multiprocessing import Process, Queue, Value
 from urllib.parse import urljoin, urlparse, parse_qs, quote_plus
 
@@ -34,6 +35,8 @@ ORLY_BASE_URL = "https://www." + ORLY_BASE_HOST
 SAFARI_BASE_URL = "https://" + SAFARI_BASE_HOST
 API_ORIGIN_URL = "https://" + API_ORIGIN_HOST
 PROFILE_URL = SAFARI_BASE_URL + "/profile/"
+
+SB_THEME_FILE = "override_v1.css"
 
 APIVER = 2
 APIV2_PREFIX = "chapter:"
@@ -76,6 +79,7 @@ class Display:
 
         self.book_ad_info = False
         self.css_ad_info = Value("i", 0)
+        self.fonts_ad_info = Value("i", 0)
         self.images_ad_info = Value("i", 0)
         self.last_request = (None,)
         self.in_error = False
@@ -273,7 +277,7 @@ class SafariBooks:
 
     BASE_02_HTML = "</style>" \
                    "</head>\n" \
-                   "<body>{1}</body>\n</html>"
+                   "<body><div class=\"ucvMode-{2}\"><div id=\"book-content\">{1}</div></div></body>\n</html>"
 
     CONTAINER_XML = "<?xml version=\"1.0\"?>" \
                     "<container version=\"1.0\" xmlns=\"urn:oasis:names:tc:opendocument:xmlns:container\">" \
@@ -424,6 +428,7 @@ class SafariBooks:
         self.filename = ""
         self.chapter_stylesheets = []
         self.css = []
+        self.fonts = []
         self.images = []
         self.images2 = []   # used to record all image links discovered when replacing links
 
@@ -450,6 +455,9 @@ class SafariBooks:
         self.css_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
         self.collect_css()
+        self.fonts_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
+        self.display.info("Downloading book fonts... (%s files)" % len(self.fonts), state=True)
+        self.collect_fonts()
         self.images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
         self.collect_images()
@@ -796,6 +804,11 @@ class SafariBooks:
             )
 
         page_css = ""
+        if self.args.theme != 'none':
+            page_css += f"<link href=\"Styles/{SB_THEME_FILE}\" rel=\"stylesheet\" type=\"text/css\" />"
+            src_sb_css = pathlib.Path(PATH) / pathlib.Path(SB_THEME_FILE)
+            sb_css_file = pathlib.Path(self.css_path) / pathlib.Path(SB_THEME_FILE)
+            sb_css_file.write_bytes(src_sb_css.read_bytes())
         if len(self.chapter_stylesheets):
             for chapter_css_url in self.chapter_stylesheets:
                 if chapter_css_url not in self.css:
@@ -925,11 +938,37 @@ class SafariBooks:
             os.makedirs(self.images_path)
             self.display.images_ad_info.value = 1
 
+
+    @staticmethod
+    def fix_overconstrained_images(txt):
+        # Remove inline 'width' and 'height' attributes from img tags that also have a style='height:XXem'
+        # type of attribute
+        fixed_n = 0
+        tsoup = bs(txt, 'html.parser')
+        for img in tsoup.find_all('img'):
+            img_style = img.get('style') 
+            if img_style and ('width' in img_style or 'height' in img_style):
+                img_width  = img.get('width')
+                img_height = img.get('height')
+                if img_width  : del img['width']
+                if img_height : del img['height']
+                if img_width or img_height : fixed_n += 1
+        if fixed_n > 0 : self.display.log(f"[fix_overconstrained_images] img tags changed: {fixed_n}\n")
+        return str(tsoup)
+
     def save_page_html(self, contents):
+        theme_mode = 'white'
+        if self.args.theme == 'sepia':
+            theme_mode = 'sepia'
+        elif self.args.theme == 'black':
+            theme_mode = 'black'
+
         self.filename = self.filename.replace(".html", ".xhtml")
-        open(os.path.join(self.BOOK_PATH, "OEBPS", self.filename), "wb") \
-            .write(self.BASE_HTML.format(contents[0], contents[1]).encode("utf-8", 'xmlcharrefreplace'))
+        html_text = self.BASE_HTML.format(contents[0], contents[1], theme_mode).encode("utf-8", 'xmlcharrefreplace')
+        with open(os.path.join(self.BOOK_PATH, "OEBPS", self.filename), "w") as html_file:
+            html_file.write(self.fix_overconstrained_images(html_text))
         self.display.log("Created: %s" % self.filename)
+
 
     def get(self):
         len_books = len(self.book_chapters)
@@ -1019,10 +1058,11 @@ class SafariBooks:
             with open(css_file, 'wb') as s:
                 s.write(response.content)
 
-            # Download any fonts found in the stylesheet
+            # Save any font URLs found in the stylesheet for later downloading
             # Format is: @font-face{font-family:ff1;src:url(f1.otf) format("opentype")}
             srules = tc.parse_stylesheet(response.text)
-            fontfaces = []
+            urlparts = urlparse(url)
+            baseurl = urlparts._replace(path=urlparts.path.rsplit('/',1)[0]).geturl()
             for rule in srules:
                 if rule.type == 'at-rule' and rule.lower_at_keyword == 'font-face':
                     fdec = tc.parse_declaration_list(rule.content)
@@ -1030,22 +1070,48 @@ class SafariBooks:
                         if fd.name == 'src':
                             for ffield in fd.value:
                                 if ffield.type == 'url':
-                                    fontfaces.append(ffield.value)
-            urlparts = urlparse(url)
-            baseurl = urlparts._replace(path=urlparts.path.rsplit('/',1)[0]).geturl()
-            cssdir = pathlib.Path(self.css_path)
-            for ff in fontfaces:
-                furl = baseurl + '/' + ff
-                font_file = (cssdir / ff).resolve()         # handle paths with '../' in them
-                font_file.parent.mkdir(parents=True, exist_ok=True)     # create directory if needed
-                fresponse = self.requests_provider(furl)
-                if fresponse == 0:
-                    self.display.error("Error trying to retrieve this font: %s\n    From: %s" % (font_file, furl))
-                with open(font_file, 'wb') as s:
-                    s.write(fresponse.content)
+                                    self.fonts.append((baseurl, ffield.value))
+
+            # for ff in self.fonts:
+            #     furl = ff[1] + '/' + ff[2]
+            #     font_file = (pathlib.Path(ff[0]) / ff[2]).resolve()    # handle paths with '../' in them
+            #     font_file.parent.mkdir(parents=True, exist_ok=True)    # create directory if needed
+            #     fresponse = self.requests_provider(furl)
+            #     if fresponse == 0:
+            #         self.display.error("Error trying to retrieve this font: %s\n    From: %s" % (font_file, furl))
+            #     with open(font_file, 'wb') as s:
+            #         s.write(fresponse.content)
 
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
+        return status
+
+
+    def _thread_download_font(self, font_info):
+        status = 'ok'
+        url = font_info[0] + '/' + font_info[1]
+        font_file = (pathlib.Path(self.css_path) / font_info[1]).resolve()    # handle paths with '../' in them
+        font_file.parent.mkdir(parents=True, exist_ok=True)                  # create directory if needed
+        if os.path.isfile(font_file):
+            if not self.display.fonts_ad_info.value and url not in self.fonts[:self.fonts.index(url)]:
+                self.display.info(("File `%s` already exists.\n"
+                                   "    If you want to download again all the fonts,\n"
+                                   "    please delete the output directory '" + self.BOOK_PATH + "'"
+                                   " and restart the program.") %
+                                  font_file)
+                self.display.fonts_ad_info.value = 1
+            status = 'already exists'
+
+        else:
+            response = self.requests_provider(url)
+            if response == 0:
+                self.display.error("Error trying to retrieve this font: %s\n    From: %s" % (font_file, url))
+
+            with open(font_file, 'wb') as s:
+                s.write(response.content)
+
+        self.fonts_done_queue.put(1)
+        self.display.state(len(self.fonts), self.fonts_done_queue.qsize())
         return status
 
 
@@ -1111,6 +1177,7 @@ class SafariBooks:
             for proc in process_queue:
                 proc.join()
 
+
     def collect_css(self):
         self.display.state_status.value = -1
 
@@ -1118,6 +1185,16 @@ class SafariBooks:
         for css_url in self.css:
             status = self._thread_download_css(css_url)
             if status == 'ok' and MODERATE : time.sleep(MODERATE_LEN)
+
+
+    def collect_fonts(self):
+        self.display.state_status.value = -1
+
+        # "self._start_multiprocessing" seems to cause problem. Switching to mono-thread download.
+        for font_info in self.fonts:
+            status = self._thread_download_font(font_info)
+            if status == 'ok' and MODERATE : time.sleep(MODERATE_LEN)
+
 
     def collect_images(self):
         if self.display.book_ad_info == 2:
@@ -1134,6 +1211,7 @@ class SafariBooks:
             status = self._thread_download_images(image_url)
             if status == 'ok' and MODERATE : time.sleep(MODERATE_LEN)
 
+
     @staticmethod
     def get_all_files_from(basedir):
         files = []
@@ -1143,6 +1221,7 @@ class SafariBooks:
                 dirlist.extend(dirnames)
                 files.extend(map(lambda n: os.path.join(*n), zip([dirpath] * len(filenames), filenames)))
         return [x.replace(basedir,"").lstrip(os.sep) for x in files]
+
 
     def create_content_opf(self):
         # self.css = next(os.walk(self.css_path))[2]
@@ -1201,6 +1280,7 @@ class SafariBooks:
             "\n".join(spine),
             self.book_chapters[0]["filename"].replace(".html", ".xhtml")
         )
+
 
     @staticmethod
     def parse_toc(l, c=0, mx=0):
@@ -1328,9 +1408,14 @@ if __name__ == "__main__":
         help="Choose the API version for interacting with SafariBooks (default is 2)"
     )
     arguments.add_argument(
-        "--delay", metavar="<DELAYI>", default=0.3,
+        "--delay", metavar="<DELAY>", default=0.3,
         help="Amount of time to wait between file requests. Setting to 0 runs as quickly as possible"
              " but increases load on the server (which isn't always kind)"
+    )
+    arguments.add_argument(
+        "--theme", metavar="<THEME>", default='none',
+        help="Choose styling theme to use for the ePub. Themes 'black', 'white', and 'sepia' use the"
+             " respective styles from the SafariBooks website, while 'none' uses the native ebook style"
     )
     arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
     arguments.add_argument(
