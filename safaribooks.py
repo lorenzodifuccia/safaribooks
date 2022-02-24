@@ -876,10 +876,31 @@ class SafariBooks:
                 self.display.images_ad_info.value = 1
 
         else:
-            response = self.requests_provider(urljoin(SAFARI_BASE_URL, url), stream=True)
-            if response == 0:
-                self.display.error("Error trying to retrieve this image: %s\n    From: %s" % (image_name, url))
-                return
+            image_url = "https://learning.oreilly.com/api/v2/epubs/urn:orm:book:{}/files{}".format(
+                                self.book_id, 
+                                url.split(self.book_id)[-1])
+            response = self.requests_provider(image_url, stream=True)
+
+            if response == 0 or response.status_code == 404:
+                invalid_url = image_url
+                image_url = "https://learning.oreilly.com/api/v2/epubs/urn:orm:book:{}/files/{}".format(
+                                    self.book_id, 
+                                    url.split(self.book_id + "/")[-1])
+
+                self.display.error("Error trying to retrieve this image: %s\n"
+                                    "    From: %s\n"
+                                    "    new try with %s" % (image_name, invalid_url, image_url))
+
+                response = self.requests_provider(image_url, stream=True)
+
+                if response == 0 or response.status_code == 404:
+                    self.display.error("Error trying to retrieve this image: %s\n"
+                                        "    From: %s" 
+                                        "    book_id:%s, file:%s, url:%s " 
+                                        % (image_name, image_url, self.book_id, url.split(self.book_id)[-1], url))
+                    return
+
+
 
             with open(image_path, 'wb') as img:
                 for chunk in response.iter_content(1024):
