@@ -5,6 +5,7 @@ Before any usage please read the *O'Reilly*'s [Terms of Service](https://learnin
 
 > ## ⚠ *Attention needed* ⚠ 
 > *If you are a developer and want to help this project, please take a look to the current [Milestone](https://github.com/lorenzodifuccia/safaribooks/milestone/1)*.  
+> *Checkout also the new APIv2 branch: [apiv2](https://github.com/lorenzodifuccia/safaribooks/tree/apiv2)*  
 > *The Community thanks 🙏🏻*
 
 ## Overview:
