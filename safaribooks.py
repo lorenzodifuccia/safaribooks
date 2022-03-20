@@ -400,6 +400,7 @@ class SafariBooks:
         self.images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
         self.collect_images()
+        self.thread_download_fonts()
 
         self.display.info("Creating EPUB file...", state=True)
         self.create_epub()
@@ -897,6 +898,26 @@ class SafariBooks:
 
         self.images_done_queue.put(1)
         self.display.state(len(self.images), self.images_done_queue.qsize())
+
+    def thread_download_fonts(self):
+            response = self.requests_provider(SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{}/files/?limit=100".format(self.book_id))
+            if response != 0:
+                resp_json = response.json()
+                for file in resp_json["results"]:
+                    if file["media_type"] == "font/otf":
+                        response_file = self.requests_provider(file["url"])
+                        if response_file == 0:
+                            self.display.error("Error trying to retrieve this font: %s\n    From: %s" % (file["filename"], file["url"]))
+                            return
+                        head, tail = os.path.split(file["full_path"])
+                        os_path = os.path.join(self.css_path,head) 
+                        if not os.path.isdir(os_path):
+                            os.makedirs(os_path)
+
+                        with open(os.path.join(os_path,tail), 'wb') as s:
+                            s.write(response_file.content)
+            else:
+                self.display.error("Error trying to retrieve files\n")
 
     def _start_multiprocessing(self, operation, full_queue):
         if len(full_queue) > 5:
