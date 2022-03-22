@@ -82,7 +82,12 @@ optional arguments:
   
 The first time you use the program, you'll have to specify your Safari Books Online account credentials (look [`here`](/../../issues/15) for special character).  
 The next times you'll download a book, before session expires, you can omit the credential, because the program save your session cookies in a file called `cookies.json`.  
-For **SSO**, please use the `sso_cookies.py` program in order to create the `cookies.json` file from the SSO cookies retrieved by your browser session (please follow [`these steps`](/../../issues/150#issuecomment-555423085)).  
+For **SSO**, please use the `sso_cookies.py` program in order to create the `cookies.json` file from the SSO cookies retrieved by your browser session (please follow the steps below).
+  1. Login as usual to https://learning.oreilly.com/
+  2. Open the developer tools with F12
+  3. Access the profile page in the browser: https://learning.oreilly.com/profile/
+  4. Enter command in console: `copy(JSON.stringify(document.cookie.split(';').map(c => c.split('=')).map(i => [i[0].trim(), i[1].trim()]).reduce((r, i) => {r[i[0]] = i[1]; return r;}, {})))`
+  5. Paste in `cookie.json`  
   
 Pay attention if you use a shared PC, because everyone that has access to your files can steal your session. 
 If you don't want to cache the cookies, just use the `--no-cookies` option and provide all time your credential through the `--cred` option or the more safe `--login` one: this will prompt you for credential during the script execution.
