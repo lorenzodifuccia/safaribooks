@@ -939,8 +939,7 @@ class SafariBooks:
             self.display.images_ad_info.value = 1
 
 
-    @staticmethod
-    def fix_overconstrained_images(txt):
+    def fix_overconstrained_images(self, txt):
         # Remove inline 'width' and 'height' attributes from img tags that also have a style='height:XXem'
         # type of attribute
         fixed_n = 0
