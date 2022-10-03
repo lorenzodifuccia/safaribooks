@@ -14,9 +14,9 @@ import traceback
 from html import escape
 from random import random
 from lxml import html, etree
+from lxml.html.soupparser import fromstring
 from multiprocessing import Process, Queue, Value
 from urllib.parse import urljoin, urlparse, parse_qs, quote_plus
-
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 COOKIES_FILE = os.path.join(PATH, "cookies.json")
@@ -162,7 +162,7 @@ class Display:
             return "n/d"
 
         try:
-            return html.fromstring(desc).text_content()
+            return fromstring(desc).text_content()
 
         except (html.etree.ParseError, html.etree.ParserError) as e:
             self.log("Error parsing the description: %s" % e)
@@ -383,7 +383,7 @@ class SafariBooks:
         if not self.cover:
             self.cover = self.get_default_cover() if "cover" in self.book_info else False
             cover_html = self.parse_html(
-                html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)), True
+                fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)), True
             )
 
             self.book_chapters = [{
@@ -491,7 +491,7 @@ class SafariBooks:
 
         if response.status_code != 200:  # TODO To be reviewed
             try:
-                error_page = html.fromstring(response.text)
+                error_page = fromstring(response.text)
                 errors_message = error_page.xpath("//ul[@class='errorlist']//li/text()")
                 recaptcha = error_page.xpath("//div[@class='g-recaptcha']")
                 messages = (["    `%s`" % error for error in errors_message
@@ -594,8 +594,7 @@ class SafariBooks:
 
         root = None
         try:
-            root = html.fromstring(response.text, base_url=SAFARI_BASE_URL)
-
+            root = fromstring(response.text)
         except (html.etree.ParseError, html.etree.ParserError) as parsing_error:
             self.display.error(parsing_error)
             self.display.exit(
@@ -730,7 +729,7 @@ class SafariBooks:
                                "#Cover{display:table-cell;vertical-align:middle;text-align:center;}" \
                                "img{height:90vh;margin-left:auto;margin-right:auto;}" \
                                "</style>"
-                    cover_html = html.fromstring("<div id=\"Cover\"></div>")
+                    cover_html = fromstring("<div id=\"Cover\"></div>")
                     cover_div = cover_html.xpath("//div")[0]
                     cover_img = cover_div.makeelement("img")
                     cover_img.attrib.update({"src": is_cover.attrib["src"]})

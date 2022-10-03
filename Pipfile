@@ -9,6 +9,7 @@ urllib3 = ">=1.26.5"
 
 lxml = "*"
 requests = "*"
+beautifulsoup4 = "*"
 
 [dev-packages]
 
