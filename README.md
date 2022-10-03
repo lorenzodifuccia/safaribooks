@@ -8,6 +8,9 @@ Before any usage please read the *O'Reilly*'s [Terms of Service](https://learnin
 > *Checkout also the new APIv2 branch: [apiv2](https://github.com/lorenzodifuccia/safaribooks/tree/apiv2)*  
 > *The Community thanks 🙏🏻*
 
+> ## ✨ ADV ✨
+> *Take a look at my other GitHub projects: https://github.com/lorenzodifuccia* 👀 ❤️
+
 ## Overview:
   * [Requirements & Setup](#requirements--setup)
   * [Usage](#usage)
