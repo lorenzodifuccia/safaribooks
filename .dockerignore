@@ -1,0 +1,5 @@
+.gitignore
+.dockerignore
+.git
+Dockerfile
+/Books/*
