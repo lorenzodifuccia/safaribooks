@@ -168,6 +168,18 @@ In this case, I suggest you to convert the `EPUB` to `AZW3` with Calibre or to `
     
     ![NoKindle Option](https://github.com/lorenzodifuccia/cloudflare/raw/master/Images/safaribooks/safaribooks_example02_NoKindle.png "Version compare")  
     
+  ### With Docker
+
+  #### Build the image to use locally:
+    ```bash
+    mkdir -p Books
+    docker build -t safaribooks .
+    ```
+
+    ```bash
+    docker run -it --rm -v $(pwd)/Books:/safaribooks/Books safaribooks python3 safaribooks.py --cred "my_email@gmail.com:MyPassword1!" --no-cookies 9781491958698
+    ```
+
 ---  
   
 ## Thanks!!
