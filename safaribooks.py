@@ -726,7 +726,7 @@ class SafariBooks:
                 is_cover = self.get_cover(book_content)
                 if is_cover is not None:
                     page_css = "<style>" \
-                               "body{display:table;position:absolute;margin:0!important;height:100%;width:100%;}" \
+                               "body{display:table;margin:0!important;height:100%;width:100%;}" \
                                "#Cover{display:table-cell;vertical-align:middle;text-align:center;}" \
                                "img{height:90vh;margin-left:auto;margin-right:auto;}" \
                                "</style>"
