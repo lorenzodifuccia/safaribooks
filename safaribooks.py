@@ -17,6 +17,7 @@ from lxml import html, etree
 from multiprocessing import Process, Queue, Value
 from urllib.parse import urljoin, urlparse, parse_qs, quote_plus
 
+from art import *
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 COOKIES_FILE = os.path.join(PATH, "cookies.json")
@@ -137,22 +138,7 @@ class Display:
                      .format(*self.last_request))
 
     def intro(self):
-        output = self.SH_YELLOW + ("""
-       ____     ___         _
-      / __/__ _/ _/__ _____(_)
-     _\ \/ _ `/ _/ _ `/ __/ /
-    /___/\_,_/_/ \_,_/_/ /_/
-      / _ )___  ___  / /__ ___
-     / _  / _ \/ _ \/  '_/(_-<
-    /____/\___/\___/_/\_\/___/
-""" if random() > 0.5 else """
- ██████╗     ██████╗ ██╗  ██╗   ██╗██████╗
-██╔═══██╗    ██╔══██╗██║  ╚██╗ ██╔╝╚════██╗
-██║   ██║    ██████╔╝██║   ╚████╔╝   ▄███╔╝
-██║   ██║    ██╔══██╗██║    ╚██╔╝    ▀▀══╝
-╚██████╔╝    ██║  ██║███████╗██║     ██╗
- ╚═════╝     ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝
-""") + self.SH_DEFAULT
+        output = self.SH_YELLOW + (text2art("Safari Books", font='rnd', chr_ignore = True) if random() > 0.5 else  text2art("Oreilly",font='rnd',chr_ignore=True)) + self.SH_DEFAULT
         output += "\n" + "~" * (self.columns // 2)
 
         self.out(output)
