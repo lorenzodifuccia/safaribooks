@@ -1,6 +1,6 @@
 venv*/
 .venv*/
-
+.env
 
 .idea/
 .vscode/
