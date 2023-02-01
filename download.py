@@ -17,6 +17,7 @@ from lxml import html, etree
 from multiprocessing import Process, Queue, Value
 from urllib.parse import urljoin, urlparse, parse_qs, quote_plus
 
+lista_book =  [9781788835367, 9781784395506, 9781787286849, 9781849691369, 9781098106737, 9781800206601, 9781789533385, 9781491914489, '0596101090']
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 COOKIES_FILE = os.path.join(PATH, "cookies.json")
@@ -1056,6 +1057,7 @@ class SafariBooks:
 
 # MAIN
 if __name__ == "__main__":
+    
     arguments = argparse.ArgumentParser(prog="safaribooks.py",
                                         description="Download and generate an EPUB of your favorite books"
                                                     " from Safari Books Online.",
@@ -1087,10 +1089,13 @@ if __name__ == "__main__":
                                                                 " file even if there isn't any error."
     )
     arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
+
+    
+
     arguments.add_argument(
         "bookid", metavar='<BOOK ID>',
         help="Book digits ID that you want to download. You can find it in the URL (X-es):"
-             " `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`"
+            " `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`"
     )
 
     args_parsed = arguments.parse_args()
@@ -1120,6 +1125,10 @@ if __name__ == "__main__":
         if args_parsed.no_cookies:
             arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
 
-    SafariBooks(args_parsed)
+    print(args_parsed)
+    for i in args_parsed.bookid.split(','):
+        args_parsed.bookid = i
+        print(args_parsed)
+        SafariBooks(args_parsed)
     # Hint: do you want to download more then one book once, initialized more than one instance of `SafariBooks`...
     sys.exit(0)
