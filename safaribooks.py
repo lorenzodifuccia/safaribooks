@@ -524,7 +524,7 @@ class SafariBooks:
         elif response.status_code != 200:
             self.display.exit("Authentication issue: unable to access profile page.")
 
-        elif "user_type\":\"Expired" in response.text:
+        elif "user_type\":\"Expired\"" in response.text:
             self.display.exit("Authentication issue: account subscription expired.")
 
         self.display.info("Successfully authenticated.", state=True)
@@ -1108,6 +1108,30 @@ if __name__ == "__main__":
     else:
         if args_parsed.no_cookies:
             arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
+
+    if len(args_parsed.bookid) > 0:
+        book_url_regex = r"['\"]*http[s]?:\/\/[a-zA-Z0-9.\-/]+\/(\d{10,15})\/*['\"]*"       # Matches book URL
+        pattern = re.compile(book_url_regex)
+        matchURL = re.search(pattern, args_parsed.bookid)
+
+        book_id_regex = r"['\"]*(\d{10,15})/*['\"]*"                                   # Matches book ID
+        pattern = re.compile(book_id_regex)
+        matchID = re.search(pattern, args_parsed.bookid)
+
+        if matchURL:
+            bookID = matchURL.group(1)
+        elif matchID:
+            bookID = matchID.group(1)
+        else:
+            bookID = None
+            arguments.error("Invalid book ID or URL")
+        if str.isdecimal(bookID):
+            args_parsed.bookid = bookID
+        else:
+            arguments.error("Invalid book ID")
+    else:
+        arguments.error("Book ID must not be empty")
+
 
     if len(args_parsed.bookid) > 0:
         bookID = args_parsed.bookid.split("/")[-1]          # Only get book ID from URL
