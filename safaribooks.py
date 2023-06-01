@@ -138,20 +138,20 @@ class Display:
 
     def intro(self):
         output = self.SH_YELLOW + ("""
-       ____     ___         _     
-      / __/__ _/ _/__ _____(_)    
-     _\ \/ _ `/ _/ _ `/ __/ /     
-    /___/\_,_/_/ \_,_/_/ /_/      
-      / _ )___  ___  / /__ ___    
-     / _  / _ \/ _ \/  '_/(_-<    
-    /____/\___/\___/_/\_\/___/    
+       ____     ___         _
+      / __/__ _/ _/__ _____(_)
+     _\ \/ _ `/ _/ _ `/ __/ /
+    /___/\_,_/_/ \_,_/_/ /_/
+      / _ )___  ___  / /__ ___
+     / _  / _ \/ _ \/  '_/(_-<
+    /____/\___/\___/_/\_\/___/
 """ if random() > 0.5 else """
- ██████╗     ██████╗ ██╗  ██╗   ██╗██████╗ 
+ ██████╗     ██████╗ ██╗  ██╗   ██╗██████╗
 ██╔═══██╗    ██╔══██╗██║  ╚██╗ ██╔╝╚════██╗
 ██║   ██║    ██████╔╝██║   ╚████╔╝   ▄███╔╝
-██║   ██║    ██╔══██╗██║    ╚██╔╝    ▀▀══╝ 
-╚██████╔╝    ██║  ██║███████╗██║     ██╗   
- ╚═════╝     ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝                                           
+██║   ██║    ██╔══██╗██║    ╚██╔╝    ▀▀══╝
+╚██████╔╝    ██║  ██║███████╗██║     ██╗
+ ╚═════╝     ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝
 """) + self.SH_DEFAULT
         output += "\n" + "~" * (self.columns // 2)
 
@@ -160,7 +160,7 @@ class Display:
     def parse_description(self, desc):
         if not desc:
             return "n/d"
-        
+
         try:
             return html.fromstring(desc).text_content()
 
@@ -540,7 +540,7 @@ class SafariBooks:
 
         if "last_chapter_read" in response:
             del response["last_chapter_read"]
-            
+
         for key, value in response.items():
             if value is None:
                 response[key] = 'n/a'
@@ -812,10 +812,19 @@ class SafariBooks:
             self.chapter_title = next_chapter["title"]
             self.filename = next_chapter["filename"]
 
-            # Images
+            asset_base_url = next_chapter['asset_base_url']
+            api_v2_detected = False
+            if 'v2' in next_chapter['content']:
+                asset_base_url = SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{}/files".format(self.book_id)
+                api_v2_detected = True
+
             if "images" in next_chapter and len(next_chapter["images"]):
-                self.images.extend(urljoin(next_chapter['asset_base_url'], img_url)
-                                   for img_url in next_chapter['images'])
+                for img_url in next_chapter['images']:
+                    if api_v2_detected:
+                        self.images.append(asset_base_url + '/' + img_url)
+                    else:
+                        self.images.append(urljoin(next_chapter['asset_base_url'], img_url))
+
 
             # Stylesheets
             self.chapter_stylesheets = []
@@ -862,6 +871,7 @@ class SafariBooks:
 
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
+
 
     def _thread_download_images(self, url):
         image_name = url.split("/")[-1]
@@ -912,7 +922,7 @@ class SafariBooks:
         if self.display.book_ad_info == 2:
             self.display.info("Some of the book contents were already downloaded.\n"
                               "    If you want to be sure that all the images will be downloaded,\n"
-                              "    please delete the output direcotry '" + self.BOOK_PATH +
+                              "    please delete the output directory '" + self.BOOK_PATH +
                               "' and restart the program.")
 
         self.display.state_status.value = -1
