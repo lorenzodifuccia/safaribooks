@@ -48,6 +48,17 @@ It's really simple to use, just choose a book from the library and replace in th
 $ python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
 ```
 
+If you want to download a bunch of books in bulk you can checkout this script (also part of this project as bulk_downloader.sh)
+```shell
+#!/bin/bash
+book_ids=9780134278308,9780134278308 #sample book_ids
+IFS=','
+for book_id in $book_ids; do
+        echo "downloading book with id $book_id"
+        python3 safaribooks.py --cred "email:password" $book_id
+done
+```
+
 The ID is the digits that you find in the URL of the book description page:  
 `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`  
 Like: `https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/`  
