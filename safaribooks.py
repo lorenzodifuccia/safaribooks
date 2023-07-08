@@ -17,7 +17,6 @@ from lxml import html, etree
 from multiprocessing import Process, Queue, Value
 from urllib.parse import urljoin, urlparse, parse_qs, quote_plus
 
-
 PATH = os.path.dirname(os.path.realpath(__file__))
 COOKIES_FILE = os.path.join(PATH, "cookies.json")
 
@@ -118,7 +117,7 @@ class Display:
         if self.output_dir_set:
             output = (self.SH_YELLOW + "[+]" + self.SH_DEFAULT +
                       " Please delete the output directory '" + self.output_dir + "'"
-                      " and restart the program.")
+                                                                                  " and restart the program.")
             self.out(output)
 
         output = self.SH_BG_RED + "[!]" + self.SH_DEFAULT + " Aborting..."
@@ -171,7 +170,8 @@ class Display:
     def book_info(self, info):
         description = self.parse_description(info.get("description", None)).replace("\n", " ")
         for t in [
-            ("Title", info.get("title", "")), ("Authors", ", ".join(aut.get("name", "") for aut in info.get("authors", []))),
+            ("Title", info.get("title", "")),
+            ("Authors", ", ".join(aut.get("name", "") for aut in info.get("authors", []))),
             ("Identifier", info.get("identifier", "")), ("ISBN", info.get("isbn", "")),
             ("Publishers", ", ".join(pub.get("name", "") for pub in info.get("publishers", []))),
             ("Rights", info.get("rights", "")),
@@ -210,8 +210,8 @@ class Display:
         else:
             os.remove(COOKIES_FILE)
             message += "Out-of-Session%s.\n" % (" (%s)" % response["detail"]) if "detail" in response else "" + \
-                       Display.SH_YELLOW + "[+]" + Display.SH_DEFAULT + \
-                       " Use the `--cred` or `--login` options in order to perform the auth login to Safari."
+                                                                                                           Display.SH_YELLOW + "[+]" + Display.SH_DEFAULT + \
+                                                                                                           " Use the `--cred` or `--login` options in order to perform the auth login to Safari."
 
         return message
 
@@ -374,6 +374,7 @@ class SafariBooks:
         self.chapter_stylesheets = []
         self.css = []
         self.images = []
+        self.fonts = []
 
         self.display.info("Downloading book contents... (%s chapters)" % len(self.book_chapters), state=True)
         self.BASE_HTML = self.BASE_01_HTML + (self.KINDLE_HTML if not args.kindle else "") + self.BASE_02_HTML
@@ -397,6 +398,12 @@ class SafariBooks:
         self.css_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
         self.collect_css()
+        fonts_css_path = os.path.join(self.BOOK_PATH, "OEBPS", "Styles")
+        self.fonts_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
+        # Since the CSS files have not been downloaded yet,
+        # it is currently not possible to analyze how many font files need to be downloaded.
+        self.display.info("Downloading book fonts... " , state=True)
+        self.collect_fonts(fonts_css_path)
         self.images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
         self.collect_images()
@@ -801,7 +808,6 @@ class SafariBooks:
 
     def get(self):
         len_books = len(self.book_chapters)
-
         for _ in range(len_books):
             if not len(self.chapters_queue):
                 return
@@ -825,7 +831,6 @@ class SafariBooks:
                     else:
                         self.images.append(urljoin(next_chapter['asset_base_url'], img_url))
 
-
             # Stylesheets
             self.chapter_stylesheets = []
             if "stylesheets" in next_chapter and len(next_chapter["stylesheets"]):
@@ -841,14 +846,43 @@ class SafariBooks:
                         ("File `%s` already exists.\n"
                          "    If you want to download again all the book,\n"
                          "    please delete the output directory '" + self.BOOK_PATH + "' and restart the program.")
-                         % self.filename.replace(".html", ".xhtml")
+                        % self.filename.replace(".html", ".xhtml")
                     )
                     self.display.book_ad_info = 2
 
             else:
                 self.save_page_html(self.parse_html(self.get_html(next_chapter["content"]), first_page))
-
             self.display.state(len_books, len_books - len(self.chapters_queue))
+
+
+
+    def collect_fonts(self, css_path:str):
+        """
+        The purpose of this function is to read all CSS files in a folder
+        and extract all the .otf file names from them.
+        It then downloads these files from the O'Reilly platform
+        and saves them to the specified css_path directory.
+        :param css_path:The book css files dirpath
+        :return:None
+        """
+        self.display.state_status.value = -1
+        fonts_link_pt = re.compile(r"url\((.+?\.otf)\)")
+        for cf in os.listdir(css_path):
+            if cf.endswith(".css"):
+                with open(os.path.join(css_path, cf)) as f:
+                    css = f.read()
+                self.fonts.extend(fonts_link_pt.findall(css))
+        sess = requests.session()
+        cookies_dict = json.load(open(COOKIES_FILE))
+        for k, v in cookies_dict.items():
+            sess.cookies.set(k, v)
+        for i in range(len(self.fonts)):
+            r = sess.get("https://learning.oreilly.com/api/v2/epubs/urn:orm:book:{}/files/{}".format(self.book_id,
+                                                                                                     self.fonts[i]))
+            with open(os.path.join(css_path ,self.fonts[i]), "wb") as f:
+                f.write(r.content)
+            self.fonts_done_queue.put(1)
+            self.display.state(len(self.fonts), self.fonts_done_queue.qsize())
 
     def _thread_download_css(self, url):
         css_file = os.path.join(self.css_path, "Style{0:0>2}.css".format(self.css.index(url)))
@@ -857,7 +891,7 @@ class SafariBooks:
                 self.display.info(("File `%s` already exists.\n"
                                    "    If you want to download again all the CSSs,\n"
                                    "    please delete the output directory '" + self.BOOK_PATH + "'"
-                                   " and restart the program.") %
+                                                                                                 " and restart the program.") %
                                   css_file)
                 self.display.css_ad_info.value = 1
 
@@ -872,7 +906,6 @@ class SafariBooks:
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
 
-
     def _thread_download_images(self, url):
         image_name = url.split("/")[-1]
         image_path = os.path.join(self.images_path, image_name)
@@ -881,7 +914,7 @@ class SafariBooks:
                 self.display.info(("File `%s` already exists.\n"
                                    "    If you want to download again all the images,\n"
                                    "    please delete the output directory '" + self.BOOK_PATH + "'"
-                                   " and restart the program.") %
+                                                                                                 " and restart the program.") %
                                   image_name)
                 self.display.images_ad_info.value = 1
 
@@ -965,7 +998,7 @@ class SafariBooks:
                              for sub in self.book_info.get("subjects", []))
 
         return self.CONTENT_OPF.format(
-            (self.book_info.get("isbn",  self.book_id)),
+            (self.book_info.get("isbn", self.book_id)),
             escape(self.book_title),
             authors,
             escape(self.book_info.get("description", "")),
@@ -990,9 +1023,9 @@ class SafariBooks:
             r += "<navPoint id=\"{0}\" playOrder=\"{1}\">" \
                  "<navLabel><text>{2}</text></navLabel>" \
                  "<content src=\"{3}\"/>".format(
-                    cc["fragment"] if len(cc["fragment"]) else cc["id"], c,
-                    escape(cc["label"]), cc["href"].replace(".html", ".xhtml").split("/")[-1]
-                 )
+                cc["fragment"] if len(cc["fragment"]) else cc["id"], c,
+                escape(cc["label"]), cc["href"].replace(".html", ".xhtml").split("/")[-1]
+            )
 
             if cc["children"]:
                 sr, c, mx = SafariBooks.parse_toc(cc["children"], c, mx)
