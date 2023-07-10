@@ -964,6 +964,11 @@ class SafariBooks:
         subjects = "\n".join("<dc:subject>{0}</dc:subject>".format(escape(sub.get("name", "n/d")))
                              for sub in self.book_info.get("subjects", []))
 
+        cover_id = None
+        match = re.search(r'/(\w+)\.', self.cover)
+        if match is not None:
+            cover_id = match.group(1)
+
         return self.CONTENT_OPF.format(
             (self.book_info.get("isbn",  self.book_id)),
             escape(self.book_title),
@@ -973,7 +978,7 @@ class SafariBooks:
             ", ".join(escape(pub.get("name", "")) for pub in self.book_info.get("publishers", [])),
             escape(self.book_info.get("rights", "")),
             self.book_info.get("issued", ""),
-            self.cover,
+            f'img_{cover_id}' if cover_id else self.cover,
             "\n".join(manifest),
             "\n".join(spine),
             self.book_chapters[0]["filename"].replace(".html", ".xhtml")
