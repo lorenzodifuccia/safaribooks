@@ -593,9 +593,11 @@ class SafariBooks:
             )
 
         root = None
+        html_text = response.text
         try:
-            root = html.fromstring(response.text, base_url=SAFARI_BASE_URL)
-
+            if not re.search("<html", response.text, re.I):
+                html_text = etree.tostring(html.html5parser.fromstring(response.text))
+            root = html.fromstring(html_text, base_url=SAFARI_BASE_URL)
         except (html.etree.ParseError, html.etree.ParserError) as parsing_error:
             self.display.error(parsing_error)
             self.display.exit(
