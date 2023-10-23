@@ -53,6 +53,19 @@ $ python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
 The ID is the digits that you find in the URL of the book description page:  
 `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`  
 Like: `https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/`  
+
+#### Manual cookie.json setup
+
+If `python3 safaribooks.py --cred "xx:xx" XXXXX` hangs over there. There is a quick way to bypass the problem temporarly by manually configure cookies.json file by export cookies from Chrome browser. 
+
+Steps:
+
+1. Create cookies.json
+2. Make sure you have [ExportThisCookie](https://chrome.google.com/webstore/detail/exportthiscookie/dannllckdimllhkiplchkcaoheibealk) installed on your Chrome browser
+3. Login your safaribooks page on your Chrome browser
+4. Use _ExportThisCookie_ extension to download the `cookies.txt` file
+5. Copy content of `cookies.txt` into cookies.json (everything in `{}` include `{}` iteslf)
+6. Try download your file again without using `--cred "xx:xx"`
   
 #### Program options:
 ```shell
