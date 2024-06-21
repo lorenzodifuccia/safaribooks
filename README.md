@@ -53,6 +53,10 @@ $ python3 safaribooks.py --cred "account_mail@mail.com:password01" XXXXXXXXXXXXX
 The ID is the digits that you find in the URL of the book description page:  
 `https://www.safaribooksonline.com/library/view/book-name/XXXXXXXXXXXXX/`  
 Like: `https://www.safaribooksonline.com/library/view/test-driven-development-with/9781491958698/`  
+
+You can also download books from a playlist !
+Simply set the `--playlist` flag and provide a playlist ID instead of the book ID.
+This option will download all books in the playlist one at a time.
   
 #### Program options:
 ```shell
@@ -64,10 +68,15 @@ usage: safaribooks.py [--cred <EMAIL:PASS> | --login] [--no-cookies]
 Download and generate an EPUB of your favorite books from Safari Books Online.
 
 positional arguments:
-  <BOOK ID>            Book digits ID that you want to download. You can find
+  <BOOK ID> / <PLAYLIST ID>           
+                       Book digits ID that you want to download. You can find
                        it in the URL (X-es):
                        `https://learning.oreilly.com/library/view/book-
                        name/XXXXXXXXXXXXX/`
+                       
+                       Alternatively, specify a playlist ID  to download all books in that playlist (Private or Public)
+                       by setting the --playlist flag
+                       EG: --playlist "6f612b99-bebc-41e1-8fff-6b655507b7af"
 
 optional arguments:
   --cred <EMAIL:PASS>  Credentials used to perform the auth login on Safari
@@ -82,6 +91,7 @@ optional arguments:
                        export the EPUB to E-Readers like Amazon Kindle.
   --preserve-log       Leave the `info_XXXXXXXXXXXXX.log` file even if there
                        isn't any error.
+  --playlist           Set this flag to interpret the <BOOK ID> as <PLAYLIST ID>
   --help               Show this help message.
 ```
   

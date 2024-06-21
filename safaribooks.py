@@ -137,7 +137,7 @@ class Display:
                      .format(*self.last_request))
 
     def intro(self):
-        output = self.SH_YELLOW + ("""
+        output = self.SH_YELLOW + (r"""
        ____     ___         _
       / __/__ _/ _/__ _____(_)
      _\ \/ _ `/ _/ _ `/ __/ /
@@ -171,7 +171,8 @@ class Display:
     def book_info(self, info):
         description = self.parse_description(info.get("description", None)).replace("\n", " ")
         for t in [
-            ("Title", info.get("title", "")), ("Authors", ", ".join(aut.get("name", "") for aut in info.get("authors", []))),
+            ("Title", info.get("title", "")),
+            ("Authors", ", ".join(aut.get("name", "") for aut in info.get("authors", []))),
             ("Identifier", info.get("identifier", "")), ("ISBN", info.get("isbn", "")),
             ("Publishers", ", ".join(pub.get("name", "") for pub in info.get("publishers", []))),
             ("Rights", info.get("rights", "")),
@@ -227,6 +228,8 @@ class WinQueue(list):  # TODO: error while use `process` in Windows: can't pickl
 class SafariBooks:
     LOGIN_URL = ORLY_BASE_URL + "/member/auth/login/"
     LOGIN_ENTRY_URL = SAFARI_BASE_URL + "/login/unified/?next=/home/"
+    COLLECTIONS_ENDPOINT_V3 = "/api/v3/collections/"
+    get_all_playlists_data_url = SAFARI_BASE_URL + COLLECTIONS_ENDPOINT_V3
 
     API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
 
@@ -337,6 +340,48 @@ class SafariBooks:
                 json.dump(self.session.cookies.get_dict(), open(COOKIES_FILE, 'w'))
 
         self.check_login()
+
+        if not args.playlist:
+            self.download_one_book(args)
+
+        # Interpret the <BOOKID> passed as an argument as a playlist ID
+        args.playlist_id = args.bookid
+        self.download_all_in_playlist(args)
+
+    def download_all_in_playlist(self, args):
+        self.display.info("Will download all in playlist ! => " + args.playlist_id)
+        self.display.info("Retrieving playlist info...")
+        self.playlist_info = self.get_user_playlist_info(self.args.playlist_id)
+        self.display.info("Retrieving all books one at a time...")
+
+        books_downloaded = set()
+        # print(self.playlist_info["content"])
+        for book_data in self.playlist_info["content"]:
+            extracted_book_id = self.check_and_extract_book_id_from_ourn(book_data["ourn"])
+            if extracted_book_id is None or extracted_book_id in books_downloaded:
+                continue
+            self.display.info("Retrieving book \"" + extracted_book_id + "\"...")
+
+            # Set the book ID in the arguments everytime.
+            # TODO: Update this logic when not single threaded
+            args.bookid = extracted_book_id
+
+            self.download_one_book(args)
+            books_downloaded.add(extracted_book_id)
+
+    """
+    This function will filter out and extract only book ID's. Playlists can also contain videos,
+    chapter snippets, courses, etc.
+    """
+    @staticmethod
+    def check_and_extract_book_id_from_ourn(ourn):
+        pattern = r'^urn:orm:book:(\d+)(?::|$)'
+        match = re.match(pattern, ourn)
+        if match:
+            return match.group(1)
+        return None
+
+    def download_one_book(self, args):
 
         self.book_id = args.bookid
         self.api_url = self.API_TEMPLATE.format(self.book_id)
@@ -528,6 +573,23 @@ class SafariBooks:
             self.display.exit("Authentication issue: account subscription expired.")
 
         self.display.info("Successfully authenticated.", state=True)
+
+    def get_user_playlist_info(self, playlist_id):
+        response = self.requests_provider(self.get_all_playlists_data_url)
+        if response == 0:
+            self.display.exit("API: Unable to retrieve user playlist info.")
+
+        response = response.json()
+        if not isinstance(response, list):
+            self.display.exit("Some error occurred")
+
+        # API returns a list of playlists
+        for playlist in response:
+            if playlist_id == playlist["id"]:
+                self.display.info("Found matching playlist with name \"" + playlist["name"] +
+                                  "\" and ID " + playlist["id"])
+                return playlist
+        self.display.exit("Did not find any matching playlist !")
 
     def get_book_info(self):
         response = self.requests_provider(self.api_url)
@@ -1087,10 +1149,16 @@ if __name__ == "__main__":
                                                                 " file even if there isn't any error."
     )
     arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
+    arguments.add_argument("--playlist", action="store_true", dest="playlist",
+                           help="Specify a playlist ID to download all books in that playlist (Private or Public)."
+                                "\n EG: -- playlist \"6f612b99-bebc-41e1-8fff-6b655507b7af\"")
     arguments.add_argument(
-        "bookid", metavar='<BOOK ID>',
+        "bookid", metavar='<BOOK ID / PLAYLIST ID>',
         help="Book digits ID that you want to download. You can find it in the URL (X-es):"
-             " `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`"
+             " `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`" +
+             "\n\nAlternatively, specify a playlist ID  to download all books in that playlist (Private or Public)"
+             " by setting a \"--playlist flag\"."
+             "\n EG: -- playlist \"6f612b99-bebc-41e1-8fff-6b655507b7af\""
     )
 
     args_parsed = arguments.parse_args()
