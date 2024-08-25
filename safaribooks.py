@@ -15,6 +15,7 @@ import requests
 import tinycss2 as tc
 import functools
 import traceback
+import cssutils
 from html import escape
 from random import random
 from lxml import html, etree
@@ -428,6 +429,7 @@ class SafariBooks:
         self.filename = ""
         self.chapter_stylesheets = []
         self.css = []
+        self.css_images = []
         self.fonts = []
         self.images = []
         self.images2 = []   # used to record all image links discovered when replacing links
@@ -1099,7 +1101,7 @@ class SafariBooks:
                                 for ffield in fd.value:
                                     if ffield.type == 'url':
                                         self.fonts.append((baseurl, ffield.value))
-
+            
             # for ff in self.fonts:
             #     furl = ff[1] + '/' + ff[2]
             #     font_file = (pathlib.Path(ff[0]) / ff[2]).resolve()    # handle paths with '../' in them
@@ -1109,6 +1111,17 @@ class SafariBooks:
             #         self.display.error("Error trying to retrieve this font: %s\n    From: %s" % (font_file, furl))
             #     with open(font_file, 'wb') as s:
             #         s.write(fresponse.content)
+
+            # Download the images referenced in the css
+            stylesheet = cssutils.parseFile(css_file)
+            for rule in stylesheet:
+                if rule.type == cssutils.css.CSSRule.STYLE_RULE:
+                    for declaration in rule.style:
+                        if declaration.name == 'background-image':
+                      # Use regular expression to match url( and capture everything within parentheses
+                            match = re.search(r'url\(([^)]+)\)', declaration.value)
+                            if match:
+                                css_images.append(match.group(1))
 
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
