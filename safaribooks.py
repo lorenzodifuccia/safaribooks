@@ -264,6 +264,7 @@ class SafariBooks:
                    " http://www.w3.org/MarkUp/SCHEMA/xhtml2.xsd\"" \
                    " xmlns:epub=\"http://www.idpf.org/2007/ops\">\n" \
                    "<head>\n" \
+                   "<meta charset=\"utf-8\">" \
                    "{0}\n" \
                    "<style type=\"text/css\">" \
                    "body{{margin:1em;background-color:transparent!important;}}" \
