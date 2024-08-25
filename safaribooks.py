@@ -463,6 +463,10 @@ class SafariBooks:
         self.images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
         self.collect_images()
+        
+        self.css_images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
+        self.display.info("Downloading book images referenced in css... (%s files)" % len(self.css_images), state=True)
+        self.collect_css_images()
 
         self.display.info("Creating EPUB file...", state=True)
         self.create_epub()
@@ -1102,26 +1106,27 @@ class SafariBooks:
                                     if ffield.type == 'url':
                                         self.fonts.append((baseurl, ffield.value))
             
-            # for ff in self.fonts:
-            #     furl = ff[1] + '/' + ff[2]
-            #     font_file = (pathlib.Path(ff[0]) / ff[2]).resolve()    # handle paths with '../' in them
-            #     font_file.parent.mkdir(parents=True, exist_ok=True)    # create directory if needed
-            #     fresponse = self.requests_provider(furl)
-            #     if fresponse == 0:
-            #         self.display.error("Error trying to retrieve this font: %s\n    From: %s" % (font_file, furl))
-            #     with open(font_file, 'wb') as s:
-            #         s.write(fresponse.content)
+                # for ff in self.fonts:
+                #     furl = ff[1] + '/' + ff[2]
+                #     font_file = (pathlib.Path(ff[0]) / ff[2]).resolve()    # handle paths with '../' in them
+                #     font_file.parent.mkdir(parents=True, exist_ok=True)    # create directory if needed
+                #     fresponse = self.requests_provider(furl)
+                #     if fresponse == 0:
+                #         self.display.error("Error trying to retrieve this font: %s\n    From: %s" % (font_file, furl))
+                #     with open(font_file, 'wb') as s:
+                #         s.write(fresponse.content)
 
-            # Download the images referenced in the css
-            stylesheet = cssutils.parseFile(css_file)
-            for rule in stylesheet:
-                if rule.type == cssutils.css.CSSRule.STYLE_RULE:
-                    for declaration in rule.style:
-                        if declaration.name == 'background-image':
-                      # Use regular expression to match url( and capture everything within parentheses
-                            match = re.search(r'url\(([^)]+)\)', declaration.value)
-                            if match:
-                                css_images.append(match.group(1))
+                # Download the images referenced in the css
+                stylesheet = cssutils.parseFile(css_file)
+                css_base_url = urlparts._replace(path=urlparts.path.rsplit('/',1)[0]).geturl()
+                for rule in stylesheet:
+                    if rule.type == cssutils.css.CSSRule.STYLE_RULE:
+                        for declaration in rule.style:
+                            if declaration.name == 'background-image':
+                          # Use regular expression to match url( and capture everything within parentheses
+                                match = re.search(r'url\(([^)]+)\)', declaration.value)
+                                if match:
+                                    self.css_images.append(f"{css_base_url}/{match.group(1)}")
 
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
@@ -1173,6 +1178,31 @@ class SafariBooks:
             impath = path_parts[0] if len(path_parts) > 1 else ""
             return imname, impath
 
+    def _thread_download_css_images(self, url):
+        status = 'ok'
+        image_name, image_subfolder = self.local_image_path(url)
+        image_path = os.path.join(self.css_path, image_name)
+        
+        if os.path.isfile(image_path):
+            self.display.info(("File `%s` already exists.\n"
+                               "    If you want to download again all the images,\n"
+                               "    please delete the output directory '" + self.BOOK_PATH + "'"
+                               " and restart the program.") %
+                              image_path)
+            status = 'already exists'
+        else:
+            response = self.requests_provider(url, stream=True)
+            if response == 0:
+                self.display.error("Error trying to retrieve this image: %s\n    From: %s" % (image_name, baseurl))
+                return
+
+            with open(image_path, 'wb') as img:
+                for chunk in response.iter_content(1024):
+                    img.write(chunk)
+      
+        self.css_images_done_queue.put(1)
+        self.display.state(len(self.css_images), self.css_images_done_queue .qsize())
+        return status
 
     def _thread_download_images(self, url):
         status = 'ok'
@@ -1252,6 +1282,20 @@ class SafariBooks:
             status = self._thread_download_images(image_url)
             if status == 'ok' and MODERATE : time.sleep(MODERATE_LEN)
 
+    
+    def collect_css_images(self):
+        if self.display.book_ad_info == 2:
+            self.display.info("Some of the book contents were already downloaded.\n"
+                              "    If you want to be sure that all the images will be downloaded,\n"
+                              "    please delete the output directory '" + self.BOOK_PATH +
+                              "' and restart the program.")
+
+        self.display.state_status.value = -1
+
+        # "self._start_multiprocessing" seems to cause problem. Switching to mono-thread download.
+        for image_url in self.css_images:
+            status = self._thread_download_css_images(image_url)
+            if status == 'ok' and MODERATE : time.sleep(MODERATE_LEN)
 
     @staticmethod
     def get_all_files_from(basedir):
