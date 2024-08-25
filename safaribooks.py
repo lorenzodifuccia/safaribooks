@@ -1366,11 +1366,19 @@ class SafariBooks:
             ", ".join(escape(pub.get("name", "")) for pub in self.book_info.get("publishers", [])),
             escape(self.book_info.get("rights", "")),
             self.book_info.get(pubkey, ""),
-            self.cover,
+            self.get_cover_image_id(),
             "\n".join(manifest),
             "\n".join(spine),
             self.book_chapters[0]["filename"].replace(".html", ".xhtml")
         )
+    
+    def get_cover_image_id(self):
+        cover_image_id = self.cover
+        if "." in cover_image_id:
+            cover_image_id, extension = cover_image_id.rsplit(".", 1)
+            cover_image_id = cover_image_id.replace("Images/", "")
+            cover_image_id = "img_" + cover_image_id
+        return cover_image_id
 
     @staticmethod
     def make_valid_id(s):
