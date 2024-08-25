@@ -791,6 +791,11 @@ class SafariBooks:
 
         return None
 
+    def change_display_none_to_visibility_hidden(self, content):
+        content = content.replace("display: none", "visibility: hidden") 
+        content = content.replace("display:none", "visibility: hidden") 
+        return content
+        
     def parse_html(self, root, first_page=False):
         if random() > 0.8:
             if len(root.xpath("//div[@class='controls']/a/text()")):
@@ -808,7 +813,10 @@ class SafariBooks:
             page_css += f"<link href=\"Styles/{SB_THEME_FILE}\" rel=\"stylesheet\" type=\"text/css\" />"
             src_sb_css = pathlib.Path(PATH) / pathlib.Path(SB_THEME_FILE)
             sb_css_file = pathlib.Path(self.css_path) / pathlib.Path(SB_THEME_FILE)
-            sb_css_file.write_bytes(src_sb_css.read_bytes())
+            css_content = src_sb_css.read_text()
+            css_content = self.change_display_none_to_visibility_hidden(css_content)
+            with open(sb_css_file, "w", encoding = 'utf-8') as f:
+                f.write(css_content)
         if len(self.chapter_stylesheets):
             for chapter_css_url in self.chapter_stylesheets:
                 if chapter_css_url not in self.css:
@@ -1062,9 +1070,10 @@ class SafariBooks:
             response = self.requests_provider(url)
             if response == 0:
                 self.display.error("Error trying to retrieve this CSS: %s\n    From: %s" % (css_file, url))
-
-            with open(css_file, 'wb') as s:
-                s.write(response.content)
+            css_content = response.text
+            css_content = self.change_display_none_to_visibility_hidden(css_content) 
+            with open(css_file, 'w', encoding='utf-8') as s:
+                s.write(css_content)
 
             # Save any font URLs found in the stylesheet for later downloading
             # Format is: @font-face{font-family:ff1;src:url(f1.otf) format("opentype")}
