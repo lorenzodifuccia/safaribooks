@@ -1309,6 +1309,14 @@ class SafariBooks:
             self.book_chapters[0]["filename"].replace(".html", ".xhtml")
         )
 
+    @staticmethod
+    def make_valid_id(s):
+        # Replace invalid characters with underscores
+        s = re.sub(r'\W|^(?=\d)', '_', s)
+        # Ensure it doesn't start with a digit
+        if s[0].isdigit():
+            s = '_' + s
+        return s
 
     @staticmethod
     def parse_toc(l, c=0, mx=0):
@@ -1319,7 +1327,7 @@ class SafariBooks:
         elif APIVER == 2:
             # idkey = "ourn"
             titlekey = "title"
-            href = lambda cc : SafariBooks.get_filename(cc).replace(".html", ".xhtml") + "#" + cc["fragment"]
+            href = lambda cc : SafariBooks.get_filename(cc).replace(".html", ".xhtml") 
 
         r = ""
         for cc in l:
@@ -1330,7 +1338,7 @@ class SafariBooks:
             r += "<navPoint id=\"{0}\" playOrder=\"{1}\">" \
                  "<navLabel><text>{2}</text></navLabel>" \
                  "<content src=\"{3}\"/>".format(
-                    cc["fragment"], c,
+                    cc["fragment"] if cc["fragment"] else escape(SafariBooks.make_valid_id(cc["reference_id"])), c,
                     escape(cc[titlekey]), href(cc)
                  )
 
