@@ -1298,6 +1298,11 @@ class SafariBooks:
             if status == 'ok' and MODERATE : time.sleep(MODERATE_LEN)
 
     @staticmethod
+    def get_media_type_for_file_name(file_name):
+        return "text/css" if file_name.endswith(".css") else "image/jpeg";
+        
+
+    @staticmethod
     def get_all_files_from(basedir):
         files = []
         dirlist = [basedir]
@@ -1332,9 +1337,9 @@ class SafariBooks:
                 head, i, "jpeg" if "jp" in extension else extension
             ))
 
-        for i in range(len(self.css)):
-            manifest.append("<item id=\"style_{0:0>2}\" href=\"Styles/Style{0:0>2}.css\" "
-                            "media-type=\"text/css\" />".format(i))
+        for file_name in self.css:
+            manifest.append("<item id=\"{0}\" href=\"Styles/{0}\" "
+               "media-type=\"{1}\" />".format(file_name, SafariBooks.get_media_type_for_file_name(file_name)))
 
         authors = "\n".join("<dc:creator opf:file-as=\"{0}\" opf:role=\"aut\">{0}</dc:creator>".format(
             escape(aut.get("name", "n/d"))
