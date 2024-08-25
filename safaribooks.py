@@ -810,13 +810,11 @@ class SafariBooks:
 
         page_css = ""
         if self.args.theme != 'none':
-            page_css += f"<link href=\"Styles/{SB_THEME_FILE}\" rel=\"stylesheet\" type=\"text/css\" />"
             src_sb_css = pathlib.Path(PATH) / pathlib.Path(SB_THEME_FILE)
-            sb_css_file = pathlib.Path(self.css_path) / pathlib.Path(SB_THEME_FILE)
-            css_content = src_sb_css.read_text()
-            css_content = self.change_display_none_to_visibility_hidden(css_content)
-            with open(sb_css_file, "w", encoding = 'utf-8') as f:
-                f.write(css_content)
+            if src_sb_css not in self.css:
+                self.css.append(src_sb_css)
+            page_css += "<link href=\"Styles/Style{0:0>2}.css\" rel=\"stylesheet\" type=\"text/css\" />\n".format(self.css.index(src_sb_css))
+            
         if len(self.chapter_stylesheets):
             for chapter_css_url in self.chapter_stylesheets:
                 if chapter_css_url not in self.css:
@@ -1067,27 +1065,40 @@ class SafariBooks:
             status = 'already exists'
 
         else:
-            response = self.requests_provider(url)
-            if response == 0:
-                self.display.error("Error trying to retrieve this CSS: %s\n    From: %s" % (css_file, url))
-            css_content = response.text
+            response = None  # Initialize response to None
+            if os.path.isfile(url):
+                try:
+                    with open(url, 'r', encoding='utf-8') as f:
+                        css_content = f.read()
+                except IOError as e:
+                    self.display.error(f"Error reading local file: {e}")
+                    return status
+            else:
+                response = self.requests_provider(url)
+                if response == 0:
+                    self.display.error("Error trying to retrieve this CSS: %s\n    From: %s" % (css_file, url))
+                    return status
+                css_content = response.text
+            
             css_content = self.change_display_none_to_visibility_hidden(css_content) 
             with open(css_file, 'w', encoding='utf-8') as s:
                 s.write(css_content)
-
-            # Save any font URLs found in the stylesheet for later downloading
-            # Format is: @font-face{font-family:ff1;src:url(f1.otf) format("opentype")}
-            srules = tc.parse_stylesheet(response.text)
-            urlparts = urlparse(url)
-            baseurl = urlparts._replace(path=urlparts.path.rsplit('/',1)[0]).geturl()
-            for rule in srules:
-                if rule.type == 'at-rule' and rule.lower_at_keyword == 'font-face':
-                    fdec = tc.parse_declaration_list(rule.content)
-                    for fd in fdec:
-                        if fd.name == 'src':
-                            for ffield in fd.value:
-                                if ffield.type == 'url':
-                                    self.fonts.append((baseurl, ffield.value))
+            
+            #if using local css file, we dont get fonts etc for it
+            if not os.path.isfile(url):
+                # Save any font URLs found in the stylesheet for later downloading
+                # Format is: @font-face{font-family:ff1;src:url(f1.otf) format("opentype")}
+                srules = tc.parse_stylesheet(css_content)
+                urlparts = urlparse(url)
+                baseurl = urlparts._replace(path=urlparts.path.rsplit('/',1)[0]).geturl()
+                for rule in srules:
+                    if rule.type == 'at-rule' and rule.lower_at_keyword == 'font-face':
+                        fdec = tc.parse_declaration_list(rule.content)
+                        for fd in fdec:
+                            if fd.name == 'src':
+                                for ffield in fd.value:
+                                    if ffield.type == 'url':
+                                        self.fonts.append((baseurl, ffield.value))
 
             # for ff in self.fonts:
             #     furl = ff[1] + '/' + ff[2]
@@ -1390,83 +1401,86 @@ class SafariBooks:
 
 # MAIN
 if __name__ == "__main__":
-    arguments = argparse.ArgumentParser(prog="safaribooks.py",
-                                        description="Download and generate an EPUB of your favorite books"
-                                                    " from Safari Books Online.",
-                                        add_help=False,
-                                        allow_abbrev=False)
+    try:
+        arguments = argparse.ArgumentParser(prog="safaribooks.py",
+                                            description="Download and generate an EPUB of your favorite books"
+                                                        " from Safari Books Online.",
+                                            add_help=False,
+                                            allow_abbrev=False)
 
-    login_arg_group = arguments.add_mutually_exclusive_group()
-    login_arg_group.add_argument(
-        "--cred", metavar="<EMAIL:PASS>", default=False,
-        help="Credentials used to perform the auth login on Safari Books Online."
-             " Es. ` --cred \"account_mail@mail.com:password01\" `."
-    )
-    login_arg_group.add_argument(
-        "--login", action='store_true',
-        help="Prompt for credentials used to perform the auth login on Safari Books Online."
-    )
+        login_arg_group = arguments.add_mutually_exclusive_group()
+        login_arg_group.add_argument(
+            "--cred", metavar="<EMAIL:PASS>", default=False,
+            help="Credentials used to perform the auth login on Safari Books Online."
+                 " Es. ` --cred \"account_mail@mail.com:password01\" `."
+        )
+        login_arg_group.add_argument(
+            "--login", action='store_true',
+            help="Prompt for credentials used to perform the auth login on Safari Books Online."
+        )
 
-    arguments.add_argument(
-        "--no-cookies", dest="no_cookies", action='store_true',
-        help="Prevent your session data to be saved into `cookies.json` file."
-    )
-    arguments.add_argument(
-        "--kindle", dest="kindle", action='store_true',
-        help="Add some CSS rules that block overflow on `table` and `pre` elements."
-             " Use this option if you're going to export the EPUB to E-Readers like Amazon Kindle."
-    )
-    arguments.add_argument(
-        "--preserve-log", dest="log", action='store_true', help="Leave the `info_XXXXXXXXXXXXX.log`"
-                                                                " file even if there isn't any error."
-    )
-    arguments.add_argument(
-        "--api", metavar="<API>", default=2,
-        help="Choose the API version for interacting with SafariBooks (default is 2)"
-    )
-    arguments.add_argument(
-        "--delay", metavar="<DELAY>", default=0.3,
-        help="Amount of time to wait between file requests. Setting to 0 runs as quickly as possible"
-             " but increases load on the server (which isn't always kind)"
-    )
-    arguments.add_argument(
-        "--theme", metavar="<THEME>", default='none',
-        help="Choose styling theme to use for the ePub. Themes 'black', 'white', and 'sepia' use the"
-             " respective styles from the SafariBooks website, while 'none' uses the native ebook style"
-    )
-    arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
-    arguments.add_argument(
-        "bookid", metavar='<BOOK ID>',
-        help="Book digits ID that you want to download. You can find it in the URL (X-es):"
-             " `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`"
-    )
+        arguments.add_argument(
+            "--no-cookies", dest="no_cookies", action='store_true',
+            help="Prevent your session data to be saved into `cookies.json` file."
+        )
+        arguments.add_argument(
+            "--kindle", dest="kindle", action='store_true',
+            help="Add some CSS rules that block overflow on `table` and `pre` elements."
+                 " Use this option if you're going to export the EPUB to E-Readers like Amazon Kindle."
+        )
+        arguments.add_argument(
+            "--preserve-log", dest="log", action='store_true', help="Leave the `info_XXXXXXXXXXXXX.log`"
+                                                                    " file even if there isn't any error."
+        )
+        arguments.add_argument(
+            "--api", metavar="<API>", default=2,
+            help="Choose the API version for interacting with SafariBooks (default is 2)"
+        )
+        arguments.add_argument(
+            "--delay", metavar="<DELAY>", default=0.3,
+            help="Amount of time to wait between file requests. Setting to 0 runs as quickly as possible"
+                 " but increases load on the server (which isn't always kind)"
+        )
+        arguments.add_argument(
+            "--theme", metavar="<THEME>", default='none',
+            help="Choose styling theme to use for the ePub. Themes 'black', 'white', and 'sepia' use the"
+                 " respective styles from the SafariBooks website, while 'none' uses the native ebook style"
+        )
+        arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
+        arguments.add_argument(
+            "bookid", metavar='<BOOK ID>',
+            help="Book digits ID that you want to download. You can find it in the URL (X-es):"
+                 " `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`"
+        )
 
-    args_parsed = arguments.parse_args()
-    if args_parsed.cred or args_parsed.login:
-        user_email = ""
-        pre_cred = ""
+        args_parsed = arguments.parse_args()
+        if args_parsed.cred or args_parsed.login:
+            user_email = ""
+            pre_cred = ""
 
-        if args_parsed.cred:
-            pre_cred = args_parsed.cred
+            if args_parsed.cred:
+                pre_cred = args_parsed.cred
+
+            else:
+                user_email = input("Email: ")
+                passwd = getpass.getpass("Password: ")
+                pre_cred = user_email + ":" + passwd
+
+            parsed_cred = SafariBooks.parse_cred(pre_cred)
+
+            if not parsed_cred:
+                arguments.error("invalid credential: %s" % (
+                    args_parsed.cred if args_parsed.cred else (user_email + ":*******")
+                ))
+
+            args_parsed.cred = parsed_cred
 
         else:
-            user_email = input("Email: ")
-            passwd = getpass.getpass("Password: ")
-            pre_cred = user_email + ":" + passwd
+            if args_parsed.no_cookies:
+                arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
 
-        parsed_cred = SafariBooks.parse_cred(pre_cred)
-
-        if not parsed_cred:
-            arguments.error("invalid credential: %s" % (
-                args_parsed.cred if args_parsed.cred else (user_email + ":*******")
-            ))
-
-        args_parsed.cred = parsed_cred
-
-    else:
-        if args_parsed.no_cookies:
-            arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
-
-    SafariBooks(args_parsed)
-    # Hint: do you want to download more then one book once, initialized more than one instance of `SafariBooks`...
-    sys.exit(0)
+        SafariBooks(args_parsed)
+        # Hint: do you want to download more then one book once, initialized more than one instance of `SafariBooks`...
+        sys.exit(0)
+    except Exception as e:
+        traceback.print_exc()
