@@ -973,8 +973,8 @@ class SafariBooks:
 		# Process and encode the decoded HTML
         fixed_html = self.fix_overconstrained_images(html_text_decoded)
     
-        with open(os.path.join(self.BOOK_PATH, "OEBPS", self.filename), "w", encoding="utf-8") as html_file:
-            html_file.write(fixed_html)
+        with open(os.path.join(self.BOOK_PATH, "OEBPS", self.filename), "w") as html_file:
+            html_file.write(self.fix_overconstrained_images(html_text))
         self.display.log("Created: %s" % self.filename)
 
 
