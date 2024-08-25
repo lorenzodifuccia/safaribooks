@@ -152,7 +152,7 @@ class Display:
                      .format(*self.last_request))
 
     def intro(self):
-        output = self.SH_YELLOW + ("""
+        output = self.SH_YELLOW + (r"""
        ____     ___         _
       / __/__ _/ _/__ _____(_)
      _\ \/ _ `/ _/ _ `/ __/ /
@@ -160,7 +160,7 @@ class Display:
       / _ )___  ___  / /__ ___
      / _  / _ \/ _ \/  '_/(_-<
     /____/\___/\___/_/\_\/___/
-""" if random() > 0.5 else """
+""" if random() > 0.5 else r"""
  ██████╗     ██████╗ ██╗  ██╗   ██╗██████╗
 ██╔═══██╗    ██╔══██╗██║  ╚██╗ ██╔╝╚════██╗
 ██║   ██║    ██████╔╝██║   ╚████╔╝   ▄███╔╝
@@ -263,6 +263,7 @@ class SafariBooks:
                    " http://www.w3.org/MarkUp/SCHEMA/xhtml2.xsd\"" \
                    " xmlns:epub=\"http://www.idpf.org/2007/ops\">\n" \
                    "<head>\n" \
+                   "<meta charset=\"utf-8\">" \
                    "{0}\n" \
                    "<style type=\"text/css\">" \
                    "body{{margin:1em;background-color:transparent!important;}}" \
@@ -428,6 +429,7 @@ class SafariBooks:
         self.filename = ""
         self.chapter_stylesheets = []
         self.css = []
+        self.css_images = []
         self.fonts = []
         self.images = []
         self.images2 = []   # used to record all image links discovered when replacing links
@@ -461,6 +463,10 @@ class SafariBooks:
         self.images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
         self.collect_images()
+        
+        self.css_images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
+        self.display.info("Downloading book images referenced in css... (%s files)" % len(self.css_images), state=True)
+        self.collect_css_images()
 
         self.display.info("Creating EPUB file...", state=True)
         self.create_epub()
@@ -791,6 +797,11 @@ class SafariBooks:
 
         return None
 
+    def change_display_none_to_visibility_hidden(self, content):
+        content = content.replace("display: none", "visibility: hidden") 
+        content = content.replace("display:none", "visibility: hidden") 
+        return content
+        
     def parse_html(self, root, first_page=False):
         if random() > 0.8:
             if len(root.xpath("//div[@class='controls']/a/text()")):
@@ -805,10 +816,11 @@ class SafariBooks:
 
         page_css = ""
         if self.args.theme != 'none':
-            page_css += f"<link href=\"Styles/{SB_THEME_FILE}\" rel=\"stylesheet\" type=\"text/css\" />"
             src_sb_css = pathlib.Path(PATH) / pathlib.Path(SB_THEME_FILE)
-            sb_css_file = pathlib.Path(self.css_path) / pathlib.Path(SB_THEME_FILE)
-            sb_css_file.write_bytes(src_sb_css.read_bytes())
+            if src_sb_css not in self.css:
+                self.css.append(src_sb_css)
+            page_css += "<link href=\"Styles/Style{0:0>2}.css\" rel=\"stylesheet\" type=\"text/css\" />\n".format(self.css.index(src_sb_css))
+            
         if len(self.chapter_stylesheets):
             for chapter_css_url in self.chapter_stylesheets:
                 if chapter_css_url not in self.css:
@@ -963,9 +975,18 @@ class SafariBooks:
             theme_mode = 'black'
 
         self.filename = self.filename.replace(".html", ".xhtml")
-        html_text = self.BASE_HTML.format(contents[0], contents[1], theme_mode).encode("utf-8", 'xmlcharrefreplace')
-        with open(os.path.join(self.BOOK_PATH, "OEBPS", self.filename), "w") as html_file:
-            html_file.write(self.fix_overconstrained_images(html_text))
+        html_text = self.BASE_HTML.format(contents[0], contents[1], theme_mode)
+        if isinstance(html_text, bytes):
+            html_text_decoded = html_text.decode('utf-8')
+        else:
+            # html_text is already a string, no decoding needed
+            html_text_decoded = html_text
+        
+		# Process and encode the decoded HTML
+        fixed_html = self.fix_overconstrained_images(html_text_decoded)
+    
+        with open(os.path.join(self.BOOK_PATH, "OEBPS", self.filename), "w", encoding="utf-8") as html_file:
+            html_file.write(fixed_html)
         self.display.log("Created: %s" % self.filename)
 
 
@@ -1050,36 +1071,62 @@ class SafariBooks:
             status = 'already exists'
 
         else:
-            response = self.requests_provider(url)
-            if response == 0:
-                self.display.error("Error trying to retrieve this CSS: %s\n    From: %s" % (css_file, url))
+            response = None  # Initialize response to None
+            if os.path.isfile(url):
+                try:
+                    with open(url, 'r', encoding='utf-8') as f:
+                        css_content = f.read()
+                except IOError as e:
+                    self.display.error(f"Error reading local file: {e}")
+                    return status
+            else:
+                response = self.requests_provider(url)
+                if response == 0:
+                    self.display.error("Error trying to retrieve this CSS: %s\n    From: %s" % (css_file, url))
+                    return status
+                css_content = response.text
+            
+            css_content = self.change_display_none_to_visibility_hidden(css_content) 
+            with open(css_file, 'w', encoding='utf-8') as s:
+                s.write(css_content)
+            
+            #if using local css file, we dont get fonts etc for it
+            if not os.path.isfile(url):
+                # Save any font URLs found in the stylesheet for later downloading
+                # Format is: @font-face{font-family:ff1;src:url(f1.otf) format("opentype")}
+                srules = tc.parse_stylesheet(css_content)
+                urlparts = urlparse(url)
+                baseurl = urlparts._replace(path=urlparts.path.rsplit('/',1)[0]).geturl()
+                for rule in srules:
+                    if rule.type == 'at-rule' and rule.lower_at_keyword == 'font-face':
+                        fdec = tc.parse_declaration_list(rule.content)
+                        for fd in fdec:
+                            if fd.name == 'src':
+                                for ffield in fd.value:
+                                    if ffield.type == 'url':
+                                        self.fonts.append((baseurl, ffield.value))
+            
+                # for ff in self.fonts:
+                #     furl = ff[1] + '/' + ff[2]
+                #     font_file = (pathlib.Path(ff[0]) / ff[2]).resolve()    # handle paths with '../' in them
+                #     font_file.parent.mkdir(parents=True, exist_ok=True)    # create directory if needed
+                #     fresponse = self.requests_provider(furl)
+                #     if fresponse == 0:
+                #         self.display.error("Error trying to retrieve this font: %s\n    From: %s" % (font_file, furl))
+                #     with open(font_file, 'wb') as s:
+                #         s.write(fresponse.content)
 
-            with open(css_file, 'wb') as s:
-                s.write(response.content)
-
-            # Save any font URLs found in the stylesheet for later downloading
-            # Format is: @font-face{font-family:ff1;src:url(f1.otf) format("opentype")}
-            srules = tc.parse_stylesheet(response.text)
-            urlparts = urlparse(url)
-            baseurl = urlparts._replace(path=urlparts.path.rsplit('/',1)[0]).geturl()
-            for rule in srules:
-                if rule.type == 'at-rule' and rule.lower_at_keyword == 'font-face':
-                    fdec = tc.parse_declaration_list(rule.content)
-                    for fd in fdec:
-                        if fd.name == 'src':
-                            for ffield in fd.value:
-                                if ffield.type == 'url':
-                                    self.fonts.append((baseurl, ffield.value))
-
-            # for ff in self.fonts:
-            #     furl = ff[1] + '/' + ff[2]
-            #     font_file = (pathlib.Path(ff[0]) / ff[2]).resolve()    # handle paths with '../' in them
-            #     font_file.parent.mkdir(parents=True, exist_ok=True)    # create directory if needed
-            #     fresponse = self.requests_provider(furl)
-            #     if fresponse == 0:
-            #         self.display.error("Error trying to retrieve this font: %s\n    From: %s" % (font_file, furl))
-            #     with open(font_file, 'wb') as s:
-            #         s.write(fresponse.content)
+                # Download the images referenced in the css
+                for rule in srules:
+                    if rule.type == 'qualified-rule':
+                        declarations = tc.parse_declaration_list(rule.content)
+                        for decl in declarations:
+                            if decl.type == 'declaration':
+                                if decl.name in ['background', 'background-image', 'border-image', 'list-style-image']:
+                                    for part in decl.value:
+                                        if part.type == 'url':
+                                            full_url = f"{baseurl}/{part.value}"
+                                            self.css_images.append(full_url)
 
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
@@ -1131,6 +1178,31 @@ class SafariBooks:
             impath = path_parts[0] if len(path_parts) > 1 else ""
             return imname, impath
 
+    def _thread_download_css_images(self, url):
+        status = 'ok'
+        image_name, image_subfolder = self.local_image_path(url)
+        image_path = os.path.join(self.css_path, image_name)
+        
+        if os.path.isfile(image_path):
+            self.display.info(("File `%s` already exists.\n"
+                               "    If you want to download again all the images,\n"
+                               "    please delete the output directory '" + self.BOOK_PATH + "'"
+                               " and restart the program.") %
+                              image_path)
+            status = 'already exists'
+        else:
+            response = self.requests_provider(url, stream=True)
+            if response == 0:
+                self.display.error("Error trying to retrieve this image: %s\n    From: %s" % (image_name, baseurl))
+                return
+
+            with open(image_path, 'wb') as img:
+                for chunk in response.iter_content(1024):
+                    img.write(chunk)
+      
+        self.css_images_done_queue.put(1)
+        self.display.state(len(self.css_images), self.css_images_done_queue .qsize())
+        return status
 
     def _thread_download_images(self, url):
         status = 'ok'
@@ -1210,6 +1282,25 @@ class SafariBooks:
             status = self._thread_download_images(image_url)
             if status == 'ok' and MODERATE : time.sleep(MODERATE_LEN)
 
+    
+    def collect_css_images(self):
+        if self.display.book_ad_info == 2:
+            self.display.info("Some of the book contents were already downloaded.\n"
+                              "    If you want to be sure that all the images will be downloaded,\n"
+                              "    please delete the output directory '" + self.BOOK_PATH +
+                              "' and restart the program.")
+
+        self.display.state_status.value = -1
+
+        # "self._start_multiprocessing" seems to cause problem. Switching to mono-thread download.
+        for image_url in self.css_images:
+            status = self._thread_download_css_images(image_url)
+            if status == 'ok' and MODERATE : time.sleep(MODERATE_LEN)
+
+    @staticmethod
+    def get_media_type_for_file_name(file_name):
+        return "text/css" if file_name.endswith(".css") else "image/jpeg";
+        
 
     @staticmethod
     def get_all_files_from(basedir):
@@ -1246,9 +1337,9 @@ class SafariBooks:
                 head, i, "jpeg" if "jp" in extension else extension
             ))
 
-        for i in range(len(self.css)):
-            manifest.append("<item id=\"style_{0:0>2}\" href=\"Styles/Style{0:0>2}.css\" "
-                            "media-type=\"text/css\" />".format(i))
+        for file_name in self.css:
+            manifest.append("<item id=\"{0}\" href=\"Styles/{0}\" "
+               "media-type=\"{1}\" />".format(file_name, SafariBooks.get_media_type_for_file_name(file_name)))
 
         authors = "\n".join("<dc:creator opf:file-as=\"{0}\" opf:role=\"aut\">{0}</dc:creator>".format(
             escape(aut.get("name", "n/d"))
@@ -1274,12 +1365,28 @@ class SafariBooks:
             ", ".join(escape(pub.get("name", "")) for pub in self.book_info.get("publishers", [])),
             escape(self.book_info.get("rights", "")),
             self.book_info.get(pubkey, ""),
-            self.cover,
+            self.get_cover_image_id(),
             "\n".join(manifest),
             "\n".join(spine),
             self.book_chapters[0]["filename"].replace(".html", ".xhtml")
         )
+    
+    def get_cover_image_id(self):
+        cover_image_id = self.cover
+        if "." in cover_image_id:
+            cover_image_id, extension = cover_image_id.rsplit(".", 1)
+            cover_image_id = cover_image_id.replace("Images/", "")
+            cover_image_id = "img_" + cover_image_id
+        return cover_image_id
 
+    @staticmethod
+    def make_valid_id(s):
+        # Replace invalid characters with underscores
+        s = re.sub(r'\W|^(?=\d)', '_', s)
+        # Ensure it doesn't start with a digit
+        if s[0].isdigit():
+            s = '_' + s
+        return s
 
     @staticmethod
     def parse_toc(l, c=0, mx=0):
@@ -1290,7 +1397,7 @@ class SafariBooks:
         elif APIVER == 2:
             # idkey = "ourn"
             titlekey = "title"
-            href = lambda cc : SafariBooks.get_filename(cc).replace(".html", ".xhtml") + "#" + cc["fragment"]
+            href = lambda cc : SafariBooks.get_filename(cc).replace(".html", ".xhtml") 
 
         r = ""
         for cc in l:
@@ -1301,7 +1408,7 @@ class SafariBooks:
             r += "<navPoint id=\"{0}\" playOrder=\"{1}\">" \
                  "<navLabel><text>{2}</text></navLabel>" \
                  "<content src=\"{3}\"/>".format(
-                    cc["fragment"], c,
+                    cc["fragment"] if cc["fragment"] else escape(SafariBooks.make_valid_id(cc["reference_id"])), c,
                     escape(cc[titlekey]), href(cc)
                  )
 
@@ -1372,83 +1479,86 @@ class SafariBooks:
 
 # MAIN
 if __name__ == "__main__":
-    arguments = argparse.ArgumentParser(prog="safaribooks.py",
-                                        description="Download and generate an EPUB of your favorite books"
-                                                    " from Safari Books Online.",
-                                        add_help=False,
-                                        allow_abbrev=False)
+    try:
+        arguments = argparse.ArgumentParser(prog="safaribooks.py",
+                                            description="Download and generate an EPUB of your favorite books"
+                                                        " from Safari Books Online.",
+                                            add_help=False,
+                                            allow_abbrev=False)
 
-    login_arg_group = arguments.add_mutually_exclusive_group()
-    login_arg_group.add_argument(
-        "--cred", metavar="<EMAIL:PASS>", default=False,
-        help="Credentials used to perform the auth login on Safari Books Online."
-             " Es. ` --cred \"account_mail@mail.com:password01\" `."
-    )
-    login_arg_group.add_argument(
-        "--login", action='store_true',
-        help="Prompt for credentials used to perform the auth login on Safari Books Online."
-    )
+        login_arg_group = arguments.add_mutually_exclusive_group()
+        login_arg_group.add_argument(
+            "--cred", metavar="<EMAIL:PASS>", default=False,
+            help="Credentials used to perform the auth login on Safari Books Online."
+                 " Es. ` --cred \"account_mail@mail.com:password01\" `."
+        )
+        login_arg_group.add_argument(
+            "--login", action='store_true',
+            help="Prompt for credentials used to perform the auth login on Safari Books Online."
+        )
 
-    arguments.add_argument(
-        "--no-cookies", dest="no_cookies", action='store_true',
-        help="Prevent your session data to be saved into `cookies.json` file."
-    )
-    arguments.add_argument(
-        "--kindle", dest="kindle", action='store_true',
-        help="Add some CSS rules that block overflow on `table` and `pre` elements."
-             " Use this option if you're going to export the EPUB to E-Readers like Amazon Kindle."
-    )
-    arguments.add_argument(
-        "--preserve-log", dest="log", action='store_true', help="Leave the `info_XXXXXXXXXXXXX.log`"
-                                                                " file even if there isn't any error."
-    )
-    arguments.add_argument(
-        "--api", metavar="<API>", default=2,
-        help="Choose the API version for interacting with SafariBooks (default is 2)"
-    )
-    arguments.add_argument(
-        "--delay", metavar="<DELAY>", default=0.3,
-        help="Amount of time to wait between file requests. Setting to 0 runs as quickly as possible"
-             " but increases load on the server (which isn't always kind)"
-    )
-    arguments.add_argument(
-        "--theme", metavar="<THEME>", default='none',
-        help="Choose styling theme to use for the ePub. Themes 'black', 'white', and 'sepia' use the"
-             " respective styles from the SafariBooks website, while 'none' uses the native ebook style"
-    )
-    arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
-    arguments.add_argument(
-        "bookid", metavar='<BOOK ID>',
-        help="Book digits ID that you want to download. You can find it in the URL (X-es):"
-             " `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`"
-    )
+        arguments.add_argument(
+            "--no-cookies", dest="no_cookies", action='store_true',
+            help="Prevent your session data to be saved into `cookies.json` file."
+        )
+        arguments.add_argument(
+            "--kindle", dest="kindle", action='store_true',
+            help="Add some CSS rules that block overflow on `table` and `pre` elements."
+                 " Use this option if you're going to export the EPUB to E-Readers like Amazon Kindle."
+        )
+        arguments.add_argument(
+            "--preserve-log", dest="log", action='store_true', help="Leave the `info_XXXXXXXXXXXXX.log`"
+                                                                    " file even if there isn't any error."
+        )
+        arguments.add_argument(
+            "--api", metavar="<API>", default=2,
+            help="Choose the API version for interacting with SafariBooks (default is 2)"
+        )
+        arguments.add_argument(
+            "--delay", metavar="<DELAY>", default=0.3,
+            help="Amount of time to wait between file requests. Setting to 0 runs as quickly as possible"
+                 " but increases load on the server (which isn't always kind)"
+        )
+        arguments.add_argument(
+            "--theme", metavar="<THEME>", default='none',
+            help="Choose styling theme to use for the ePub. Themes 'black', 'white', and 'sepia' use the"
+                 " respective styles from the SafariBooks website, while 'none' uses the native ebook style"
+        )
+        arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
+        arguments.add_argument(
+            "bookid", metavar='<BOOK ID>',
+            help="Book digits ID that you want to download. You can find it in the URL (X-es):"
+                 " `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`"
+        )
 
-    args_parsed = arguments.parse_args()
-    if args_parsed.cred or args_parsed.login:
-        user_email = ""
-        pre_cred = ""
+        args_parsed = arguments.parse_args()
+        if args_parsed.cred or args_parsed.login:
+            user_email = ""
+            pre_cred = ""
 
-        if args_parsed.cred:
-            pre_cred = args_parsed.cred
+            if args_parsed.cred:
+                pre_cred = args_parsed.cred
+
+            else:
+                user_email = input("Email: ")
+                passwd = getpass.getpass("Password: ")
+                pre_cred = user_email + ":" + passwd
+
+            parsed_cred = SafariBooks.parse_cred(pre_cred)
+
+            if not parsed_cred:
+                arguments.error("invalid credential: %s" % (
+                    args_parsed.cred if args_parsed.cred else (user_email + ":*******")
+                ))
+
+            args_parsed.cred = parsed_cred
 
         else:
-            user_email = input("Email: ")
-            passwd = getpass.getpass("Password: ")
-            pre_cred = user_email + ":" + passwd
+            if args_parsed.no_cookies:
+                arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
 
-        parsed_cred = SafariBooks.parse_cred(pre_cred)
-
-        if not parsed_cred:
-            arguments.error("invalid credential: %s" % (
-                args_parsed.cred if args_parsed.cred else (user_email + ":*******")
-            ))
-
-        args_parsed.cred = parsed_cred
-
-    else:
-        if args_parsed.no_cookies:
-            arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
-
-    SafariBooks(args_parsed)
-    # Hint: do you want to download more then one book once, initialized more than one instance of `SafariBooks`...
-    sys.exit(0)
+        SafariBooks(args_parsed)
+        # Hint: do you want to download more then one book once, initialized more than one instance of `SafariBooks`...
+        sys.exit(0)
+    except Exception as e:
+        traceback.print_exc()
