@@ -2,110 +2,111 @@
 //    BASE CSS RESET
 //    ---------------------------- */
 
-#book-content #sbo-rt-content div,
-#book-content #sbo-rt-content figure,
-#book-content #sbo-rt-content .figure,
-#book-content #sbo-rt-content code,
-#book-content #sbo-rt-content dir,
-#book-content #sbo-rt-content figcaption,
-#book-content #sbo-rt-content dl,
-#book-content #sbo-rt-content dt,
-#book-content #sbo-rt-content dd,
-#book-content #sbo-rt-content ul,
-#book-content #sbo-rt-content ol,
-#book-content #sbo-rt-content li,
-#book-content #sbo-rt-content h1,
-#book-content #sbo-rt-content h2,
-#book-content #sbo-rt-content h3,
-#book-content #sbo-rt-content h4,
-#book-content #sbo-rt-content h5,
-#book-content #sbo-rt-content h6,
-#book-content #sbo-rt-content pre,
-#book-content #sbo-rt-content form,
-#book-content #sbo-rt-content fieldset,
-#book-content #sbo-rt-content menu,
-#book-content #sbo-rt-content input,
-#book-content #sbo-rt-content textarea,
-#book-content #sbo-rt-content p,
-#book-content #sbo-rt-content blockquote,
-#book-content #sbo-rt-content th,
-#book-content #sbo-rt-content td {
+ #sbo-rt-content div,
+ #sbo-rt-content figure,
+ #sbo-rt-content .figure,
+ #sbo-rt-content code,
+ #sbo-rt-content dir,
+ #sbo-rt-content figcaption,
+ #sbo-rt-content dl,
+ #sbo-rt-content dt,
+ #sbo-rt-content dd,
+ #sbo-rt-content ul,
+ #sbo-rt-content ol,
+ #sbo-rt-content li
+ #sbo-rt-content h1,
+ #sbo-rt-content h2,
+ #sbo-rt-content h3,
+ #sbo-rt-content h4,
+ #sbo-rt-content h5,
+ #sbo-rt-content h6,
+ #sbo-rt-content pre,
+ #sbo-rt-content form,
+ #sbo-rt-content fieldset,
+ #sbo-rt-content menu,
+ #sbo-rt-content input,
+ #sbo-rt-content textarea,
+ #sbo-rt-content p,
+ #sbo-rt-content blockquote,
+ #sbo-rt-content th,
+ #sbo-rt-content td {
     margin: 0;
     padding: 0;
     -webkit-margin-before: 0;
     -webkit-margin-after: 0;
+    line-height: 1.5rem;
 }
-#book-content #sbo-rt-content div {
+ #sbo-rt-content div {
     background-color: inherit;
 }
-#book-content #sbo-rt-content table {
+ #sbo-rt-content table {
     border-collapse: collapse;
     border-spacing: 0;
     border: none;
     font-size: inherit;
 }
-#book-content #sbo-rt-content fieldset,
-#book-content #sbo-rt-content img {
+ #sbo-rt-content fieldset,
+ #sbo-rt-content img {
     border:0;
     height: auto;
 }
-#book-content #sbo-rt-content address,
-#book-content #sbo-rt-content caption,
-#book-content #sbo-rt-content cite,
-#book-content #sbo-rt-content code,
-#book-content #sbo-rt-content dfn,
-#book-content #sbo-rt-content strong,
-#book-content #sbo-rt-content th,
-#book-content #sbo-rt-content var {
+ #sbo-rt-content address,
+ #sbo-rt-content caption,
+ #sbo-rt-content cite,
+ #sbo-rt-content code,
+ #sbo-rt-content dfn,
+ #sbo-rt-content strong,
+ #sbo-rt-content th,
+ #sbo-rt-content var {
     font-style:normal;
     font-weight:normal;
 }
-#book-content #sbo-rt-content strong,
-#book-content #sbo-rt-content strong>code {
+ #sbo-rt-content strong,
+ #sbo-rt-content strong>code {
     font-weight: bold;
 }
-#book-content #sbo-rt-content code {
+ #sbo-rt-content code {
     font-family: "Consolas", Courier, monospace;
 }
-#book-content #sbo-rt-content caption,
-#book-content #sbo-rt-content th {
+ #sbo-rt-content caption,
+ #sbo-rt-content th {
     text-align:left;
 }
-#book-content #sbo-rt-content h1,
-#book-content #sbo-rt-content h2,
-#book-content #sbo-rt-content h3,
-#book-content #sbo-rt-content h4,
-#book-content #sbo-rt-content h5,
-#book-content #sbo-rt-content h6 {
+ #sbo-rt-content h1,
+ #sbo-rt-content h2,
+ #sbo-rt-content h3,
+ #sbo-rt-content h4,
+ #sbo-rt-content h5,
+ #sbo-rt-content h6 {
     font-size:100%;
     font-weight:normal;
 }
-#book-content #sbo-rt-content q:before,
-#book-content #sbo-rt-content q:after {
+ #sbo-rt-content q:before,
+ #sbo-rt-content q:after {
     content:'';
 }
-#book-content #sbo-rt-content abbr,
-#book-content #sbo-rt-content acronym {
+ #sbo-rt-content abbr,
+ #sbo-rt-content acronym {
     border:0;
 }
-#book-content #sbo-rt-content em {
+ #sbo-rt-content em {
     font-style: italic;
 }
-#book-content #sbo-rt-content em,
-#book-content #sbo-rt-content em>code {
+ #sbo-rt-content em,
+ #sbo-rt-content em>code {
     font-style: italic;
 }
 
-.ucvMode-black #book-content #sbo-rt-content h1,
-.ucvMode-black #book-content #sbo-rt-content h2,
-.ucvMode-black #book-content #sbo-rt-content h3,
-.ucvMode-black #book-content #sbo-rt-content h4,
-.ucvMode-black #book-content #sbo-rt-content h5,
-.ucvMode-black #book-content #sbo-rt-content h6 {
+.ucvMode-black  #sbo-rt-content h1,
+.ucvMode-black  #sbo-rt-content h2,
+.ucvMode-black  #sbo-rt-content h3,
+.ucvMode-black  #sbo-rt-content h4,
+.ucvMode-black  #sbo-rt-content h5,
+.ucvMode-black  #sbo-rt-content h6 {
     color: #fff !important;
 }
 
-.ucvMode-black #book-content #sbo-rt-content table {
+.ucvMode-black  #sbo-rt-content table {
     color:#3d3b49;
 }
 
@@ -113,29 +114,29 @@
 //    ADDITIONAL RESET
 //    ---------------------------- */
 
-#book-content #sbo-rt-content article,
-#book-content #sbo-rt-content aside,
-#book-content #sbo-rt-content details,
-#book-content #sbo-rt-content figcaption,
-#book-content #sbo-rt-content figure,
-#book-content #sbo-rt-content footer,
-#book-content #sbo-rt-content header,
-#book-content #sbo-rt-content hgroup,
-#book-content #sbo-rt-content nav,
-#book-content #sbo-rt-content section {
+ #sbo-rt-content article,
+ #sbo-rt-content aside,
+ #sbo-rt-content details,
+ #sbo-rt-content figcaption,
+ #sbo-rt-content figure,
+ #sbo-rt-content footer,
+ #sbo-rt-content header,
+ #sbo-rt-content hgroup,
+ #sbo-rt-content nav,
+ #sbo-rt-content section {
     display: block;
     border: none;
     margin: 0;
     padding: 0;
 }
 
-#book-content #sbo-rt-content audio,
-#book-content #sbo-rt-content canvas,
-#book-content #sbo-rt-content video {
+ #sbo-rt-content audio,
+ #sbo-rt-content canvas,
+ #sbo-rt-content video {
     display: inline-block;
 }
 
-#book-content #sbo-rt-content audio:not([controls]) { display: none; }
+ #sbo-rt-content audio:not([controls]) { display: none; }
 
 html {
     font-size: 100% !important;
@@ -143,8 +144,8 @@ html {
     -ms-text-size-adjust: 100%;
 }
 
-#book-content #sbo-rt-content sub,
-#book-content #sbo-rt-content sup {
+ #sbo-rt-content sub,
+ #sbo-rt-content sup {
     position: relative !important;
     font-size: 0.750em;
     line-height: 0;
@@ -153,49 +154,44 @@ html {
     font-weight: 600;
 }
 
-#book-content #sbo-rt-content sup { top: -0.5em; }
-#book-content #sbo-rt-content sub { bottom: -0.25em; }
+ #sbo-rt-content sup { top: -0.5em; }
+ #sbo-rt-content sub { bottom: -0.25em; }
 
-#book-content #sbo-rt-content .footnotes,
-#book-content #sbo-rt-content div[data-type="footnotes"],
-#book-content #sbo-rt-content .footnote {
+ #sbo-rt-content .footnotes,
+ #sbo-rt-content div[data-type="footnotes"],
+ #sbo-rt-content .footnote {
     border-top: 1px solid #8B889A;
     padding: 1.750em 0 0 0 !important;
 }
 
-#book-content {
-    font-family: Noto Serif,serif !important;
-    margin-bottom: 80px !important;
-}
-
-#book-content #sbo-rt-content .guideList,
-#book-content #sbo-rt-content .pageList {
+ #sbo-rt-content .guideList,
+ #sbo-rt-content .pageList {
     display: none;
 }
 
-#book-content #sbo-rt-content section {
+ #sbo-rt-content section {
     margin-bottom: 32px !important;
 }
 
 /*  ----------------------------
 //    HEADERS
 //    ---------------------------- */
-#book-content #sbo-rt-content h1,
-#book-content #sbo-rt-content h2,
-#book-content #sbo-rt-content h3,
-#book-content #sbo-rt-content h4,
-#book-content #sbo-rt-content h5,
-#book-content #sbo-rt-content h6,
-#book-content #sbo-rt-content .heading-1,
-#book-content #sbo-rt-content .paragraph-head,
-#book-content #sbo-rt-content .cn-chapter-number,
-#book-content #sbo-rt-content .heading-3,
-#book-content #sbo-rt-content .title_document,
-#book-content #sbo-rt-content .fm_title_document,
-#book-content #sbo-rt-content .box_title,
-#book-content #sbo-rt-content .chaptertitle,
-#book-content #sbo-rt-content .chapterTitle,
-#book-content #sbo-rt-content .chapterNumber {
+ #sbo-rt-content h1,
+ #sbo-rt-content h2,
+ #sbo-rt-content h3,
+ #sbo-rt-content h4,
+ #sbo-rt-content h5,
+ #sbo-rt-content h6,
+ #sbo-rt-content .heading-1,
+ #sbo-rt-content .paragraph-head,
+ #sbo-rt-content .cn-chapter-number,
+ #sbo-rt-content .heading-3,
+ #sbo-rt-content .title_document,
+ #sbo-rt-content .fm_title_document,
+ #sbo-rt-content .box_title,
+ #sbo-rt-content .chaptertitle,
+ #sbo-rt-content .chapterTitle,
+ #sbo-rt-content .chapterNumber {
     background-color: transparent;
     color: #3d3b49 !important;
     padding: 0 !important;
@@ -208,31 +204,31 @@ html {
     word-wrap: break-word;
     margin: 0 !important;
 }
-#book-content #sbo-rt-content h1,
-#book-content #sbo-rt-content .chaptertitle {
+ #sbo-rt-content h1,
+ #sbo-rt-content .chaptertitle {
     margin: 0 0 32px 0 !important;
     text-align: left !important;
 }
-#book-content #sbo-rt-content h2 {  /* MIKE TO CHECK ALL H* ELEMENTS */
+ #sbo-rt-content h2 {  /* MIKE TO CHECK ALL H* ELEMENTS */
     font-size: 1.375em !important;
     font-weight: bold !important;
     line-height: 1.5 !important;
     margin: 0 0 24px 0 !important;
 }
-#book-content #sbo-rt-content h3 {
+ #sbo-rt-content h3 {
     font-size: 1.125em !important;
     font-weight: bold !important;
     line-height: 1.5 !important;
     margin: 0 0 24px 0 !important;
 }
-#book-content #sbo-rt-content h4 {
+ #sbo-rt-content h4 {
     font-size: 1em !important;
     font-weight: bold !important;
     line-height: 1.5 !important;
     margin: 0 0 24px 0 !important;
 }
-#book-content #sbo-rt-content h5,
-#book-content #sbo-rt-content h6 {
+ #sbo-rt-content h5,
+ #sbo-rt-content h6 {
     font-size: 1em !important;
     font-weight: bold !important;
     line-height: 1.5 !important;
@@ -241,36 +237,36 @@ html {
 
 /* Links */
 
-#book-content #sbo-rt-content a,
-#book-content #sbo-rt-content a:link,
-#book-content #sbo-rt-content a:visited {
+ #sbo-rt-content a,
+ #sbo-rt-content a:link,
+ #sbo-rt-content a:visited {
     color: #d3002d !important;
     text-decoration: underline;
     font-family: "Noto serif", serif !important;
     font-size: inherit !important;
 
 }
-#book-content #sbo-rt-content a:focus,
-#book-content #sbo-rt-content a:hover {
+ #sbo-rt-content a:focus,
+ #sbo-rt-content a:hover {
     color: #9f0027 !important;
     text-decoration-line: underline !important;
     text-decoration-style: solid;
     font-size: inherit;
 }
 
-.ucvMode-black #book-content #sbo-rt-content a,
-.ucvMode-black #book-content #sbo-rt-content a:link,
-.ucvMode-black #book-content #sbo-rt-content a:visited {
+.ucvMode-black  #sbo-rt-content a,
+.ucvMode-black  #sbo-rt-content a:link,
+.ucvMode-black  #sbo-rt-content a:visited {
     color: #85E6EA !important;
 }
 
-.ucvMode-black #book-content #sbo-rt-content a:hover,
-.ucvMode-black #book-content #sbo-rt-content a:active {
+.ucvMode-black  #sbo-rt-content a:hover,
+.ucvMode-black  #sbo-rt-content a:active {
     color: #17d2cc !important;
     text-decoration: none;
 }
 
-.ucvMode-black #book-content #sbo-rt-content a:focus {
+.ucvMode-black  #sbo-rt-content a:focus {
     color: #17d2cc !important;
     text-decoration: underline;
 }
@@ -303,25 +299,25 @@ html {
     margin: 1rem 0 !important;
 }
 
-.ucvMode-black #book-content #sbo-rt-content table.calibre7 {
+.ucvMode-black  #sbo-rt-content table.calibre7 {
     background-color: inherit;
 }
 /* Misc typography */
-#book-content #sbo-rt-content hr,
-#book-content #sbo-rt-content .small { font-size: .6em; }
-#book-content #sbo-rt-content .sc,
-#book-content #sbo-rt-content abbr,
-#book-content #sbo-rt-content acronym {
+ #sbo-rt-content hr,
+ #sbo-rt-content .small { font-size: .6em; }
+ #sbo-rt-content .sc,
+ #sbo-rt-content abbr,
+ #sbo-rt-content acronym {
     font-size: .85em;
     text-transform: uppercase;
     letter-spacing: 0.063em;
 }
 
-#book-content #sbo-rt-content p,
-#book-content #sbo-rt-content .note p,
-#book-content #sbo-rt-content blockquote,
-#book-content #sbo-rt-content blockquote p,
-#book-content #sbo-rt-content .blockquote p {
+ #sbo-rt-content p,
+ #sbo-rt-content .note p,
+ #sbo-rt-content blockquote,
+ #sbo-rt-content blockquote p,
+ #sbo-rt-content .blockquote p {
     font-family: "Noto serif", serif !important;
     font-size: 1em;
     font-weight: 400;
@@ -330,56 +326,59 @@ html {
     -moz-hyphens: auto;
     hyphens: auto;
     margin: 0 0 24px 0 !important;
+    text-indent: unset;
+    text-align: left;
+    color: unset;
 }
 
-#book-content #sbo-rt-content blockquote,
-#book-content #sbo-rt-content .blockquote {
+ #sbo-rt-content blockquote,
+ #sbo-rt-content .blockquote {
     margin: 0 24px 24px !important;
 }
 
-#book-content #sbo-rt-content blockquote p:last-child,
-#book-content #sbo-rt-content .blockquote p:last-child {
+ #sbo-rt-content blockquote p:last-child,
+ #sbo-rt-content .blockquote p:last-child {
     margin-bottom: 0 !important;
 }
 
-#book-content #sbo-rt-content blockquote,
-#book-content #sbo-rt-content blockquote p {
+ #sbo-rt-content blockquote,
+ #sbo-rt-content blockquote p {
     font-style: italic;
 }
 
-#book-content #sbo-rt-content blockquote p[data-type="attribution"],
-#book-content #sbo-rt-content aside .byline {
+ #sbo-rt-content blockquote p[data-type="attribution"],
+ #sbo-rt-content aside .byline {
     text-align: right;
     font-style: normal !important;
 }
 
-#book-content #sbo-rt-content blockquote p[data-type="attribution"] {
+ #sbo-rt-content blockquote p[data-type="attribution"] {
     margin-top: -24px !important;
 }
 
-#book-content #sbo-rt-content blockquote > p[data-type="attribution"] {
+ #sbo-rt-content blockquote > p[data-type="attribution"] {
     margin-top: 0 !important;
 }
 
-#book-content #sbo-rt-content div.tip,
-#book-content #sbo-rt-content .tip,
-#book-content #sbo-rt-content div[data-type="tip"],
-#book-content #sbo-rt-content .note,
-#book-content #sbo-rt-content div.note,
-#book-content #sbo-rt-content div[data-type="note"],
-#book-content #sbo-rt-content .warning,
-#book-content #sbo-rt-content div[data-type="warning"],
-#book-content #sbo-rt-content div[data-type="caution"],
-#book-content #sbo-rt-content .note1,
-#book-content #sbo-rt-content .sidebar1,
-#book-content #sbo-rt-content .boxg,
-#book-content #sbo-rt-content div.sidebar,
-#book-content #sbo-rt-content div[data-type="sidebar"],
-#book-content #sbo-rt-content div.warning,
-#book-content #sbo-rt-content .footnotes,
-#book-content #sbo-rt-content div[data-type="footnotes"],
-#book-content #sbo-rt-content .footnote,
-#book-content #sbo-rt-content aside {
+ #sbo-rt-content div.tip,
+ #sbo-rt-content .tip,
+ #sbo-rt-content div[data-type="tip"],
+ #sbo-rt-content .note,
+ #sbo-rt-content div.note,
+ #sbo-rt-content div[data-type="note"],
+ #sbo-rt-content .warning,
+ #sbo-rt-content div[data-type="warning"],
+ #sbo-rt-content div[data-type="caution"],
+ #sbo-rt-content .note1,
+ #sbo-rt-content .sidebar1,
+ #sbo-rt-content .boxg,
+ #sbo-rt-content div.sidebar,
+ #sbo-rt-content div[data-type="sidebar"],
+ #sbo-rt-content div.warning,
+ #sbo-rt-content .footnotes,
+ #sbo-rt-content div[data-type="footnotes"],
+ #sbo-rt-content .footnote,
+ #sbo-rt-content aside {
     background-color: transparent;
     border: none;
     border-top: 1px solid #8B889A;
@@ -389,172 +388,172 @@ html {
     border-radius: 0;
 }
 
-#book-content #sbo-rt-content aside + br {
+ #sbo-rt-content aside + br {
     display: none;
 }
 
-#book-content #sbo-rt-content aside > .sidebar {
+ #sbo-rt-content aside > .sidebar {
     border: 0;
     margin: 0 !important;
 }
 
-#book-content #sbo-rt-content aside + aside,
-#book-content #sbo-rt-content aside + .footnotes,
-#book-content #sbo-rt-content aside + div[data-type="footnotes"],
-#book-content #sbo-rt-content aside + .footnote,
-#book-content #sbo-rt-content aside + div.tip,
-#book-content #sbo-rt-content aside + .tip,
-#book-content #sbo-rt-content aside + div[data-type="tip"],
-#book-content #sbo-rt-content aside + .note,
-#book-content #sbo-rt-content aside + div.note,
-#book-content #sbo-rt-content aside + div[data-type="note"],
-#book-content #sbo-rt-content aside + .warning,
-#book-content #sbo-rt-content aside + div[data-type="warning"],
-#book-content #sbo-rt-content aside + div[data-type="caution"] {
+ #sbo-rt-content aside + aside,
+ #sbo-rt-content aside + .footnotes,
+ #sbo-rt-content aside + div[data-type="footnotes"],
+ #sbo-rt-content aside + .footnote,
+ #sbo-rt-content aside + div.tip,
+ #sbo-rt-content aside + .tip,
+ #sbo-rt-content aside + div[data-type="tip"],
+ #sbo-rt-content aside + .note,
+ #sbo-rt-content aside + div.note,
+ #sbo-rt-content aside + div[data-type="note"],
+ #sbo-rt-content aside + .warning,
+ #sbo-rt-content aside + div[data-type="warning"],
+ #sbo-rt-content aside + div[data-type="caution"] {
     border-top: 0;
 }
 
-#book-content #sbo-rt-content section + .footnotes,
-#book-content #sbo-rt-content section + div[data-type="footnotes"],
-#book-content #sbo-rt-content section + .footnote {
-    border-top: 0;
-    margin-top: 60px !important;
-}
-
-#book-content #sbo-rt-content aside + aside,
-#book-content #sbo-rt-content aside + .footnotes,
-#book-content #sbo-rt-content aside + div[data-type="footnotes"],
-#book-content #sbo-rt-content aside + .footnote,
-#book-content #sbo-rt-content aside + div.tip,
-#book-content #sbo-rt-content aside + .tip,
-#book-content #sbo-rt-content aside + div[data-type="tip"],
-#book-content #sbo-rt-content aside + .note,
-#book-content #sbo-rt-content aside + div.note,
-#book-content #sbo-rt-content aside + div[data-type="note"],
-#book-content #sbo-rt-content aside + .warning,
-#book-content #sbo-rt-content aside + div[data-type="warning"],
-#book-content #sbo-rt-content aside + div[data-type="caution"] {
-    border-top: 0;
-}
-
-#book-content #sbo-rt-content section + .footnotes,
-#book-content #sbo-rt-content section + div[data-type="footnotes"],
-#book-content #sbo-rt-content section + .footnote {
+ #sbo-rt-content section + .footnotes,
+ #sbo-rt-content section + div[data-type="footnotes"],
+ #sbo-rt-content section + .footnote {
     border-top: 0;
     margin-top: 60px !important;
 }
 
-#book-content #sbo-rt-content .footnotes,
-#book-content #sbo-rt-content div[data-type="footnotes"],
-#book-content #sbo-rt-content .footnote {
+ #sbo-rt-content aside + aside,
+ #sbo-rt-content aside + .footnotes,
+ #sbo-rt-content aside + div[data-type="footnotes"],
+ #sbo-rt-content aside + .footnote,
+ #sbo-rt-content aside + div.tip,
+ #sbo-rt-content aside + .tip,
+ #sbo-rt-content aside + div[data-type="tip"],
+ #sbo-rt-content aside + .note,
+ #sbo-rt-content aside + div.note,
+ #sbo-rt-content aside + div[data-type="note"],
+ #sbo-rt-content aside + .warning,
+ #sbo-rt-content aside + div[data-type="warning"],
+ #sbo-rt-content aside + div[data-type="caution"] {
+    border-top: 0;
+}
+
+ #sbo-rt-content section + .footnotes,
+ #sbo-rt-content section + div[data-type="footnotes"],
+ #sbo-rt-content section + .footnote {
+    border-top: 0;
+    margin-top: 60px !important;
+}
+
+ #sbo-rt-content .footnotes,
+ #sbo-rt-content div[data-type="footnotes"],
+ #sbo-rt-content .footnote {
     border-bottom: none;
 }
 
-#book-content #sbo-rt-content div.tip h1,
-#book-content #sbo-rt-content div.tip h2,
-#book-content #sbo-rt-content div.tip h3,
-#book-content #sbo-rt-content div.tip h4,
-#book-content #sbo-rt-content div.tip h5,
-#book-content #sbo-rt-content div.tip h6,
-#book-content #sbo-rt-content div.tip .title,
-#book-content #sbo-rt-content .tip h1,
-#book-content #sbo-rt-content .tip h2,
-#book-content #sbo-rt-content .tip h3,
-#book-content #sbo-rt-content .tip h4,
-#book-content #sbo-rt-content .tip h5,
-#book-content #sbo-rt-content .tip h6,
-#book-content #sbo-rt-content .tip .title,
-#book-content #sbo-rt-content div[data-type="tip"] h1,
-#book-content #sbo-rt-content div[data-type="tip"] h2,
-#book-content #sbo-rt-content div[data-type="tip"] h3,
-#book-content #sbo-rt-content div[data-type="tip"] h4,
-#book-content #sbo-rt-content div[data-type="tip"] h5,
-#book-content #sbo-rt-content div[data-type="tip"] h6,
-#book-content #sbo-rt-content div[data-type="tip"] .title,
-#book-content #sbo-rt-content .note h3,
-#book-content #sbo-rt-content .note h6,
-#book-content #sbo-rt-content .note .title,
-#book-content #sbo-rt-content div.note h1,
-#book-content #sbo-rt-content div.note h2,
-#book-content #sbo-rt-content div.note h3,
-#book-content #sbo-rt-content div.note h4,
-#book-content #sbo-rt-content div.note h5,
-#book-content #sbo-rt-content div.note h6,
-#book-content #sbo-rt-content div.note .title,
-#book-content #sbo-rt-content div[data-type="note"] h1,
-#book-content #sbo-rt-content div[data-type="note"] h2,
-#book-content #sbo-rt-content div[data-type="note"] h3,
-#book-content #sbo-rt-content div[data-type="note"] h4,
-#book-content #sbo-rt-content div[data-type="note"] h5,
-#book-content #sbo-rt-content div[data-type="note"] h6,
-#book-content #sbo-rt-content div[data-type="note"] .title,
-#book-content #sbo-rt-content .warning h1,
-#book-content #sbo-rt-content .warning h2,
-#book-content #sbo-rt-content .warning h3,
-#book-content #sbo-rt-content .warning h4,
-#book-content #sbo-rt-content .warning h5,
-#book-content #sbo-rt-content .warning h6,
-#book-content #sbo-rt-content .warning .title,
-#book-content #sbo-rt-content div[data-type="warning"] h1,
-#book-content #sbo-rt-content div[data-type="warning"] h2,
-#book-content #sbo-rt-content div[data-type="warning"] h3,
-#book-content #sbo-rt-content div[data-type="warning"] h4,
-#book-content #sbo-rt-content div[data-type="warning"] h5,
-#book-content #sbo-rt-content div[data-type="warning"] h6,
-#book-content #sbo-rt-content div[data-type="warning"] .title,
-#book-content #sbo-rt-content div[data-type="caution"] h1,
-#book-content #sbo-rt-content div[data-type="caution"] h2,
-#book-content #sbo-rt-content div[data-type="caution"] h3,
-#book-content #sbo-rt-content div[data-type="caution"] h4,
-#book-content #sbo-rt-content div[data-type="caution"] h5,
-#book-content #sbo-rt-content div[data-type="caution"] h6,
-#book-content #sbo-rt-content .note1 h3,
-#book-content #sbo-rt-content .note1 h6,
-#book-content #sbo-rt-content .note1 .title,
-#book-content #sbo-rt-content .sidebar1 h3,
-#book-content #sbo-rt-content .sidebar1 h6,
-#book-content #sbo-rt-content .sidebar1 .title,
-#book-content #sbo-rt-content .boxg h3,
-#book-content #sbo-rt-content .boxg h6,
-#book-content #sbo-rt-content .boxg .title,
-#book-content #sbo-rt-content div.sidebar h1,
-#book-content #sbo-rt-content div.sidebar h2,
-#book-content #sbo-rt-content div.sidebar h3,
-#book-content #sbo-rt-content div.sidebar h4,
-#book-content #sbo-rt-content div.sidebar h5,
-#book-content #sbo-rt-content div.sidebar h6,
-#book-content #sbo-rt-content div.sidebar .title,
-#book-content #sbo-rt-content div[data-type="sidebar"] h1,
-#book-content #sbo-rt-content div[data-type="sidebar"] h2,
-#book-content #sbo-rt-content div[data-type="sidebar"] h3,
-#book-content #sbo-rt-content div[data-type="sidebar"] h4,
-#book-content #sbo-rt-content div[data-type="sidebar"] h5,
-#book-content #sbo-rt-content div[data-type="sidebar"] h6,
-#book-content #sbo-rt-content div[data-type="sidebar"] .title,
-#book-content #sbo-rt-content .footnotes h1,
-#book-content #sbo-rt-content .footnotes h2,
-#book-content #sbo-rt-content .footnotes h3,
-#book-content #sbo-rt-content .footnotes h4,
-#book-content #sbo-rt-content .footnotes h5,
-#book-content #sbo-rt-content .footnotes h6,
-#book-content #sbo-rt-content div[data-type="footnotes"] h1,
-#book-content #sbo-rt-content div[data-type="footnotes"] h2,
-#book-content #sbo-rt-content div[data-type="footnotes"] h3,
-#book-content #sbo-rt-content div[data-type="footnotes"] h4,
-#book-content #sbo-rt-content div[data-type="footnotes"] h5,
-#book-content #sbo-rt-content div[data-type="footnotes"] h6,
-#book-content #sbo-rt-content .footnote h1,
-#book-content #sbo-rt-content .footnote h2,
-#book-content #sbo-rt-content .footnote h3,
-#book-content #sbo-rt-content .footnote h4,
-#book-content #sbo-rt-content .footnote h5,
-#book-content #sbo-rt-content .footnote h6,
-#book-content #sbo-rt-content aside h1,
-#book-content #sbo-rt-content aside h2,
-#book-content #sbo-rt-content aside h3,
-#book-content #sbo-rt-content aside h4,
-#book-content #sbo-rt-content aside h5,
-#book-content #sbo-rt-content aside h6 {
+ #sbo-rt-content div.tip h1,
+ #sbo-rt-content div.tip h2,
+ #sbo-rt-content div.tip h3,
+ #sbo-rt-content div.tip h4,
+ #sbo-rt-content div.tip h5,
+ #sbo-rt-content div.tip h6,
+ #sbo-rt-content div.tip .title,
+ #sbo-rt-content .tip h1,
+ #sbo-rt-content .tip h2,
+ #sbo-rt-content .tip h3,
+ #sbo-rt-content .tip h4,
+ #sbo-rt-content .tip h5,
+ #sbo-rt-content .tip h6,
+ #sbo-rt-content .tip .title,
+ #sbo-rt-content div[data-type="tip"] h1,
+ #sbo-rt-content div[data-type="tip"] h2,
+ #sbo-rt-content div[data-type="tip"] h3,
+ #sbo-rt-content div[data-type="tip"] h4,
+ #sbo-rt-content div[data-type="tip"] h5,
+ #sbo-rt-content div[data-type="tip"] h6,
+ #sbo-rt-content div[data-type="tip"] .title,
+ #sbo-rt-content .note h3,
+ #sbo-rt-content .note h6,
+ #sbo-rt-content .note .title,
+ #sbo-rt-content div.note h1,
+ #sbo-rt-content div.note h2,
+ #sbo-rt-content div.note h3,
+ #sbo-rt-content div.note h4,
+ #sbo-rt-content div.note h5,
+ #sbo-rt-content div.note h6,
+ #sbo-rt-content div.note .title,
+ #sbo-rt-content div[data-type="note"] h1,
+ #sbo-rt-content div[data-type="note"] h2,
+ #sbo-rt-content div[data-type="note"] h3,
+ #sbo-rt-content div[data-type="note"] h4,
+ #sbo-rt-content div[data-type="note"] h5,
+ #sbo-rt-content div[data-type="note"] h6,
+ #sbo-rt-content div[data-type="note"] .title,
+ #sbo-rt-content .warning h1,
+ #sbo-rt-content .warning h2,
+ #sbo-rt-content .warning h3,
+ #sbo-rt-content .warning h4,
+ #sbo-rt-content .warning h5,
+ #sbo-rt-content .warning h6,
+ #sbo-rt-content .warning .title,
+ #sbo-rt-content div[data-type="warning"] h1,
+ #sbo-rt-content div[data-type="warning"] h2,
+ #sbo-rt-content div[data-type="warning"] h3,
+ #sbo-rt-content div[data-type="warning"] h4,
+ #sbo-rt-content div[data-type="warning"] h5,
+ #sbo-rt-content div[data-type="warning"] h6,
+ #sbo-rt-content div[data-type="warning"] .title,
+ #sbo-rt-content div[data-type="caution"] h1,
+ #sbo-rt-content div[data-type="caution"] h2,
+ #sbo-rt-content div[data-type="caution"] h3,
+ #sbo-rt-content div[data-type="caution"] h4,
+ #sbo-rt-content div[data-type="caution"] h5,
+ #sbo-rt-content div[data-type="caution"] h6,
+ #sbo-rt-content .note1 h3,
+ #sbo-rt-content .note1 h6,
+ #sbo-rt-content .note1 .title,
+ #sbo-rt-content .sidebar1 h3,
+ #sbo-rt-content .sidebar1 h6,
+ #sbo-rt-content .sidebar1 .title,
+ #sbo-rt-content .boxg h3,
+ #sbo-rt-content .boxg h6,
+ #sbo-rt-content .boxg .title,
+ #sbo-rt-content div.sidebar h1,
+ #sbo-rt-content div.sidebar h2,
+ #sbo-rt-content div.sidebar h3,
+ #sbo-rt-content div.sidebar h4,
+ #sbo-rt-content div.sidebar h5,
+ #sbo-rt-content div.sidebar h6,
+ #sbo-rt-content div.sidebar .title,
+ #sbo-rt-content div[data-type="sidebar"] h1,
+ #sbo-rt-content div[data-type="sidebar"] h2,
+ #sbo-rt-content div[data-type="sidebar"] h3,
+ #sbo-rt-content div[data-type="sidebar"] h4,
+ #sbo-rt-content div[data-type="sidebar"] h5,
+ #sbo-rt-content div[data-type="sidebar"] h6,
+ #sbo-rt-content div[data-type="sidebar"] .title,
+ #sbo-rt-content .footnotes h1,
+ #sbo-rt-content .footnotes h2,
+ #sbo-rt-content .footnotes h3,
+ #sbo-rt-content .footnotes h4,
+ #sbo-rt-content .footnotes h5,
+ #sbo-rt-content .footnotes h6,
+ #sbo-rt-content div[data-type="footnotes"] h1,
+ #sbo-rt-content div[data-type="footnotes"] h2,
+ #sbo-rt-content div[data-type="footnotes"] h3,
+ #sbo-rt-content div[data-type="footnotes"] h4,
+ #sbo-rt-content div[data-type="footnotes"] h5,
+ #sbo-rt-content div[data-type="footnotes"] h6,
+ #sbo-rt-content .footnote h1,
+ #sbo-rt-content .footnote h2,
+ #sbo-rt-content .footnote h3,
+ #sbo-rt-content .footnote h4,
+ #sbo-rt-content .footnote h5,
+ #sbo-rt-content .footnote h6,
+ #sbo-rt-content aside h1,
+ #sbo-rt-content aside h2,
+ #sbo-rt-content aside h3,
+ #sbo-rt-content aside h4,
+ #sbo-rt-content aside h5,
+ #sbo-rt-content aside h6 {
     color: #018C8C !important;
     font-family: Guardian Text Sans\ 2, sans-serif !important;
     font-size: 0.688em !important;
@@ -565,212 +564,212 @@ html {
     text-transform: uppercase;
 }
 
-.black #book-content #sbo-rt-content div.tip h1,
-.black #book-content #sbo-rt-content div.tip h2,
-.black #book-content #sbo-rt-content div.tip h3,
-.black #book-content #sbo-rt-content div.tip h4,
-.black #book-content #sbo-rt-content div.tip h5,
-.black #book-content #sbo-rt-content div.tip h6,
-.black #book-content #sbo-rt-content div.tip .title,
-.black #book-content #sbo-rt-content .tip h1,
-.black #book-content #sbo-rt-content .tip h2,
-.black #book-content #sbo-rt-content .tip h3,
-.black #book-content #sbo-rt-content .tip h4,
-.black #book-content #sbo-rt-content .tip h5,
-.black #book-content #sbo-rt-content .tip h6,
-.black #book-content #sbo-rt-content .tip .title,
-.black #book-content #sbo-rt-content div[data-type="tip"] h1,
-.black #book-content #sbo-rt-content div[data-type="tip"] h2,
-.black #book-content #sbo-rt-content div[data-type="tip"] h3,
-.black #book-content #sbo-rt-content div[data-type="tip"] h4,
-.black #book-content #sbo-rt-content div[data-type="tip"] h5,
-.black #book-content #sbo-rt-content div[data-type="tip"] h6,
-.black #book-content #sbo-rt-content div[data-type="tip"] .title,
-.black #book-content #sbo-rt-content .note h3,
-.black #book-content #sbo-rt-content .note h6,
-.black #book-content #sbo-rt-content .note .title,
-.black #book-content #sbo-rt-content div.note h1,
-.black #book-content #sbo-rt-content div.note h2,
-.black #book-content #sbo-rt-content div.note h3,
-.black #book-content #sbo-rt-content div.note h4,
-.black #book-content #sbo-rt-content div.note h5,
-.black #book-content #sbo-rt-content div.note h6,
-.black #book-content #sbo-rt-content div.note .title,
-.black #book-content #sbo-rt-content div[data-type="note"] h1,
-.black #book-content #sbo-rt-content div[data-type="note"] h2,
-.black #book-content #sbo-rt-content div[data-type="note"] h3,
-.black #book-content #sbo-rt-content div[data-type="note"] h4,
-.black #book-content #sbo-rt-content div[data-type="note"] h5,
-.black #book-content #sbo-rt-content div[data-type="note"] h6,
-.black #book-content #sbo-rt-content div[data-type="note"] .title,
-.black #book-content #sbo-rt-content .warning h1,
-.black #book-content #sbo-rt-content .warning h2,
-.black #book-content #sbo-rt-content .warning h3,
-.black #book-content #sbo-rt-content .warning h4,
-.black #book-content #sbo-rt-content .warning h5,
-.black #book-content #sbo-rt-content .warning h6,
-.black #book-content #sbo-rt-content .warning .title,
-.black #book-content #sbo-rt-content div[data-type="warning"] h1,
-.black #book-content #sbo-rt-content div[data-type="warning"] h2,
-.black #book-content #sbo-rt-content div[data-type="warning"] h3,
-.black #book-content #sbo-rt-content div[data-type="warning"] h4,
-.black #book-content #sbo-rt-content div[data-type="warning"] h5,
-.black #book-content #sbo-rt-content div[data-type="warning"] h6,
-.black #book-content #sbo-rt-content div[data-type="warning"] .title,
-.black #book-content #sbo-rt-content div[data-type="caution"] h1,
-.black #book-content #sbo-rt-content div[data-type="caution"] h2,
-.black #book-content #sbo-rt-content div[data-type="caution"] h3,
-.black #book-content #sbo-rt-content div[data-type="caution"] h4,
-.black #book-content #sbo-rt-content div[data-type="caution"] h5,
-.black #book-content #sbo-rt-content div[data-type="caution"] h6,
-.black #book-content #sbo-rt-content .note1 h3,
-.black #book-content #sbo-rt-content .note1 h6,
-.black #book-content #sbo-rt-content .note1 .title,
-.black #book-content #sbo-rt-content .sidebar1 h3,
-.black #book-content #sbo-rt-content .sidebar1 h6,
-.black #book-content #sbo-rt-content .sidebar1 .title,
-.black #book-content #sbo-rt-content .boxg h3,
-.black #book-content #sbo-rt-content .boxg h6,
-.black #book-content #sbo-rt-content .boxg .title,
-.black #book-content #sbo-rt-content div.sidebar h1,
-.black #book-content #sbo-rt-content div.sidebar h2,
-.black #book-content #sbo-rt-content div.sidebar h3,
-.black #book-content #sbo-rt-content div.sidebar h4,
-.black #book-content #sbo-rt-content div.sidebar h5,
-.black #book-content #sbo-rt-content div.sidebar h6,
-.black #book-content #sbo-rt-content div.sidebar .title,
-.black #book-content #sbo-rt-content div[data-type="sidebar"] h1,
-.black #book-content #sbo-rt-content div[data-type="sidebar"] h2,
-.black #book-content #sbo-rt-content div[data-type="sidebar"] h3,
-.black #book-content #sbo-rt-content div[data-type="sidebar"] h4,
-.black #book-content #sbo-rt-content div[data-type="sidebar"] h5,
-.black #book-content #sbo-rt-content div[data-type="sidebar"] h6,
-.black #book-content #sbo-rt-content div[data-type="sidebar"] .title,
-.black #book-content #sbo-rt-content .footnotes h1,
-.black #book-content #sbo-rt-content .footnotes h2,
-.black #book-content #sbo-rt-content .footnotes h3,
-.black #book-content #sbo-rt-content .footnotes h4,
-.black #book-content #sbo-rt-content .footnotes h5,
-.black #book-content #sbo-rt-content .footnotes h6,
-.black #book-content #sbo-rt-content div[data-type="footnotes"] h1,
-.black #book-content #sbo-rt-content div[data-type="footnotes"] h2,
-.black #book-content #sbo-rt-content div[data-type="footnotes"] h3,
-.black #book-content #sbo-rt-content div[data-type="footnotes"] h4,
-.black #book-content #sbo-rt-content div[data-type="footnotes"] h5,
-.black #book-content #sbo-rt-content div[data-type="footnotes"] h6,
-.black #book-content #sbo-rt-content .footnote h1,
-.black #book-content #sbo-rt-content .footnote h2,
-.black #book-content #sbo-rt-content .footnote h3,
-.black #book-content #sbo-rt-content .footnote h4,
-.black #book-content #sbo-rt-content .footnote h5,
-.black #book-content #sbo-rt-content .footnote h6,
-.black #book-content #sbo-rt-content aside h1,
-.black #book-content #sbo-rt-content aside h2,
-.black #book-content #sbo-rt-content aside h3,
-.black #book-content #sbo-rt-content aside h4,
-.black #book-content #sbo-rt-content aside h5,
-.black #book-content #sbo-rt-content aside h6 {
+.black  #sbo-rt-content div.tip h1,
+.black  #sbo-rt-content div.tip h2,
+.black  #sbo-rt-content div.tip h3,
+.black  #sbo-rt-content div.tip h4,
+.black  #sbo-rt-content div.tip h5,
+.black  #sbo-rt-content div.tip h6,
+.black  #sbo-rt-content div.tip .title,
+.black  #sbo-rt-content .tip h1,
+.black  #sbo-rt-content .tip h2,
+.black  #sbo-rt-content .tip h3,
+.black  #sbo-rt-content .tip h4,
+.black  #sbo-rt-content .tip h5,
+.black  #sbo-rt-content .tip h6,
+.black  #sbo-rt-content .tip .title,
+.black  #sbo-rt-content div[data-type="tip"] h1,
+.black  #sbo-rt-content div[data-type="tip"] h2,
+.black  #sbo-rt-content div[data-type="tip"] h3,
+.black  #sbo-rt-content div[data-type="tip"] h4,
+.black  #sbo-rt-content div[data-type="tip"] h5,
+.black  #sbo-rt-content div[data-type="tip"] h6,
+.black  #sbo-rt-content div[data-type="tip"] .title,
+.black  #sbo-rt-content .note h3,
+.black  #sbo-rt-content .note h6,
+.black  #sbo-rt-content .note .title,
+.black  #sbo-rt-content div.note h1,
+.black  #sbo-rt-content div.note h2,
+.black  #sbo-rt-content div.note h3,
+.black  #sbo-rt-content div.note h4,
+.black  #sbo-rt-content div.note h5,
+.black  #sbo-rt-content div.note h6,
+.black  #sbo-rt-content div.note .title,
+.black  #sbo-rt-content div[data-type="note"] h1,
+.black  #sbo-rt-content div[data-type="note"] h2,
+.black  #sbo-rt-content div[data-type="note"] h3,
+.black  #sbo-rt-content div[data-type="note"] h4,
+.black  #sbo-rt-content div[data-type="note"] h5,
+.black  #sbo-rt-content div[data-type="note"] h6,
+.black  #sbo-rt-content div[data-type="note"] .title,
+.black  #sbo-rt-content .warning h1,
+.black  #sbo-rt-content .warning h2,
+.black  #sbo-rt-content .warning h3,
+.black  #sbo-rt-content .warning h4,
+.black  #sbo-rt-content .warning h5,
+.black  #sbo-rt-content .warning h6,
+.black  #sbo-rt-content .warning .title,
+.black  #sbo-rt-content div[data-type="warning"] h1,
+.black  #sbo-rt-content div[data-type="warning"] h2,
+.black  #sbo-rt-content div[data-type="warning"] h3,
+.black  #sbo-rt-content div[data-type="warning"] h4,
+.black  #sbo-rt-content div[data-type="warning"] h5,
+.black  #sbo-rt-content div[data-type="warning"] h6,
+.black  #sbo-rt-content div[data-type="warning"] .title,
+.black  #sbo-rt-content div[data-type="caution"] h1,
+.black  #sbo-rt-content div[data-type="caution"] h2,
+.black  #sbo-rt-content div[data-type="caution"] h3,
+.black  #sbo-rt-content div[data-type="caution"] h4,
+.black  #sbo-rt-content div[data-type="caution"] h5,
+.black  #sbo-rt-content div[data-type="caution"] h6,
+.black  #sbo-rt-content .note1 h3,
+.black  #sbo-rt-content .note1 h6,
+.black  #sbo-rt-content .note1 .title,
+.black  #sbo-rt-content .sidebar1 h3,
+.black  #sbo-rt-content .sidebar1 h6,
+.black  #sbo-rt-content .sidebar1 .title,
+.black  #sbo-rt-content .boxg h3,
+.black  #sbo-rt-content .boxg h6,
+.black  #sbo-rt-content .boxg .title,
+.black  #sbo-rt-content div.sidebar h1,
+.black  #sbo-rt-content div.sidebar h2,
+.black  #sbo-rt-content div.sidebar h3,
+.black  #sbo-rt-content div.sidebar h4,
+.black  #sbo-rt-content div.sidebar h5,
+.black  #sbo-rt-content div.sidebar h6,
+.black  #sbo-rt-content div.sidebar .title,
+.black  #sbo-rt-content div[data-type="sidebar"] h1,
+.black  #sbo-rt-content div[data-type="sidebar"] h2,
+.black  #sbo-rt-content div[data-type="sidebar"] h3,
+.black  #sbo-rt-content div[data-type="sidebar"] h4,
+.black  #sbo-rt-content div[data-type="sidebar"] h5,
+.black  #sbo-rt-content div[data-type="sidebar"] h6,
+.black  #sbo-rt-content div[data-type="sidebar"] .title,
+.black  #sbo-rt-content .footnotes h1,
+.black  #sbo-rt-content .footnotes h2,
+.black  #sbo-rt-content .footnotes h3,
+.black  #sbo-rt-content .footnotes h4,
+.black  #sbo-rt-content .footnotes h5,
+.black  #sbo-rt-content .footnotes h6,
+.black  #sbo-rt-content div[data-type="footnotes"] h1,
+.black  #sbo-rt-content div[data-type="footnotes"] h2,
+.black  #sbo-rt-content div[data-type="footnotes"] h3,
+.black  #sbo-rt-content div[data-type="footnotes"] h4,
+.black  #sbo-rt-content div[data-type="footnotes"] h5,
+.black  #sbo-rt-content div[data-type="footnotes"] h6,
+.black  #sbo-rt-content .footnote h1,
+.black  #sbo-rt-content .footnote h2,
+.black  #sbo-rt-content .footnote h3,
+.black  #sbo-rt-content .footnote h4,
+.black  #sbo-rt-content .footnote h5,
+.black  #sbo-rt-content .footnote h6,
+.black  #sbo-rt-content aside h1,
+.black  #sbo-rt-content aside h2,
+.black  #sbo-rt-content aside h3,
+.black  #sbo-rt-content aside h4,
+.black  #sbo-rt-content aside h5,
+.black  #sbo-rt-content aside h6 {
     color: #4DF0F0 !important;
 }
 
-#book-content #sbo-rt-content .footnotes p:first-child,
-#book-content #sbo-rt-content div[data-type="footnotes"] p:first-child,
-#book-content #sbo-rt-content .footnote p:first-child {
+ #sbo-rt-content .footnotes p:first-child,
+ #sbo-rt-content div[data-type="footnotes"] p:first-child,
+ #sbo-rt-content .footnote p:first-child {
     margin-top: 24px !important;
 }
 
-#book-content #sbo-rt-content .warning h1,
-#book-content #sbo-rt-content .warning h2,
-#book-content #sbo-rt-content .warning h3,
-#book-content #sbo-rt-content .warning h4,
-#book-content #sbo-rt-content .warning h5,
-#book-content #sbo-rt-content .warning h6,
-#book-content #sbo-rt-content .warning .title,
-#book-content #sbo-rt-content div[data-type="warning"] h1,
-#book-content #sbo-rt-content div[data-type="warning"] h2,
-#book-content #sbo-rt-content div[data-type="warning"] h3,
-#book-content #sbo-rt-content div[data-type="warning"] h4,
-#book-content #sbo-rt-content div[data-type="warning"] h5,
-#book-content #sbo-rt-content div[data-type="warning"] h6,
-#book-content #sbo-rt-content div[data-type="caution"] h1,
-#book-content #sbo-rt-content div[data-type="caution"] h2,
-#book-content #sbo-rt-content div[data-type="caution"] h3,
-#book-content #sbo-rt-content div[data-type="caution"] h4,
-#book-content #sbo-rt-content div[data-type="caution"] h5,
-#book-content #sbo-rt-content div[data-type="caution"] h6,
-#book-content #sbo-rt-content div[data-type="warning"] .title {
+ #sbo-rt-content .warning h1,
+ #sbo-rt-content .warning h2,
+ #sbo-rt-content .warning h3,
+ #sbo-rt-content .warning h4,
+ #sbo-rt-content .warning h5,
+ #sbo-rt-content .warning h6,
+ #sbo-rt-content .warning .title,
+ #sbo-rt-content div[data-type="warning"] h1,
+ #sbo-rt-content div[data-type="warning"] h2,
+ #sbo-rt-content div[data-type="warning"] h3,
+ #sbo-rt-content div[data-type="warning"] h4,
+ #sbo-rt-content div[data-type="warning"] h5,
+ #sbo-rt-content div[data-type="warning"] h6,
+ #sbo-rt-content div[data-type="caution"] h1,
+ #sbo-rt-content div[data-type="caution"] h2,
+ #sbo-rt-content div[data-type="caution"] h3,
+ #sbo-rt-content div[data-type="caution"] h4,
+ #sbo-rt-content div[data-type="caution"] h5,
+ #sbo-rt-content div[data-type="caution"] h6,
+ #sbo-rt-content div[data-type="warning"] .title {
     color: #aa8f00 !important;
 }
 
-#book-content #sbo-rt-content div.tip hr,
-#book-content #sbo-rt-content .tip hr,
-#book-content #sbo-rt-content .note hr,
-#book-content #sbo-rt-content div.note hr,
-#book-content #sbo-rt-content div[data-type="note"] hr,
-#book-content #sbo-rt-content .warning hr,
-#book-content #sbo-rt-content .note1 hr,
-#book-content #sbo-rt-content .sidebar1 hr,
-#book-content #sbo-rt-content .boxg hr,
-#book-content #sbo-rt-content div.sidebar hr,
-#book-content #sbo-rt-content div.warning hr {
+ #sbo-rt-content div.tip hr,
+ #sbo-rt-content .tip hr,
+ #sbo-rt-content .note hr,
+ #sbo-rt-content div.note hr,
+ #sbo-rt-content div[data-type="note"] hr,
+ #sbo-rt-content .warning hr,
+ #sbo-rt-content .note1 hr,
+ #sbo-rt-content .sidebar1 hr,
+ #sbo-rt-content .boxg hr,
+ #sbo-rt-content div.sidebar hr,
+ #sbo-rt-content div.warning hr {
     display: none;
 }
 
-#book-content #sbo-rt-content div.tip img,
-#book-content #sbo-rt-content div.tip img:hover,
-#book-content #sbo-rt-content .tip img,
-#book-content #sbo-rt-content .tip img:hover,
-#book-content #sbo-rt-content .note img,
-#book-content #sbo-rt-content .note img:hover,
-#book-content #sbo-rt-content div.note img,
-#book-content #sbo-rt-content div.note img:hover,
-#book-content #sbo-rt-content div[data-type="note"] img,
-#book-content #sbo-rt-content div[data-type="note"] img:hover,
-#book-content #sbo-rt-content .warning img,
-#book-content #sbo-rt-content .warning img:hover,
-#book-content #sbo-rt-content .note1 img,
-#book-content #sbo-rt-content .note1 img:hover,
-#book-content #sbo-rt-content .sidebar1 img,
-#book-content #sbo-rt-content .sidebar1 img:hover,
-#book-content #sbo-rt-content .boxg img,
-#book-content #sbo-rt-content .boxg img:hover,
-#book-content #sbo-rt-content div.sidebar img,
-#book-content #sbo-rt-content div.sidebar img:hover,
-#book-content #sbo-rt-content div.warning img,
-#book-content #sbo-rt-content div.warning img:hover {
+ #sbo-rt-content div.tip img,
+ #sbo-rt-content div.tip img:hover,
+ #sbo-rt-content .tip img,
+ #sbo-rt-content .tip img:hover,
+ #sbo-rt-content .note img,
+ #sbo-rt-content .note img:hover,
+ #sbo-rt-content div.note img,
+ #sbo-rt-content div.note img:hover,
+ #sbo-rt-content div[data-type="note"] img,
+ #sbo-rt-content div[data-type="note"] img:hover,
+ #sbo-rt-content .warning img,
+ #sbo-rt-content .warning img:hover,
+ #sbo-rt-content .note1 img,
+ #sbo-rt-content .note1 img:hover,
+ #sbo-rt-content .sidebar1 img,
+ #sbo-rt-content .sidebar1 img:hover,
+ #sbo-rt-content .boxg img,
+ #sbo-rt-content .boxg img:hover,
+ #sbo-rt-content div.sidebar img,
+ #sbo-rt-content div.sidebar img:hover,
+ #sbo-rt-content div.warning img,
+ #sbo-rt-content div.warning img:hover {
     border: none;
     background-color: transparent;
 }
 
-#book-content #sbo-rt-content .tip h3,
-#book-content #sbo-rt-content .note h3,
-#book-content #sbo-rt-content .warning h3 {
+ #sbo-rt-content .tip h3,
+ #sbo-rt-content .note h3,
+ #sbo-rt-content .warning h3 {
     margin-top: 0;
 }
 
-#book-content #sbo-rt-content .note1 .note {
+ #sbo-rt-content .note1 .note {
     background: transparent none no-repeat scroll 0 0;
     border: none;
     margin: 0 !important;
     padding: 0;
 }
 
-#book-content #sbo-rt-content .codelink {
+ #sbo-rt-content .codelink {
     font-size: 80% !important;
 }
 
-#book-content #sbo-rt-content .totri-image-wrapper,
-#book-content #sbo-rt-content .totri-image-wrapper p {
+ #sbo-rt-content .totri-image-wrapper,
+ #sbo-rt-content .totri-image-wrapper p {
     text-align: center;
 }
 
-#book-content #sbo-rt-content pre,
-#book-content #sbo-rt-content .pre,
-#book-content #sbo-rt-content p.pre,
-#book-content #sbo-rt-content .pre1,
-#book-content #sbo-rt-content .pre-ex,
-#book-content #sbo-rt-content .pre-ex1,
-#book-content #sbo-rt-content .pre_w {
+ #sbo-rt-content pre,
+ #sbo-rt-content .pre,
+ #sbo-rt-content p.pre,
+ #sbo-rt-content .pre1,
+ #sbo-rt-content .pre-ex,
+ #sbo-rt-content .pre-ex1,
+ #sbo-rt-content .pre_w {
     font-family: "Consolas", Courier, monospace !important;
     line-height: 1.5 !important;
     margin: 24px 0 !important;
@@ -786,79 +785,83 @@ html {
     white-space: pre !important;
 }
 
-#book-content #sbo-rt-content pre code {
+ #sbo-rt-content p.codelink + p.pre {
+    white-space: nowrap !important;
+}
+
+ #sbo-rt-content pre code {
     font-size: inherit;
     padding: 0;
     overflow-wrap: normal;
 }
 
 /*Strip these colors*/
-#book-content #sbo-rt-content .pd_lightblue,
-#book-content #sbo-rt-content .skycolor,
-#book-content #sbo-rt-content .tabcolor,
-#book-content #sbo-rt-content .tab_num,
-#book-content #sbo-rt-content .pd_white {
+ #sbo-rt-content .pd_lightblue,
+ #sbo-rt-content .skycolor,
+ #sbo-rt-content .tabcolor,
+ #sbo-rt-content .tab_num,
+ #sbo-rt-content .pd_white {
     color: #3D3B49 !important;
 }
 
 /*  ----------------------------
 //    DIRTY OVERRIDES
 //    ---------------------------- */
-#book-content #sbo-rt-content .indenthangingB,
-#book-content #sbo-rt-content .indenthanging {
+ #sbo-rt-content .indenthangingB,
+ #sbo-rt-content .indenthanging {
     /*indenthangingB is typical ordered list in many books MIKE*/
     @include rem('margin', 0 0 10px 35px);
 }
 
-#book-content #sbo-rt-content .bul_hang1,
-#book-content #sbo-rt-content .bul_hang,
-#book-content #sbo-rt-content .bul_hang2,
-#book-content #sbo-rt-content .bul_hang3,
-#book-content #sbo-rt-content .hanging-i,
-#book-content #sbo-rt-content .indentbullet {
+ #sbo-rt-content .bul_hang1,
+ #sbo-rt-content .bul_hang,
+ #sbo-rt-content .bul_hang2,
+ #sbo-rt-content .bul_hang3,
+ #sbo-rt-content .hanging-i,
+ #sbo-rt-content .indentbullet {
     text-indent: -0.625em !important;
 }
 
-#book-content #sbo-rt-content .bul_hang1::before,
-#book-content #sbo-rt-content .bul_hang::before,
-#book-content #sbo-rt-content .bul_hang2::before,
-#book-content #sbo-rt-content .bul_hang3::before,
-#book-content #sbo-rt-content .hanging-i::before,
-#book-content #sbo-rt-content .indentbullet::before {
+ #sbo-rt-content .bul_hang1::before,
+ #sbo-rt-content .bul_hang::before,
+ #sbo-rt-content .bul_hang2::before,
+ #sbo-rt-content .bul_hang3::before,
+ #sbo-rt-content .hanging-i::before,
+ #sbo-rt-content .indentbullet::before {
     content: "• ";
     position: relative;
     left: -0.625em;
 }
 
-#book-content #sbo-rt-content .bul_hang1 img,
-#book-content #sbo-rt-content .bul_hang img,
-#book-content #sbo-rt-content .bul_hang2 img,
-#book-content #sbo-rt-content .bul_hang3 img,
-#book-content #sbo-rt-content .hanging-i img,
-#book-content #sbo-rt-content .indentbullet img {
+ #sbo-rt-content .bul_hang1 img,
+ #sbo-rt-content .bul_hang img,
+ #sbo-rt-content .bul_hang2 img,
+ #sbo-rt-content .bul_hang3 img,
+ #sbo-rt-content .hanging-i img,
+ #sbo-rt-content .indentbullet img {
     display: none;
 }
 
-#book-content #sbo-rt-content .box_title {
+ #sbo-rt-content .box_title {
     font-size: 165% !important;
     margin: 1em 0 0.5em;
 }
 
-#book-content #sbo-rt-content figure,
-#book-content #sbo-rt-content .figure_legend,
-#book-content #sbo-rt-content .figure {
+ #sbo-rt-content figure,
+ #sbo-rt-content .figure_legend,
+ #sbo-rt-content .figure {
     border: none !important;
     margin: 32px 0 !important;
     padding: 0 !important;
 }
 
-#book-content #sbo-rt-content figure img {
+ #sbo-rt-content figure img {
     margin-bottom: 8px;
     width: auto!important;
     height: auto!important;
 }
 
-#book-content #sbo-rt-content figure.image img {
+ #sbo-rt-content figure.image img {
     width: 100% !important;
 }
 
@@ -866,22 +869,22 @@ p.figure img {
     width: 100% !important;
 }
 
-#book-content #sbo-rt-content .figure_legend h1,
-#book-content #sbo-rt-content .figure_legend h2,
-#book-content #sbo-rt-content .figure_legend h3,
-#book-content #sbo-rt-content .figure_legend h4,
-#book-content #sbo-rt-content .figure_legend h5,
-#book-content #sbo-rt-content .figure_legend h6,
-#book-content #sbo-rt-content .figure_legend p,
-#book-content #sbo-rt-content .figure h1,
-#book-content #sbo-rt-content .figure h2,
-#book-content #sbo-rt-content .figure h3,
-#book-content #sbo-rt-content .figure h4,
-#book-content #sbo-rt-content .figure h5,
-#book-content #sbo-rt-content .figure h6,
-#book-content #sbo-rt-content .figure p,
-#book-content #sbo-rt-content figcaption p,
-#book-content #sbo-rt-content table caption {
+ #sbo-rt-content .figure_legend h1,
+ #sbo-rt-content .figure_legend h2,
+ #sbo-rt-content .figure_legend h3,
+ #sbo-rt-content .figure_legend h4,
+ #sbo-rt-content .figure_legend h5,
+ #sbo-rt-content .figure_legend h6,
+ #sbo-rt-content .figure_legend p,
+ #sbo-rt-content .figure h1,
+ #sbo-rt-content .figure h2,
+ #sbo-rt-content .figure h3,
+ #sbo-rt-content .figure h4,
+ #sbo-rt-content .figure h5,
+ #sbo-rt-content .figure h6,
+ #sbo-rt-content .figure p,
+ #sbo-rt-content figcaption p,
+ #sbo-rt-content table caption {
     font-family: "Noto serif", serif !important;
     font-size: 0.750em !important;
     font-weight: 400 !important;
@@ -893,21 +896,49 @@ p.figure img {
     padding: 0.5em 0 0 0;
 }
 
-#book-content #sbo-rt-content table caption {
+ #sbo-rt-content table caption {
     margin-bottom: 0.5em !important;
 }
 
-#book-content #sbo-rt-content .centera,
-#book-content #sbo-rt-content .centerb {
+ #sbo-rt-content .centera,
+ #sbo-rt-content .centerb {
     margin: 0;
     text-align: center;
+}
+
+ #sbo-rt-content div.pdf-page div,
+ #sbo-rt-content div.title,
+ #sbo-rt-content div.title1,
+ #sbo-rt-content div.author,
+ #sbo-rt-content div.author1,
+ #sbo-rt-content div.pub,
+ #sbo-rt-content div.pub1,
+ #sbo-rt-content div.chapno,
+ #sbo-rt-content div.chaptitle,
+ #sbo-rt-content div.halftitle,
+ #sbo-rt-content div.halftitle1,
+ #sbo-rt-content div.fmtitle,
+ #sbo-rt-content div.fmtitle1,
+ #sbo-rt-content div.head,
+ #sbo-rt-content div.head1 {
+    line-height: initial;
+}
+
+ #sbo-rt-content div.center {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
+ #sbo-rt-content div.captions {
+    margin-top: 0.2rem;
+    margin-bottom: 1rem;
 }
 
 /*  ----------------------------
 //    TABLES
 //    ---------------------------- */
 
-#book-content #sbo-rt-content table {
+ #sbo-rt-content table {
     border: 0 !important;
     max-width: 100% !important;
     padding: 0 !important;
@@ -917,23 +948,23 @@ p.figure img {
     text-align: left;
     display: block !important;
 }
-#book-content #sbo-rt-content table pre {
+ #sbo-rt-content table pre {
     border: none;
     background-color: transparent;
     padding: 0px;
 }
 
-#book-content #sbo-rt-content table img.totri-border {
+ #sbo-rt-content table img.totri-border {
     padding: 0;
     border: none;
 }
-#book-content #sbo-rt-content thead {
+ #sbo-rt-content thead {
     border: 0 !important;
     background-color: #EEF2F6;
 }
-#book-content #sbo-rt-content thead,
-#book-content #sbo-rt-content thead th,
-#book-content #sbo-rt-content thead td {
+ #sbo-rt-content thead,
+ #sbo-rt-content thead th,
+ #sbo-rt-content thead td {
     padding: 0.875em;
     font-weight: bold !important;
     font-family: "Noto serif", serif !important;
@@ -942,20 +973,20 @@ p.figure img {
     border: 0 !important;
     vertical-align: middle;
 }
-#book-content #sbo-rt-content tbody td,
-#book-content #sbo-rt-content table { padding: 0.875em; }
-#book-content #sbo-rt-content tbody tr,
-#book-content #sbo-rt-content table tr,
-#book-content #sbo-rt-content tbody tr td,
-#book-content #sbo-rt-content table tr td { border: 0 !important; }
-#book-content #sbo-rt-content tbody tr:last-child { border-bottom: 0; }
-#book-content #sbo-rt-content tbody tr:nth-child(even) { background-color: #EEF2F6; }
-#book-content #sbo-rt-content tbody tr:nth-child(even) code,
-#book-content #sbo-rt-content tbody tr:nth-child(even) .codeLabel {
+ #sbo-rt-content tbody td,
+ #sbo-rt-content table { padding: 0.875em; }
+ #sbo-rt-content tbody tr,
+ #sbo-rt-content table tr,
+ #sbo-rt-content tbody tr td,
+ #sbo-rt-content table tr td { border: 0 !important; }
+ #sbo-rt-content tbody tr:last-child { border-bottom: 0; }
+ #sbo-rt-content tbody tr:nth-child(even) { background-color: #EEF2F6; }
+ #sbo-rt-content tbody tr:nth-child(even) code,
+ #sbo-rt-content tbody tr:nth-child(even) .codeLabel {
     background-color: #fff !important;
 }
-#book-content #sbo-rt-content table p,
-#book-content #sbo-rt-content table tr td {
+ #sbo-rt-content table p,
+ #sbo-rt-content table tr td {
     font-family: "Noto serif", serif !important;
     font-size: 1em;
     font-weight: 400;
@@ -965,10 +996,11 @@ p.figure img {
     word-wrap: break-word;
 }
 
-#book-content #sbo-rt-content div.pageavoid table.tbody tbody tr td.tb,
-#book-content #sbo-rt-content div.pageavoid table.tbody tbody tr td.tcolhd,
-#book-content #sbo-rt-content section div.pageavoid table.tbody thead tr td.tcolhd,
-#book-content #sbo-rt-content section div.pageavoid table.tbody tbody tr td.tb {
+ #sbo-rt-content div.pageavoid table.tbody tbody tr td.tb,
+ #sbo-rt-content div.pageavoid table.tbody tbody tr td.tcolhd,
+ #sbo-rt-content section div.pageavoid table.tbody thead tr td.tcolhd,
+ #sbo-rt-content section div.pageavoid table.tbody tbody tr td.tb,
+ #sbo-rt-content .tb {
     text-indent: 0;
 }
 
@@ -976,31 +1008,31 @@ p.figure img {
 //    LISTS
 //    ---------------------------- */
 
-#book-content #sbo-rt-content ol,
-#book-content #sbo-rt-content ul,
-#book-content #sbo-rt-content dl,
-#book-content #sbo-rt-content menu,
-#book-content #sbo-rt-content dir {
+ #sbo-rt-content ol,
+ #sbo-rt-content ul,
+ #sbo-rt-content dl,
+ #sbo-rt-content menu,
+ #sbo-rt-content dir {
     list-style:none;
     margin: 24px 0 24px 24px !important;
 }
 
-#book-content #sbo-rt-content h3 + ul {
+ #sbo-rt-content h3 + ul {
     margin-top: 0 !important;
 }
 
-#book-content #sbo-rt-content dd  ol,
-#book-content #sbo-rt-content ul  ul,
-#book-content #sbo-rt-content ol  ol {
+ #sbo-rt-content dd  ol,
+ #sbo-rt-content ul  ul,
+ #sbo-rt-content ol  ol {
     margin-top: 0 !important;
 }
-#book-content #sbo-rt-content ul  li ul,
-#book-content #sbo-rt-content ol  li ol {
+ #sbo-rt-content ul  li ul,
+ #sbo-rt-content ol  li ol {
     margin-bottom: 0 !important;
 }
 
-#book-content #sbo-rt-content ul li,
-#book-content #sbo-rt-content ol li {
+ #sbo-rt-content ul li,
+ #sbo-rt-content ol li {
     font-family: "Noto serif", serif !important;
     font-size: 1em;
     font-weight: 400;
@@ -1009,25 +1041,25 @@ p.figure img {
     text-align: left;
 }
 
-#book-content #sbo-rt-content ul li {
+ #sbo-rt-content ul li {
     list-style: disc;
     list-style-position: outside !important;
     margin: 0 !important;
 }
-#book-content #sbo-rt-content ol li {
+ #sbo-rt-content ol li {
     list-style: decimal;
     list-style-position: outside;
 }
 
-#book-content #sbo-rt-content ol.biblioentrylist li,
-#book-content #sbo-rt-content ul.simple li {
+ #sbo-rt-content ol.biblioentrylist li,
+ #sbo-rt-content ul.simple li {
     list-style: none;
 }
 
-#book-content #sbo-rt-content ul li,
-#book-content #sbo-rt-content ol li,
-#book-content #sbo-rt-content ul li p,
-#book-content #sbo-rt-content ol li p {
+ #sbo-rt-content ul li,
+ #sbo-rt-content ol li,
+ #sbo-rt-content ul li p,
+ #sbo-rt-content ol li p {
     font-family: "Noto serif", serif !important;
     font-size: 1em;
     font-weight: 400;
@@ -1038,7 +1070,49 @@ p.figure img {
     margin: 0 !important;
 }
 
-#book-content #sbo-rt-content dt {
+ #sbo-rt-content ul li ul,
+ #sbo-rt-content ul li ol,
+ #sbo-rt-content ol li ul,
+ #sbo-rt-content ol li ol,
+ #sbo-rt-content dl.calloutlist dd ul,
+ #sbo-rt-content dl.calloutlist dd ul {
+    margin: 0 0 0 24px !important;
+}
+
+ #sbo-rt-content dl.calloutlist ul li p:first-child {
+    margin-top: 0 !important;
+}
+
+ #sbo-rt-content dl.calloutlist dd > p {
+    margin-bottom: 0 !important;
+}
+
+ #sbo-rt-content dl.calloutlist dd > p:only-child {
+    margin-bottom: 24px !important;
+}
+
+ #sbo-rt-content dl.calloutlist dd {
+    margin-top: 0 !important;
+}
+
+ #sbo-rt-content dl.calloutlist dt {
+    margin-bottom: -1.5rem !important;
+}
+
+ #sbo-rt-content dl.calloutlist dd ul > li {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+}
+
+ #sbo-rt-content dl.calloutlist dd ul > li:first-child {
+    padding-top: 1rem !important;
+}
+
+ #sbo-rt-content dl.calloutlist dd ul > li:last-child {
+    padding-bottom: 1rem !important;
+}
+
+ #sbo-rt-content dt {
     font-family: "Noto serif", serif !important;
     font-size: 1em !important;
     font-weight: 400;
@@ -1049,14 +1123,14 @@ p.figure img {
     padding: 0 !important;
 }
 
-#book-content #sbo-rt-content dl.calloutlist p:first-child {
+ #sbo-rt-content dl.calloutlist p:first-child {
     margin-top: -1.750em !important;
 }
 
-#book-content #sbo-rt-content dt code,
-#book-content #sbo-rt-content ol code,
-#book-content #sbo-rt-content li pre,
-#book-content #sbo-rt-content li code {
+ #sbo-rt-content dt code,
+ #sbo-rt-content ol code,
+ #sbo-rt-content li pre,
+ #sbo-rt-content li code {
     font-size: inherit;
 }
 
@@ -1065,9 +1139,9 @@ p.figure img {
 //   CODE
 //   ---------------------------- */
 
-#book-content #sbo-rt-content code,
-#book-content #sbo-rt-content code code,
-#book-content #sbo-rt-content .codeLabel {
+ #sbo-rt-content code,
+ #sbo-rt-content code code,
+ #sbo-rt-content .codeLabel {
     font-family: "Consolas", Courier, monospace;
     background-color: #EEF2F6 !important;
     padding: 0.375em 0.250em 0.250em 0.250em;
@@ -1080,18 +1154,18 @@ p.figure img {
 //    IMAGES
 //    ---------------------------- */
 
-#book-content #sbo-rt-content .figure table,
-#book-content #sbo-rt-content .informalfigure,
-#book-content #sbo-rt-content p.image {
+ #sbo-rt-content .figure table,
+ #sbo-rt-content .informalfigure,
+ #sbo-rt-content p.image {
     text-align: center;
 }
-#book-content #sbo-rt-content table img {
+ #sbo-rt-content table img {
     border: 0px;
     padding: 1.250em 0;
     text-align: center;
     margin: 0 auto;
 }
-#book-content #sbo-rt-content img.totri-border {
+ #sbo-rt-content img.totri-border {
     padding: 0.625em;
     background-color: #fff;
     border: 2px solid #ddd;
@@ -1099,36 +1173,36 @@ p.figure img {
     height: auto;
 }
 
-#book-content #sbo-rt-content .iconinline img {
+ #sbo-rt-content .iconinline img {
     height: 20px;
     width: 17px;
 }
 
-#book-content #sbo-rt-content .eq-md {
+ #sbo-rt-content .eq-md {
     height: 100%;
     margin-top: 0;
 }
 
-#book-content #sbo-rt-content img {
+ #sbo-rt-content img {
     height: auto;
     max-width: 100%;
 }
 
 @media (max-width: 768px) {
-    #book-content #sbo-rt-content {
+     #sbo-rt-content {
         width: 90%;
         margin: 0 auto;
     }
-    #book-content #sbo-rt-content .cover {
+     #sbo-rt-content .cover {
         width: 85%;
     }
-    #book-content #sbo-rt-content .cover img,
-    #book-content #sbo-rt-content img {
+     #sbo-rt-content .cover img,
+     #sbo-rt-content img {
         object-fit: contain;
     }
 }
 
-#book-content #sbo-rt-content #pdf-main {
+ #sbo-rt-content #pdf-main {
     transform-origin: 0 0;
     transform: scale(1.5);
     position: relative;
@@ -1138,191 +1212,202 @@ p.figure img {
     font-size: 85%;
 }
 
-#book-content #sbo-rt-content img.IMG---Figure {
+ #sbo-rt-content img.IMG---Figure {
     width: 100%;
 }
 
-#book-content  #sbo-rt-content table.arr-recipe {
+  #sbo-rt-content table.arr-recipe {
     border: 2px solid #3E9A3E !important;
 }
 
-#book-content  #sbo-rt-content table.arr-tip {
+  #sbo-rt-content table.arr-tip {
     border: 2px solid #6aa !important;
 }
 
-#book-content #sbo-rt-content .epigraph {
+ #sbo-rt-content .epigraph {
     margin-right: 1rem !important;
     padding: 0.5rem !important;
 }
 
-#book-content #sbo-rt-content table.processedcode {
+ #sbo-rt-content table.processedcode {
     border: 1px solid #8bb !important;
     border-top: none !important;
     font-family: "Consolas", Courier, monospace;
 }
 
-#book-content #sbo-rt-content table.processedcode td {
+ #sbo-rt-content table.processedcode td {
     padding: 0;
 }
 
-#book-content #sbo-rt-content table.processedcode tbody tr td.codeinfo,
-#book-content #sbo-rt-content table.processedcode tbody tr td.codeline {
+ #sbo-rt-content table.processedcode tbody tr td.codeinfo,
+ #sbo-rt-content table.processedcode tbody tr td.codeline {
     font-family: "Consolas", Courier, monospace !important;
+    background-color: #EEF2F6;
+    color: #3d3b49;
 }
 
-#book-content #sbo-rt-content table.processedcode tbody tr:nth-child(even) {
+ #sbo-rt-content table.processedcode tbody td em.string {
+    color: green;
+}
+
+ #sbo-rt-content table.processedcode tbody tr:nth-child(even) {
     background-color: transparent;
 }
 
-.ucvMode-white #book-content #sbo-rt-content div.brown-bg,
-.ucvMode-sepia #book-content #sbo-rt-content div.brown-bg,
-.ucvMode-white #book-content #sbo-rt-content p.brown-bg-text,
-.ucvMode-sepia #book-content #sbo-rt-content p.brown-bg-text,
-.ucvMode-white #book-content #sbo-rt-content table.bodytable,
-.ucvMode-sepia #book-content #sbo-rt-content table.bodytable,
-.ucvMode-white #book-content #sbo-rt-content .white,
-.ucvMode-sepia #book-content #sbo-rt-content .white,
-.ucvMode-white #book-content #sbo-rt-content .summary,
-.ucvMode-sepia #book-content #sbo-rt-content .summary,
-.ucvMode-white #book-content #sbo-rt-content .summary-title,
-.ucvMode-sepia #book-content #sbo-rt-content .summary-title,
-.ucvMode-white #book-content #sbo-rt-content .summary-subhead,
-.ucvMode-sepia #book-content #sbo-rt-content .summary-subhead,
-.ucvMode-black #book-content #sbo-rt-content table.bodytable > tbody > tr > td.td-entry > .gray,
-#book-content #sbo-rt-content .hljs-con, #book-content #sbo-rt-content .hljs-con-subst,
-.ucvMode-black #book-content #sbo-rt-content .exam1,
+.ucvMode-white  #sbo-rt-content div.brown-bg,
+.ucvMode-sepia  #sbo-rt-content div.brown-bg,
+.ucvMode-white  #sbo-rt-content p.brown-bg-text,
+.ucvMode-sepia  #sbo-rt-content p.brown-bg-text,
+.ucvMode-white  #sbo-rt-content table.bodytable,
+.ucvMode-sepia  #sbo-rt-content table.bodytable,
+.ucvMode-white  #sbo-rt-content .white,
+.ucvMode-sepia  #sbo-rt-content .white,
+.ucvMode-white  #sbo-rt-content .summary,
+.ucvMode-sepia  #sbo-rt-content .summary,
+.ucvMode-white  #sbo-rt-content .summary-title,
+.ucvMode-sepia  #sbo-rt-content .summary-title,
+.ucvMode-white  #sbo-rt-content .summary-subhead,
+.ucvMode-sepia  #sbo-rt-content .summary-subhead,
+.ucvMode-black  #sbo-rt-content table.bodytable > tbody > tr > td.td-entry > .gray,
+ #sbo-rt-content .hljs-con,  #sbo-rt-content .hljs-con-subst,
+.ucvMode-black  #sbo-rt-content .exam1,
 .ucvMode-white #sbo-rt-content .noindente,
 .ucvMode-sepia #sbo-rt-content .noindente {
     color: #3d3b49;
 }
 
-.ucvMode-black #book-content #sbo-rt-content .gray,
-.ucvMode-black #book-content #sbo-rt-content p.text-14pt,
-.ucvMode-black #book-content #sbo-rt-content p.text-9pt,
-.ucvMode-black #book-content #sbo-rt-content .subhead-18pt {
+.ucvMode-black  #sbo-rt-content .gray,
+.ucvMode-black  #sbo-rt-content p.text-14pt,
+.ucvMode-black  #sbo-rt-content p.text-9pt,
+.ucvMode-black  #sbo-rt-content .subhead-18pt {
     color: #f5f5f5;
 }
 
-#book-content #sbo-rt-content .boxb {
+ #sbo-rt-content .boxb {
     background-color: #65205c;
     padding: 1rem;
     color: #fff;
 }
-#book-content #sbo-rt-content .boxm {
+ #sbo-rt-content .boxm {
     background-color: #25295e;
     padding: 1rem;
 }
-#book-content #sbo-rt-content .boxt1 {
+ #sbo-rt-content .boxt1 {
     background-color: #54be91;
     padding: 1rem;
 }
-#book-content #sbo-rt-content .box2 {
+ #sbo-rt-content .box2 {
     background-color: #3777bc;
     padding: 1rem;
 }
-#book-content #sbo-rt-content .def_box,
-#book-content #sbo-rt-content .box1 {
+ #sbo-rt-content .box2 p,  #sbo-rt-content .box2 .box_title,   #sbo-rt-content .box2 .box_title .cl{
+    color: #fff!important;
+}
+
+ #sbo-rt-content .def_box,
+ #sbo-rt-content .box1 {
     background-color: #804c9e;
     padding: 1rem;
 }
-#book-content #sbo-rt-content .key_box {
+ #sbo-rt-content .key_box {
     background-color: #080040;
     padding: 1rem;
 }
-#book-content #sbo-rt-content .tip_box {
+ #sbo-rt-content .tip_box {
     background-color: #dd486c;
     padding: 1rem;
 }
-#book-content #sbo-rt-content .ind_box {
+ #sbo-rt-content .ind_box {
     background-color: #9d75a1;
     padding: 1rem;
 }
-#book-content #sbo-rt-content .boxpv {
+ #sbo-rt-content .boxpv {
     background-color: #b1217a;
     padding: 1rem;
 }
 
-.ucvMode-black #book-content #sbo-rt-content .blue,
-.ucvMode-black #book-content #sbo-rt-content .head1,
-.ucvMode-black #book-content #sbo-rt-content .head,
-.ucvMode-black #book-content #sbo-rt-content .body,
-.ucvMode-black #book-content #sbo-rt-content .co-summary-bullet,
-.ucvMode-black #book-content #sbo-rt-content .co-summary-head,
-.ucvMode-black #book-content #sbo-rt-content .fm-combinumeral,
-.ucvMode-black #book-content #sbo-rt-content .fm-figure-caption,
-.ucvMode-black #book-content #sbo-rt-content .fm-table-caption,
-.ucvMode-black #book-content #sbo-rt-content .fm-callout,
-.ucvMode-black #book-content #sbo-rt-content .fm-callout-head {
+.ucvMode-black  #sbo-rt-content .blue,
+.ucvMode-black  #sbo-rt-content .head1,
+.ucvMode-black  #sbo-rt-content .head,
+.ucvMode-black  #sbo-rt-content .body,
+.ucvMode-black  #sbo-rt-content .co-summary-bullet,
+.ucvMode-black  #sbo-rt-content .co-summary-head,
+.ucvMode-black  #sbo-rt-content .fm-combinumeral,
+.ucvMode-black  #sbo-rt-content .fm-figure-caption,
+.ucvMode-black  #sbo-rt-content .fm-table-caption,
+.ucvMode-black  #sbo-rt-content .fm-table-body,
+.ucvMode-black  #sbo-rt-content .fm-callout,
+.ucvMode-black  #sbo-rt-content .fm-callout-head {
     color: #fff;
 }
 
-.ucvMode-black #book-content #sbo-rt-content .fm-code-listing-caption {
+.ucvMode-black  #sbo-rt-content .fm-code-listing-caption {
     background: transparent;
 }
 
-.ucvMode-black #book-content #sbo-rt-content table p > .blue,
-.ucvMode-black #book-content #sbo-rt-content table tr td > .blue {
+.ucvMode-black  #sbo-rt-content table p > .blue,
+.ucvMode-black  #sbo-rt-content table tr td > .blue {
     color: #25295e;
 }
 
-.ucvMode-black #book-content #sbo-rt-content div {
+.ucvMode-black  #sbo-rt-content div {
     color: inherit;
 }
 
-.ucvMode-black #book-content #sbo-rt-content pre.codesnippet .blue {
+.ucvMode-black  #sbo-rt-content pre.codesnippet .blue {
     color: #00ADEF;
 }
 
-#book-content #sbo-rt-content div.note::before,
-#book-content #sbo-rt-content div.note::after,
-#book-content #sbo-rt-content div.packt_tip::before,
-#book-content #sbo-rt-content div.packt_tip::after {
+ #sbo-rt-content div.note::before,
+ #sbo-rt-content div.note::after,
+ #sbo-rt-content div.packt_tip::before,
+ #sbo-rt-content div.packt_tip::after {
     background: transparent;
     margin: 0;
 }
 
-#book-content #sbo-rt-content div.note,
-#book-content #sbo-rt-content div.packt_tip {
+ #sbo-rt-content div.note,
+ #sbo-rt-content div.packt_tip {
     padding-left: 6rem !important;
     margin: 1rem 0 !important;
 }
 
-#book-content #sbo-rt-content .hljs-con-addition,
-#book-content #sbo-rt-content .hljs-con-attr,
-#book-content #sbo-rt-content .hljs-con-bullet,
-#book-content #sbo-rt-content .hljs-con-name,
-#book-content #sbo-rt-content .hljs-con-string,
-#book-content #sbo-rt-content .hljs-con-symbol,
-#book-content #sbo-rt-content .hljs-con-template-tag,
-#book-content #sbo-rt-content .hljs-con-template-variable,
-#book-content #sbo-rt-content .hljs-con-type,
-#book-content #sbo-rt-content .hljs-con-variable {
+ #sbo-rt-content .hljs-con-addition,
+ #sbo-rt-content .hljs-con-attr,
+ #sbo-rt-content .hljs-con-bullet,
+ #sbo-rt-content .hljs-con-name,
+ #sbo-rt-content .hljs-con-string,
+ #sbo-rt-content .hljs-con-symbol,
+ #sbo-rt-content .hljs-con-template-tag,
+ #sbo-rt-content .hljs-con-template-variable,
+ #sbo-rt-content .hljs-con-type,
+ #sbo-rt-content .hljs-con-variable {
     color: #59129a;
 }
 
-#book-content #sbo-rt-content .side1,
-#book-content #sbo-rt-content .div-chap1{
+ #sbo-rt-content .side1,
+ #sbo-rt-content .div-chap1{
     margin-bottom: 1.2em !important;
 }
 
-#book-content #sbo-rt-content .div-chap1 {
+ #sbo-rt-content .div-chap1 {
     padding: 1rem !important;
 }
 
-#book-content #sbo-rt-content .fm-code-listing-caption code {
+ #sbo-rt-content .fm-code-listing-caption code {
     color: #3d3b49;
 }
 
-.ucvMode-sepia #book-content #sbo-rt-content p.featurepara,
-.ucvMode-white #book-content #sbo-rt-content p.featurepara {
+.ucvMode-sepia  #sbo-rt-content p.featurepara,
+.ucvMode-white  #sbo-rt-content p.featurepara {
     color: #3d3b49;
 }
 
-#book-content #sbo-rt-content div.index div[data-type="index"] ul li {
+ #sbo-rt-content div.index div[data-type="index"] ul li {
     list-style: none;
 }
 
-#book-content #sbo-rt-content div.longdesc {
+ #sbo-rt-content div.longdesc {
     position: unset;
     left: unset;
     top: unset;
@@ -1331,64 +1416,66 @@ p.figure img {
     overflow: unset;
 }
 
-#book-content #sbo-rt-content div.pre p.para_fl,
-#book-content #sbo-rt-content div.pre .hang {
+ #sbo-rt-content div.pre p.para_fl,
+ #sbo-rt-content div.pre .hang {
     white-space: normal;
 }
 
-.ucvMode-black #book-content #sbo-rt-content p.boxip,
-.ucvMode-black #book-content #sbo-rt-content p.box-bq {
+.ucvMode-black  #sbo-rt-content p.boxip,
+.ucvMode-black  #sbo-rt-content p.box-bq {
     color: #3d3b49;
 }
 
-.ucvMode-black #book-content #sbo-rt-content figure figcaption p:not(.tab-para),
-.ucvMode-black #book-content #sbo-rt-content section figure figcaption p:not(.tab-para) {
+.ucvMode-black  #sbo-rt-content figure figcaption p:not(.tab-para),
+.ucvMode-black  #sbo-rt-content section figure figcaption p:not(.tab-para) {
     color: #fff;
 }
 
-.ucvMode-white #book-content #sbo-rt-content .notee,
-.ucvMode-sepia #book-content #sbo-rt-content .notee {
+.ucvMode-white  #sbo-rt-content .notee,
+.ucvMode-sepia  #sbo-rt-content .notee {
     color: #3d3b49;
 }
 
-.ucvMode-black #book-content #sbo-rt-content ul.sq p.bull,
-.ucvMode-black #book-content #sbo-rt-content figure figcaption p.title-f,
-.ucvMode-black #book-content #sbo-rt-content figure figcaption p.title-t,
-.ucvMode-black #book-content #sbo-rt-content figure figcaption p.source {
+.ucvMode-black  #sbo-rt-content ul.sq p.bull,
+.ucvMode-black  #sbo-rt-content figure figcaption p.title-f,
+.ucvMode-black  #sbo-rt-content figure figcaption p.title-t,
+.ucvMode-black  #sbo-rt-content figure figcaption p.source {
     color: #fff;
 }
 
-.ucvMode-black #book-content #sbo-rt-content a sup,
-.ucvMode-black #book-content #sbo-rt-content p.fm-footnote sup {
+.ucvMode-black  #sbo-rt-content a sup,
+.ucvMode-black  #sbo-rt-content p.fm-footnote sup {
     color: #85e6ea;
 }
 
-.ucvMode-black #book-content #sbo-rt-content p.copyrightc,
-.ucvMode-black #book-content #sbo-rt-content p.copyrightbody1,
-.ucvMode-black #book-content #sbo-rt-content p.tablebodyc,
-.ucvMode-black #book-content #sbo-rt-content p.body1,
-.ucvMode-black #book-content #sbo-rt-content p.tocchapters,
-.ucvMode-black #book-content #sbo-rt-content p.fm-head-1toc,
-.ucvMode-black #book-content #sbo-rt-content p.tocparts,
-.ucvMode-black #book-content #sbo-rt-content p.grouptitlesix,
-.ucvMode-black #book-content #sbo-rt-content p.level1ix,
-.ucvMode-black #book-content #sbo-rt-content p.level2ix,
-.ucvMode-black #book-content #sbo-rt-content p.fm-head2,
-.ucvMode-black #book-content #sbo-rt-content p.fm-sidebar-title,
-.ucvMode-black #book-content #sbo-rt-content p.fm-footnote,
-.ucvMode-black #book-content #sbo-rt-content p.fm-quote-source,
-.ucvMode-black #book-content #sbo-rt-content p.fm-equation {
+.ucvMode-black  #sbo-rt-content p.copyrightc,
+.ucvMode-black  #sbo-rt-content p.copyrightbody1,
+.ucvMode-black  #sbo-rt-content p.tablebodyc,
+.ucvMode-black  #sbo-rt-content p.body1,
+.ucvMode-black  #sbo-rt-content p.tocchapters,
+.ucvMode-black  #sbo-rt-content p.fm-head-1toc,
+.ucvMode-black  #sbo-rt-content p.tocparts,
+.ucvMode-black  #sbo-rt-content p.grouptitlesix,
+.ucvMode-black  #sbo-rt-content p.level1ix,
+.ucvMode-black  #sbo-rt-content p.level2ix,
+.ucvMode-black  #sbo-rt-content p.fm-head2,
+.ucvMode-black  #sbo-rt-content p.fm-sidebar-title,
+.ucvMode-black  #sbo-rt-content p.fm-footnote,
+.ucvMode-black  #sbo-rt-content p.fm-quote-source,
+.ucvMode-black  #sbo-rt-content p.fm-equation {
     color: #fff;
 }
 
-.ucvMode-black #book-content #sbo-rt-content blockquote.packt_quote {
+.ucvMode-black  #sbo-rt-content blockquote.packt_quote,
+.ucvMode-black  #sbo-rt-content blockquote.blockquote p {
     color: #3d3b49;
 }
 
-#book-content #sbo-rt-content p.Code,
-#book-content #sbo-rt-content p.source-code,
-#book-content #sbo-rt-content p.snippet.shell,
-#book-content #sbo-rt-content p.snippet.code {
+ #sbo-rt-content p.Code,
+ #sbo-rt-content p.source-code,
+ #sbo-rt-content pre.source-code,
+ #sbo-rt-content p.snippet.shell,
+ #sbo-rt-content p.snippet.code {
     font-family: "Consolas", Courier, monospace !important;
     background-color: #eef2f6;
     hyphens: none;
@@ -1398,196 +1485,905 @@ p.figure img {
     margin: 0 !important;
 }
 
-.ucvMode-black #book-content #sbo-rt-content p.source-code,
-.ucvMode-black #book-content #sbo-rt-content p.snippet.shell,
-.ucvMode-black #book-content #sbo-rt-content p.snippet.code {
+.ucvMode-black  #sbo-rt-content p.source-code,
+.ucvMode-black  #sbo-rt-content p.snippet.shell,
+.ucvMode-black  #sbo-rt-content p.snippet.code{
     color: #3d3b49;
 }
 
-.ucvMode-black #book-content #sbo-rt-content header h1.title span.number,
-.ucvMode-black #book-content #sbo-rt-content section.chapter ol li::marker,
-.ucvMode-black #book-content #sbo-rt-content section.chapter ol li p,
-.ucvMode-black #book-content #sbo-rt-content section.glossary dl dt dfn {
+.ucvMode-black  #sbo-rt-content header h1.title span.number,
+.ucvMode-black  #sbo-rt-content section.chapter ol li::marker,
+.ucvMode-black  #sbo-rt-content section.chapter ol li p,
+.ucvMode-black  #sbo-rt-content section.glossary dl dt dfn {
     color: #fff;
 }
 
-.ucvMode-black #book-content #sbo-rt-content figure.figure figcaption div.note p,
-.ucvMode-black #book-content #sbo-rt-content figure.figure figcaption div.source p {
+.ucvMode-black  #sbo-rt-content figure.figure figcaption div.note p,
+.ucvMode-black  #sbo-rt-content figure.figure figcaption div.source p {
     color: #3d3b49;
 }
 
-#book-content #sbo-rt-content div.booksection p[class^='bull'] span {
+ #sbo-rt-content div.booksection p[class^='bull'] span {
     margin: 0 0.25rem 0 0;
 }
 
-#book-content #sbo-rt-content div.booksection div.boxb,
-#book-content #sbo-rt-content div.booksection div.box1 p span,
-#book-content #sbo-rt-content div.booksection div.box2 p span,
-#book-content #sbo-rt-content div.booksection div.boxl ul.white,
-#book-content #sbo-rt-content div.booksection div.boxr ul.white,
-#book-content #sbo-rt-content div.booksection div.boxm ul.white {
+ #sbo-rt-content div.booksection div.boxb,
+ #sbo-rt-content div.booksection div.box1 p span,
+ #sbo-rt-content div.booksection div.box2 p span,
+ #sbo-rt-content div.booksection div.boxl ul.white,
+ #sbo-rt-content div.booksection div.boxr ul.white,
+ #sbo-rt-content div.booksection div.boxm ul.white {
     color: #fff;
 }
 
-#book-content #sbo-rt-content div.booksection div.boxl {
+ #sbo-rt-content div.booksection div.boxl {
     background-color: #804c9e;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.box3 {
+ #sbo-rt-content div.booksection div.box3 {
     background-color: #c6ceea;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.box3a {
+ #sbo-rt-content div.booksection div.box3a {
     background-color: #e4e1e0;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.box4 {
+ #sbo-rt-content div.booksection div.box4 {
     background-color: #fef9cd;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.box5 {
+ #sbo-rt-content div.booksection div.box5 {
     background-color: #cce9e7;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.boxbr {
+ #sbo-rt-content div.booksection div.boxbr {
     background-color: #4c2432;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.boxf {
+ #sbo-rt-content div.booksection div.boxf {
     background-color: #b2146f;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.boxk {
+ #sbo-rt-content div.booksection div.boxk {
     background-color: #6d002e;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.boxo {
+ #sbo-rt-content div.booksection div.boxo {
     background-color: #fedfc5;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.boxp,
-#book-content #sbo-rt-content div.booksection div.ind_box1 {
+ #sbo-rt-content div.booksection div.boxp,
+ #sbo-rt-content div.booksection div.ind_box1 {
     background-color: #e59397;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.boxp1 {
+ #sbo-rt-content div.booksection div.boxp1 {
     background-color: #245a9c;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.boxr {
+ #sbo-rt-content div.booksection div.boxr {
     background-color: #ae1d58;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.sidebar {
+ #sbo-rt-content div.booksection div.sidebar {
     background-color: #934258;
     padding: 1rem !important;
 }
 
-#book-content #sbo-rt-content div.booksection div.boxt {
+ #sbo-rt-content div.booksection div.boxt {
     background-color: #00b1c5;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.tool_box {
+ #sbo-rt-content div.booksection div.tool_box {
     background-color: #3463af;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.boxw {
+ #sbo-rt-content div.booksection div.boxw {
     background-color: #9d75a1;
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.box,
-#book-content #sbo-rt-content div.booksection div.boxv,
-#book-content #sbo-rt-content div.booksection div.scan {
+ #sbo-rt-content div.booksection div.box,
+ #sbo-rt-content div.booksection div.boxv,
+ #sbo-rt-content div.booksection div.scan {
     padding: 1rem;
 }
 
-#book-content #sbo-rt-content div.booksection div.boxo p.hang {
+ #sbo-rt-content div.booksection div.boxo p.hang {
     text-indent: 0;
 }
 
-.ucvMode-black #book-content #sbo-rt-content div.booksection .pink,
-.ucvMode-black #book-content #sbo-rt-content div.booksection .vio,
-.ucvMode-black #book-content #sbo-rt-content div.booksection .vio4,
-.ucvMode-black #book-content #sbo-rt-content div.booksection .vio1,
-.ucvMode-black #book-content #sbo-rt-content div.booksection .vio2,
-.ucvMode-black #book-content #sbo-rt-content div.booksection .vio6,
-.ucvMode-black #book-content #sbo-rt-content div.booksection .blue1,
-.ucvMode-black #book-content #sbo-rt-content div.booksection .blue5,
-.ucvMode-black #book-content #sbo-rt-content div.booksection p.block span.blue5,
-.ucvMode-black #book-content #sbo-rt-content div.booksection p[class^='bull'] span,
-.ucvMode-black #book-content #sbo-rt-content div.booksection p.noindentf b {
+.ucvMode-black  #sbo-rt-content div.booksection .pink,
+.ucvMode-black  #sbo-rt-content div.booksection .vio,
+.ucvMode-black  #sbo-rt-content div.booksection .vio4,
+.ucvMode-black  #sbo-rt-content div.booksection .vio1,
+.ucvMode-black  #sbo-rt-content div.booksection .vio2,
+.ucvMode-black  #sbo-rt-content div.booksection .vio6,
+.ucvMode-black  #sbo-rt-content div.booksection .blue1,
+.ucvMode-black  #sbo-rt-content div.booksection .blue5,
+.ucvMode-black  #sbo-rt-content div.booksection p.block span.blue5,
+.ucvMode-black  #sbo-rt-content div.booksection p[class^='bull'] span,
+.ucvMode-black  #sbo-rt-content div.booksection p.noindentf b {
     color: #fff;
 }
 
-.ucvMode-black #book-content #sbo-rt-content p.Chapter-Title,
-.ucvMode-black #book-content #sbo-rt-content p.My-Basic-Paragraph,
-.ucvMode-black #book-content #sbo-rt-content p.My-Basic-Paragraph a span,
-.ucvMode-black #book-content #sbo-rt-content p.Numbered-List,
-.ucvMode-black #book-content #sbo-rt-content p.Heading-1-1,
-.ucvMode-black #book-content #sbo-rt-content p.Heading-1-1-1,
-.ucvMode-black #book-content #sbo-rt-content p.Bullet-List,
-.ucvMode-black #book-content #sbo-rt-content p.Figure-Caption,
-.ucvMode-black #book-content #sbo-rt-content p.Table-Caption,
-.ucvMode-black #book-content #sbo-rt-content p.List-Paragraph_wrd_1,
-.ucvMode-black #book-content #sbo-rt-content p.Index-Title,
-.ucvMode-black #book-content #sbo-rt-content p.Index-Section-Head,
-.ucvMode-black #book-content #sbo-rt-content p.Index-Level-1,
-.ucvMode-black #book-content #sbo-rt-content p.Index-Level-2 {
+.ucvMode-black  #sbo-rt-content p.Chapter-Title,
+.ucvMode-black  #sbo-rt-content p.My-Basic-Paragraph,
+.ucvMode-black  #sbo-rt-content p.My-Basic-Paragraph a span,
+.ucvMode-black  #sbo-rt-content p.Numbered-List,
+.ucvMode-black  #sbo-rt-content p.Heading-1-1,
+.ucvMode-black  #sbo-rt-content p.Heading-1-1-1,
+.ucvMode-black  #sbo-rt-content p.Bullet-List,
+.ucvMode-black  #sbo-rt-content p.Figure-Caption,
+.ucvMode-black  #sbo-rt-content p.Table-Caption,
+.ucvMode-black  #sbo-rt-content p.List-Paragraph_wrd_1,
+.ucvMode-black  #sbo-rt-content p.Index-Title,
+.ucvMode-black  #sbo-rt-content p.Index-Section-Head,
+.ucvMode-black  #sbo-rt-content p.Index-Level-1,
+.ucvMode-black  #sbo-rt-content p.Index-Level-2 {
     color: #fff;
 }
 
-.ucvMode-black #book-content #sbo-rt-content table tbody td.No-Table-Style p {
-    color: #3d3b49;
-}
-
-.ucvMode-black #book-content #sbo-rt-content section p.indent,
-.ucvMode-black #book-content #sbo-rt-content section p.noindent,
-.ucvMode-black #book-content #sbo-rt-content section p.footnote,
-.ucvMode-black #book-content #sbo-rt-content section ul.rarrow li p,
-.ucvMode-black #book-content #sbo-rt-content section ol li p,
-.ucvMode-black #book-content #sbo-rt-content section p.step,
-.ucvMode-black #book-content #sbo-rt-content section figure.image-l figcaption,
-.ucvMode-black #book-content #sbo-rt-content section p[class^='question'],
-.ucvMode-black #book-content #sbo-rt-content section p[class^='answer'],
-.ucvMode-black #book-content #sbo-rt-content section div.note p.note-para,
-.ucvMode-black #book-content #sbo-rt-content section div.note div.note-para p,
-.ucvMode-black #book-content #sbo-rt-content section div.note-para3 p.note-para2,
-.ucvMode-black #book-content #sbo-rt-content section p.code-para,
-.ucvMode-black #book-content #sbo-rt-content section p.copy,
-.ucvMode-black #book-content #sbo-rt-content section p.copy1,
-.ucvMode-black #book-content #sbo-rt-content section p.credit,
-.ucvMode-black #book-content #sbo-rt-content section p.credit1,
-.ucvMode-black #book-content #sbo-rt-content section p.copy-title,
-.ucvMode-black #book-content #sbo-rt-content section p.copy-titlea,
-.ucvMode-black #book-content #sbo-rt-content section p.copy-title1,
-.ucvMode-black #book-content #sbo-rt-content section p.copy1a,
-.ucvMode-black #book-content #sbo-rt-content section div.boxw p {
+.ucvMode-black  #sbo-rt-content section p.indent,
+.ucvMode-black  #sbo-rt-content section p.noindent,
+.ucvMode-black  #sbo-rt-content section p.footnote,
+.ucvMode-black  #sbo-rt-content section ul.rarrow li p,
+.ucvMode-black  #sbo-rt-content section ol li p,
+.ucvMode-black  #sbo-rt-content section p.step,
+.ucvMode-black  #sbo-rt-content section figure.image-l figcaption,
+.ucvMode-black  #sbo-rt-content section p[class^='question'],
+.ucvMode-black  #sbo-rt-content section p[class^='answer'],
+.ucvMode-black  #sbo-rt-content section div.note p.note-para,
+.ucvMode-black  #sbo-rt-content section div.note div.note-para p,
+.ucvMode-black  #sbo-rt-content section div.note-para3 p.note-para2,
+.ucvMode-black  #sbo-rt-content section p.code-para,
+.ucvMode-black  #sbo-rt-content section p.copy,
+.ucvMode-black  #sbo-rt-content section p.copy1,
+.ucvMode-black  #sbo-rt-content section p.credit,
+.ucvMode-black  #sbo-rt-content section p.credit1,
+.ucvMode-black  #sbo-rt-content section p.copy-title,
+.ucvMode-black  #sbo-rt-content section p.copy-titlea,
+.ucvMode-black  #sbo-rt-content section p.copy-title1,
+.ucvMode-black  #sbo-rt-content section p.copy1a,
+.ucvMode-black  #sbo-rt-content section div.boxw p {
     color: #fff
 }
 
-.ucvMode-black #book-content #sbo-rt-content .chapterNumber,
-.ucvMode-black #book-content #sbo-rt-content .chapterTitle,
-.ucvMode-black #book-content #sbo-rt-content .chaptertitle,
-.ucvMode-black #book-content #sbo-rt-content p span.codeLabel,
-.ucvMode-black #book-content #sbo-rt-content span.codeLabel,
-.ucvMode-black #book-content #sbo-rt-content tr .left span,
-.ucvMode-black #book-content #sbo-rt-content .tabularentry,
-.ucvMode-black #book-content #sbo-rt-content table tr {
+.ucvMode-black  #sbo-rt-content .chapterNumber,
+.ucvMode-black  #sbo-rt-content .chapterTitle,
+.ucvMode-black  #sbo-rt-content .chaptertitle,
+.ucvMode-black  #sbo-rt-content p span.codeLabel,
+.ucvMode-black  #sbo-rt-content span.codeLabel,
+.ucvMode-black  #sbo-rt-content tr .left span,
+.ucvMode-black  #sbo-rt-content .tabularentry,
+.ucvMode-black  #sbo-rt-content table tr,
+.ucvMode-black  #sbo-rt-content table td {
     color: #fff !important;
     background-color: #3d3b49 !important;
+}
+
+.ucvMode-black  #sbo-rt-content pre .fm-combinumeral {
+    color: #3d3b49;
+}
+
+.ucvMode-black  #sbo-rt-content .fm-combinumeral1 {
+    color: #fff;
+}
+
+.ucvMode-black  #sbo-rt-content pre .blue {
+    color: #3953A4
+}
+
+.ucvMode-black  #sbo-rt-content table.No-Table-Style,
+.ucvMode-black  #sbo-rt-content table.Basic-Table {
+    background-color: #3d3b49;
+}
+
+.ucvMode-black  #sbo-rt-content li.numbered img,
+.ucvMode-black  #sbo-rt-content p.normal img,
+.ucvMode-black  #sbo-rt-content figure.mediaobject img {
+    background-color: #fff;
+}
+
+ #sbo-rt-content div.code {
+    background-color: #e0e0e0;
+    margin: 0.5rem 0 0.8rem 0;
+    padding: 0.5rem;
+}
+
+ #sbo-rt-content div.boxb div.code {
+    color: #3d3b49;
+}
+
+ #sbo-rt-content div.code p span {
+    font-family: "Consolas", Courier, monospace;
+}
+
+ #sbo-rt-content div.code p.code2-a2,
+ #sbo-rt-content div.code p.code2a3 {
+    margin: 0 0 0 6rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.codea1,
+ #sbo-rt-content div.code p.code-1 {
+    margin: 0 0 0 1.2rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code {
+    margin: 0 !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code-1at {
+    margin: 1.1rem 0 0 1.8rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code1 {
+    margin: 0 0 0 2.4rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code1-a1 {
+    margin: 0 0 0 3.4rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code1-a2 {
+    margin: 0 0 0 4rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code2 {
+    margin: 0 0 0 4.8rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code2-a {
+    margin: 0 0 0 5.4rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code3a {
+    margin: 0 0 0 8.4rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code3-a1 {
+    margin: 0 0 0 8.2rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code4 {
+    margin: 0 0 0 9.6rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code4a {
+    margin: 0 0 0 10.8rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code5 {
+    margin: 0 0 0 12rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code5a {
+    margin: 0 0 0 13.2rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code15 {
+    margin: 0 0 0 15rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code2a1 {
+    margin: 0 0 0 6.6rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code2t {
+    margin: 1rem 0 0 4.8rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.codea {
+    margin: 0 0 0 0.6rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.codet1 {
+    margin: 2.2rem 0 0 0 !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code1t {
+    margin: 1rem 0 0 2.4rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.codet {
+    margin: 1.1rem 0 0 0 !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code-1a {
+    margin: 0 0 0 1.8rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code1a {
+    margin: 0 0 0 3.6rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code1a1 {
+    margin: 0 0 0 4.2rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code1a1t {
+    margin: 1rem 0 0 4.2rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code3 {
+    margin: 0 0 0 7.2rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code3a1,
+ #sbo-rt-content div.code p.code3b {
+    margin: 0 0 0 9rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code3t {
+    margin: 1rem 0 0 7.2rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code3-a {
+    margin: 0 0 0 7.8rem !important;
+    line-height: 1.2rem !important;
+}
+
+ #sbo-rt-content div.code p.code6 {
+    margin: 0 0 0 14.4rem !important;
+    line-height: 1.2rem !important;
+}
+
+.ucvMode-black  #sbo-rt-content table.borderall tbody td.bgcolor,
+.ucvMode-black  #sbo-rt-content table.borderall tbody td.bgcolor1,
+.ucvMode-black  #sbo-rt-content table.tablem tbody td.bgcolor,
+.ucvMode-black  #sbo-rt-content table.tablem tbody td.bgcolor1,
+.ucvMode-black  #sbo-rt-content div.code p span {
+    color: #3d3b49;
+}
+
+.ucvMode-black  #sbo-rt-content table.borderall,
+.ucvMode-black  #sbo-rt-content table.tablem {
+    background-color: #3d3b49;
+}
+
+.ucvMode-black  #sbo-rt-content section section aside section h1,
+.ucvMode-black  #sbo-rt-content section section aside section h2 {
+    color: #3d3b49 !important;
+}
+
+.ucvMode-black  #sbo-rt-content section section figure table thead tr td.bgcolor1,
+.ucvMode-black  #sbo-rt-content section section.feature2 ul.none li,
+.ucvMode-black  #sbo-rt-content section section.feature2 ul.ul-box li,
+.ucvMode-black  #sbo-rt-content section section.feature1 ul.ul-box li,
+.ucvMode-black  #sbo-rt-content section section aside section.feature1 p,
+.ucvMode-black  #sbo-rt-content section section aside section.feature2 p {
+    color: #3d3b49;
+}
+
+.ucvMode-black  #sbo-rt-content section section section aside section p a:link,
+.ucvMode-black  #sbo-rt-content section section code a:link {
+    color: #d3002d !important;
+}
+
+.ucvMode-black  #sbo-rt-content img.bi {
+    filter: invert(.8);
+}
+
+.ucvMode-black  #sbo-rt-content .pdf-page img.bi {
+    filter: invert(.5);
+}
+
+#sbo-rt-content .hljs-con-attribute, #sbo-rt-content .hljs-con-builtin-name, #sbo-rt-content .hljs-con-class, #sbo-rt-content .hljs-con-code, #sbo-rt-content .hljs-con-constructor, #sbo-rt-content .hljs-con-formula, #sbo-rt-content .hljs-con-function, #sbo-rt-content .hljs-con-meta-keyword, #sbo-rt-content .hljs-con-meta-string, #sbo-rt-content .hljs-con-module, #sbo-rt-content .hljs-con-module-access, #sbo-rt-content .hljs-con-operator, #sbo-rt-content .hljs-con-params, #sbo-rt-content .hljs-con-pattern-match, #sbo-rt-content .hljs-con-regexp, #sbo-rt-content .hljs-con-selector-attr, #sbo-rt-content .hljs-con-selector-class, #sbo-rt-content .hljs-con-selector-id, #sbo-rt-content .hljs-con-selector-pseudo, #sbo-rt-content .hljs-con-tag, #sbo-rt-content .hljs-con-typing {
+    color: #6f6f69 !important;
+}
+
+.ucvMode-black  #sbo-rt-content .informaltable table p {
+    color: #3d3b49 !important;
+}
+
+ #sbo-rt-content .follow table,
+ #sbo-rt-content .note table.note {
+    display: table !important;
+    width: 100%;
+}
+
+ #sbo-rt-content .note .Note-Label,
+ #sbo-rt-content .follow .Note-Label {
+    background-color: white;
+    padding-bottom: 1rem;
+}
+
+.ucvMode-black  #sbo-rt-content .follow td,
+.ucvMode-black  #sbo-rt-content .note td,
+.ucvMode-black  #sbo-rt-content .follow .Note-Label,
+.ucvMode-black  #sbo-rt-content .note .Note-Label {
+    background-color: #3d3b49 !important;
+}
+
+.ucvMode-black  #sbo-rt-content .introCell .intro {
+    color: white;
+}
+
+.ucvMode-black  #sbo-rt-content aside section.feature1 ol.decimal li,
+.ucvMode-black  #sbo-rt-content aside section.feature1 ul.square li,
+.ucvMode-black  #sbo-rt-content aside section.feature1 ul.none li,
+.ucvMode-black  #sbo-rt-content aside section.feature1 section h3 {
+    color: #3d3b49 !important;
+}
+
+.ucvMode-black  #sbo-rt-content section ol.none li p span,
+.ucvMode-black  #sbo-rt-content section ul.none li p,
+.ucvMode-black  #sbo-rt-content section ul.none li p span,
+.ucvMode-black  #sbo-rt-content section ol.decimal li p span,
+.ucvMode-black  #sbo-rt-content aside section ol.decimal li ol.upper-alpha p span,
+.ucvMode-black  #sbo-rt-content section ul.disc li p,
+.ucvMode-black  #sbo-rt-content section ul.disc li p span,
+.ucvMode-black  #sbo-rt-content aside section ul.disc li p {
+    color: white;
+}
+
+ #sbo-rt-content div.box2 p.pre-ex,
+.ucvMode-black  #sbo-rt-content div.box2 p.pre-ex,
+.ucvMode-black  #sbo-rt-content div.h4_heading p span.highlight,
+.ucvMode-black  #sbo-rt-content div.h4_heading div.code p.code_only {
+    color: #3d3b49 !important;
+}
+
+ #sbo-rt-content div.box1 p[class^='indenthanging'],
+ #sbo-rt-content div.box1 p.box1_txt {
+    color: white;
+}
+
+ #sbo-rt-content pre code .hljs-con-meta {
+    color: #50a14f
+}
+
+ #sbo-rt-content pre code .hljs-con-built_in {
+    color: #c18401;
+}
+
+ #sbo-rt-content pre code .hljs-con-number {
+    color: #3d3b49;
+}
+
+ #sbo-rt-content pre code .hljs-con-title {
+    color: #4078f2;
+}
+
+ #sbo-rt-content pre code .hljs-con-keyword {
+    color: #a626a4;
+}
+
+ #sbo-rt-content pre code .hljs-con-literal {
+    color: #069;
+}
+
+ #sbo-rt-content .lg_fa table {
+    display: table !important;
+    width: 100%;
+}
+
+.ucvMode-black  #sbo-rt-content .lg_fa table tbody tr.LG-Follow-Along-Table {
+    color: black !important;
+}
+
+.ucvMode-black  #sbo-rt-content .lg_important,
+.ucvMode-black  #sbo-rt-content .lg_warning,
+.ucvMode-black  #sbo-rt-content .lg_visualize,
+.ucvMode-black  #sbo-rt-content .lg_note,
+.ucvMode-black  #sbo-rt-content .lg_save_command {
+    background-color: #3d3b49 !important;
+}
+
+ #sbo-rt-content ol.upper-alpha li {
+    list-style: upper-alpha;
+}
+
+ #sbo-rt-content section .chap1 .chaptit,
+ #sbo-rt-content section .part_num {
+    color: #3d3b49;
+}
+
+ #sbo-rt-content section .chap3 .box2 .box2,
+ #sbo-rt-content section .chap2 .box2 .box2,
+ #sbo-rt-content section table tbody tr .tdleft .box .box1,
+ #sbo-rt-content section .box2 .box2 .box2,
+ #sbo-rt-content section .box2 .blockquote .box2 .box2,
+ #sbo-rt-content section table tbody tr .tdleft3c .box1,
+ #sbo-rt-content section table tbody tr .tdleft .box1 .box1 {
+    color: #fff;
+}
+
+ #sbo-rt-content section .box2 .footnoot,
+ #sbo-rt-content section .box2 .box3-title,
+ #sbo-rt-content section .box2 .box3a-title,
+ #sbo-rt-content section .box2 .box3b-title,
+ #sbo-rt-content section .box2 .box3ba-title,
+ #sbo-rt-content section .box2 .box3c-title,
+ #sbo-rt-content section .box2 .tabhead,
+ #sbo-rt-content section .box2 .tabhead1,
+ #sbo-rt-content section .box2 .noindentat,
+ #sbo-rt-content section .box2 .box-exth,
+ #sbo-rt-content section .box2 .box-exth1,
+ #sbo-rt-content section .box2 .noindent,
+ #sbo-rt-content section .box2 .noindentsz1 .bold,
+ #sbo-rt-content section .box2 .noindentsz2,
+ #sbo-rt-content section .box2 .noindentai,
+ #sbo-rt-content section .box2 .noindents,
+ #sbo-rt-content section .box2 .box2a-title,
+ #sbo-rt-content section .box2 .noindenta {
+    color: #3d3b49 !important;
+}
+
+.ucvMode-black  #sbo-rt-content .mathi,
+.ucvMode-black  #sbo-rt-content .chap2 .alphaa,
+.ucvMode-black  #sbo-rt-content section .chap2 .chaptit1,
+.ucvMode-black  #sbo-rt-content section .chap2 .chaptit2,
+.ucvMode-black  #sbo-rt-content .chap2 .numa .numa,
+.ucvMode-black  #sbo-rt-content section .chap3 .chaptit1,
+.ucvMode-black  #sbo-rt-content section .chap3 .chaptit2,
+.ucvMode-black  #sbo-rt-content section .box3 .noindenta,
+.ucvMode-black  #sbo-rt-content section .box3 .noindentat,
+.ucvMode-black  #sbo-rt-content section .box2 .box .box,
+.ucvMode-black  #sbo-rt-content section .box2 .boxz .boxz,
+.ucvMode-black  #sbo-rt-content section .box2 .numa .numa,
+.ucvMode-black  #sbo-rt-content section .nobox .noindent .bold,
+.ucvMode-black  #sbo-rt-content section .nobox .num .num,
+.ucvMode-black  #sbo-rt-content section .box2 .dash .dash,
+.ucvMode-black  #sbo-rt-content .box4 .box .box,
+.ucvMode-black  #sbo-rt-content section .box5 .dashn .dashn,
+.ucvMode-black  #sbo-rt-content section .box5 .box2a-title1,
+.ucvMode-black  #sbo-rt-content section .box5 .box2a-title2,
+.ucvMode-black  #sbo-rt-content section .box5 .noindentsz,
+.ucvMode-black  #sbo-rt-content section .box2 .hyp .hyp1,
+.ucvMode-black  #sbo-rt-content section .box2 .num1 .num1,
+.ucvMode-black  #sbo-rt-content section .box1 .box-aut,
+.ucvMode-black  #sbo-rt-content section .box1 .box-ext,
+.ucvMode-black  #sbo-rt-content section .box2 .blockquote .hyp {
+    color: #3d3b49;
+}
+
+ #sbo-rt-content section .list li a .key_col,
+ #sbo-rt-content section .list1 li a .key_col,
+ #sbo-rt-content section .bullet a .fig_col1 strong,
+ #sbo-rt-content section p a .fig_col1 strong,
+ #sbo-rt-content section p a .tab_col strong,
+ #sbo-rt-content section .bullet .key_col,
+ #sbo-rt-content section p .key_col {
+    color: #d3002d;
+}
+
+.ucvMode-black  #sbo-rt-content section .list li span,
+.ucvMode-black  #sbo-rt-content section .list1 li,
+.ucvMode-black  #sbo-rt-content section .list1 li span,
+.ucvMode-black  #sbo-rt-content section .number .upperalpha li,
+.ucvMode-black  #sbo-rt-content section .EM_GLOS .KT,
+.ucvMode-black  #sbo-rt-content section .EM_INDX1,
+.ucvMode-black  #sbo-rt-content section .bulleta,
+.ucvMode-black  #sbo-rt-content section .bullet {
+    color: #fff;
+}
+
+.ucvMode-black  #sbo-rt-content section .list li a .key_col,
+.ucvMode-black  #sbo-rt-content section .list1 li a .key_col,
+.ucvMode-black  #sbo-rt-content section p .key_col,
+.ucvMode-black  #sbo-rt-content section .bullet .key_col,
+.ucvMode-black  #sbo-rt-content section .bullet a .fig_col1 strong,
+.ucvMode-black  #sbo-rt-content section p a .tab_col strong,
+.ucvMode-black  #sbo-rt-content section p a .fig_col1 strong {
+    color: #85E6EA;
+}
+
+.ucvMode-black  #sbo-rt-content section .box2c header .subhead,
+.ucvMode-black  #sbo-rt-content section .box2a header h3.subhead,
+.ucvMode-black  #sbo-rt-content section .box2 header .subheadbox_1,
+.ucvMode-black  #sbo-rt-content section .sidebarbg .subheadbox,
+.ucvMode-black  #sbo-rt-content section .sidebar-padding .subheadbox {
+    color: #3d3b49 !important;
+}
+
+.ucvMode-black  #sbo-rt-content section div#box5-19 .bullet,
+.ucvMode-black  #sbo-rt-content section .box_3a .noindent,
+.ucvMode-black  #sbo-rt-content section .box2b .noindent,
+.ucvMode-black  #sbo-rt-content section .box2b .bullet,
+.ucvMode-black  #sbo-rt-content section .sidebarbg .bullet,
+.ucvMode-black  #sbo-rt-content section .sidebarbg .noindent,
+.ucvMode-black  #sbo-rt-content section .sidebar-padding .bullet,
+.ucvMode-black  #sbo-rt-content section .box_3aa .noindent {
+    color: #3d3b49;
+}
+
+ #sbo-rt-content section div#box5-19 .noindent1 {
+    color: #3d3b49 !important;
+}
+
+ #sbo-rt-content .biblioEntryList .bibliographyEntry {
+    list-style: none;
+}
+
+.ucvFamily-OpenDyslexic  #sbo-rt-content * {
+    font-family: "OpenDyslexic" !important;
+}
+
+.ucvFamily-SanSerif  #sbo-rt-content * {
+    font-family: "Guardian Sans Text" !important;
+}
+
+ #sbo-rt-content aside section.box {
+    margin-top: 1rem;
+    padding: 10px 15px;
+}
+
+.ucvMode-black  #sbo-rt-content aside section.box {
+    background-color: #4d495c;
+}
+
+.ucvMode-black  #sbo-rt-content aside section.box p,
+.ucvMode-black  #sbo-rt-content aside section.box ul,
+.ucvMode-black  #sbo-rt-content aside section.box h2 {
+    color: #fff !important;
+}
+
+ #sbo-rt-content ol.none > li {
+    list-style-type: none;
+}
+
+ #sbo-rt-content ol li.list-a1 {
+    list-style-type: upper-alpha;
+}
+
+ #sbo-rt-content div div[id^='footnote'] p.Footnote span a._idFootnoteAnchor {
+    text-indent: -2rem !important;
+    margin-right: 0.5rem !important;
+}
+
+ #sbo-rt-content div p[data-type="footnote"] sup {
+    top: 0;
+}
+
+ #sbo-rt-content div.sidebar p[class^='noindent'],
+ #sbo-rt-content div.sidebar p[class='blockquotebig'],
+ #sbo-rt-content div.sidebar p[class='blockquoteatt1'],
+ #sbo-rt-content div.sidebar p[class='blockquotep1'] {
+    color: #3d3b49;
+}
+
+.ucvMode-black  #sbo-rt-content p[class^="noindentcolor"],
+.ucvMode-black  #sbo-rt-content p[class^="noindentcolor"] span.black,
+.ucvMode-black  #sbo-rt-content p.caption span.black,
+.ucvMode-black  #sbo-rt-content p.captiona span.black,
+.ucvMode-black  #sbo-rt-content div.sidebar p[class^='noindent'],
+.ucvMode-black  #sbo-rt-content div.sidebar p[class='blockquotebig'],
+.ucvMode-black  #sbo-rt-content div.sidebar p[class='blockquoteatt1'],
+.ucvMode-black  #sbo-rt-content div.sidebar p[class='blockquotep1'] {
+    color: #fff;
+}
+
+.ucvMode-black  #sbo-rt-content div#pdf-main div.pdf-page div.pd div.pf div.pc div {
+    color: transparent;
+}
+
+ #sbo-rt-content div.ProgramCode {
+    margin: 1.5rem 0 !important;
+    padding: 0.75em 1.5em;
+    background-color: #EEF2F6;
+    color: #3D3B49;
+    overflow-y: hidden;
+    -webkit-hyphens: none;
+    white-space: pre;
+    display: block;
+}
+
+ #sbo-rt-content div.ProgramCode div.LineGroup div {
+    font-family: "Consolas", Courier, monospace;
+}
+
+ #sbo-rt-content .programsa,
+ #sbo-rt-content .programsdd,
+ #sbo-rt-content .programsd,
+ #sbo-rt-content .programs,
+ #sbo-rt-content table p.programd1d,
+ #sbo-rt-content table p.programd1 {
+    font-family: "Consolas", Courier, monospace !important;
+}
+
+ #sbo-rt-content .programsdd,
+ #sbo-rt-content .programsd,
+ #sbo-rt-content .programs {
+    padding: 0.75em 1.5em;
+    background-color: #EEF2F6;
+    color: #3D3B49;
+    overflow-y: hidden;
+    -webkit-hyphens: none;
+    white-space: nowrap;
+    display: block;
+}
+
+.ucvMode-black  #sbo-rt-content table td.table-b {
+    background-color: #FFF;
+    color: #3D3B49;
+}
+
+.ucvMode-black  #sbo-rt-content table p.programsa,
+.ucvMode-black  #sbo-rt-content table p.tab_th,
+.ucvMode-black  #sbo-rt-content table p.taba {
+    color: #3D3B49
+}
+
+ #sbo-rt-content div[id^="_idContainer"] {
+    font-size: 1em;
+}
+
+.ucvMode-black  #sbo-rt-content p span.code {
+    color: #3D3B49;
+}
+
+.ucvMode-black  #sbo-rt-content .sect2 p span.code,
+.ucvMode-black  #sbo-rt-content p.indent span.code,
+.ucvMode-black  #sbo-rt-content p.noindent span.code,
+.ucvMode-black  #sbo-rt-content p.exe span.code,
+.ucvMode-black  #sbo-rt-content p.programlisting span.code
+ {
+    color: #fff;
+}
+
+ #sbo-rt-content p.exam-para {
+    color: #fff !important;
+}
+
+.ucvMode-black  #sbo-rt-content .informaltable table td {
+    background-color: #EEF2F6;
+}
+
+ #sbo-rt-content div.note p.notepara,
+ #sbo-rt-content section ul.sq li p.bullet,
+ #sbo-rt-content section ol.number li p,
+ #sbo-rt-content ul.sq li figcaption p.fig-caption {
+    color: #3D3B49;
+}
+
+.ucvMode-black  #sbo-rt-content div.note p.notepara,
+.ucvMode-black  #sbo-rt-content section ul.sq li p.bullet,
+.ucvMode-black  #sbo-rt-content section ol.number li p,
+.ucvMode-black  #sbo-rt-content ol.number li ul.sq1 li,
+.ucvMode-black  #sbo-rt-content ol.number li ul.sq2 li,
+.ucvMode-black  #sbo-rt-content ul.sq li figcaption p.fig-caption {
+    color: #FFF;
+}
+
+ #sbo-rt-content ol.number li ul.sq1 li,
+ #sbo-rt-content ol.number li ul.sq2 li {
+    list-style-type: disc;
+}
+
+ #sbo-rt-content aside div.sidebar p.small2 code {
+    background-color: transparent !important;
+}
+
+.ucvMode-black  #sbo-rt-content aside div.sidebar p.small2 code {
+    color: #FFF;
+}
+
+ #sbo-rt-content div.chap {
+    font-size: inherit;
+}
+
+ #sbo-rt-content strong.source-inline {
+    font-size: 1em;
+}
+
+ #sbo-rt-content li.bulllist {
+    text-indent: unset;
+}
+
+ #sbo-rt-content table.processedcode td.codeline {
+    font-family: "Consolas", Courier, monospace !important;
+}
+
+ #sbo-rt-content div.interviewBox {
+    padding: 0.625rem;
+    width: 100%;
+    height: 100%;
+}
+
+ #sbo-rt-content img[src*='9781457196362'],
+ #sbo-rt-content img[src*='9781457190063'] {
+    z-index: 0;
+}
+
+ #sbo-rt-content div:has(img[src*="9781457190063"]) div {
+    line-height: initial;
+}
+
+.ucvMode-black  #sbo-rt-content div:has(img[src*="9781457190063"]) div {
+    color: #3d3b49;
+}
+
+.ucvMode-black  #sbo-rt-content div:has(img[src*='9781457196362']) {
+    color: rgb(210,35,42);
+}
+
+ #sbo-rt-content .bg-000000 {
+    color: #fff;
+}
+
+ #sbo-rt-content .bg-c9c9ca {
+    background-color: #c9c9ca;
+    color: #3d3b49 !important;
+}
+
+ #sbo-rt-content .bg-cce0f4,
+ #sbo-rt-content .bg-d8e0ea {
+    color: #3d3b49;
+}
+
+ #sbo-rt-content .bg-eeefef div p {
+    margin: unset !important;
+}
+
+ #sbo-rt-content .bg-eeefef div {
+    background-color: #eeefef;
+}
+
+.ucvMode-black  #sbo-rt-content .bg-eeefef div {
+    background-color: inherit;
+}
+
+.ucvMode-black  #sbo-rt-content span.bg-d2dde9 {
+    color: #3d3b49;
+}
+
+.ucvMode-black #sbo-rt-content span.FigureNumberInline,
+.ucvMode-black #sbo-rt-content span.FigureNumber,
+.ucvMode-black #sbo-rt-content p.FigureCaption,
+.ucvMode-black #sbo-rt-content figcaption.FigureCaption {
+    color: #fff;
+}
+
+/* for transparent images in darkmode */
+.ucvMode-black #sbo-rt-content p.figHolder img {
+    margin-bottom: 0;
+    background-color: #fff;
+}
+
+.ucvMode-black #sbo-rt-content p.Body img {
+    background-color: #fff;
 }
