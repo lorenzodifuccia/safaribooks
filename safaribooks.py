@@ -15,7 +15,6 @@ import requests
 import tinycss2 as tc
 import functools
 import traceback
-import cssutils
 from html import escape
 from random import random
 from lxml import html, etree
@@ -1118,16 +1117,16 @@ class SafariBooks:
                 #         s.write(fresponse.content)
 
                 # Download the images referenced in the css
-                stylesheet = cssutils.parseFile(css_file)
-                css_base_url = urlparts._replace(path=urlparts.path.rsplit('/',1)[0]).geturl()
-                for rule in stylesheet:
-                    if rule.type == cssutils.css.CSSRule.STYLE_RULE:
-                        for declaration in rule.style:
-                            if declaration.name == 'background-image':
-                          # Use regular expression to match url( and capture everything within parentheses
-                                match = re.search(r'url\(([^)]+)\)', declaration.value)
-                                if match:
-                                    self.css_images.append(f"{css_base_url}/{match.group(1)}")
+                for rule in srules:
+                    if rule.type == 'qualified-rule':
+                        declarations = tc.parse_declaration_list(rule.content)
+                        for decl in declarations:
+                            if decl.type == 'declaration':
+                                if decl.name in ['background', 'background-image', 'border-image', 'list-style-image']:
+                                    for part in decl.value:
+                                        if part.type == 'url':
+                                            full_url = f"{baseurl}/{part.value}"
+                                            self.css_images.append(full_url)
 
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
