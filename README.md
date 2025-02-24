@@ -3,7 +3,7 @@ Download and generate *EPUB* of your favorite books from [*Safari Books Online*]
 I'm not responsible for the use of this program, this is only for *personal* and *educational* purpose.  
 Before any usage please read the *O'Reilly*'s [Terms of Service](https://learning.oreilly.com/terms/).  
 
-<a href='https://ko-fi.com/lorenz0x00' target='_blank'><img height='35' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' />
+<a href='https://ko-fi.com/Y8Y0MPEGU' target='_blank'><img height='60' style='border:0px;height:60px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com'/></a>
 
 ## ✨✨ *Attention needed* ✨✨
 - This project is no longer actively maintained.  
