@@ -31,6 +31,9 @@ SAFARI_BASE_URL = "https://" + SAFARI_BASE_HOST
 API_ORIGIN_URL = "https://" + API_ORIGIN_HOST
 PROFILE_URL = SAFARI_BASE_URL + "/profile/"
 
+# Basic token, used to perform the login, this is hardcoded in IOS app
+BASIC_TOKEN = 'Basic MDUyMDc5OjAwYTYzYzA4ZTlkMjQwYjZmNGYxNGI5M2ExMzVkYTIyN2U4YjlkYTk5MTAzZGIzOGM0YjRlYjRj'
+
 # DEBUG
 USE_PROXY = False
 PROXIES = {"https": "https://127.0.0.1:8080"}
@@ -227,6 +230,9 @@ class WinQueue(list):  # TODO: error while use `process` in Windows: can't pickl
 class SafariBooks:
     LOGIN_URL = ORLY_BASE_URL + "/member/auth/login/"
     LOGIN_ENTRY_URL = SAFARI_BASE_URL + "/login/unified/?next=/home/"
+
+    API_LOGIN_URL = API_ORIGIN_URL + "/api/v1/auth/login/"
+    API_LOGIN_LOOKUP_URL = API_ORIGIN_URL + "/api/m/v2/auth/lookup/"
 
     API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
 
@@ -462,53 +468,29 @@ class SafariBooks:
         return new_cred
 
     def do_login(self, email, password):
-        response = self.requests_provider(self.LOGIN_ENTRY_URL)
-        if response == 0:
+        response = self.requests_provider(self.API_LOGIN_LOOKUP_URL, is_post=True, json={"email": email})
+        lookup_response_body = response.json()
+
+        if not lookup_response_body.get('password_login_allowed', False):
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
 
-        next_parameter = None
-        try:
-            next_parameter = parse_qs(urlparse(response.request.url).query)["next"][0]
-
-        except (AttributeError, ValueError, IndexError):
-            self.display.exit("Login: unable to complete login on Safari Books Online. Try again...")
-
-        redirect_uri = API_ORIGIN_URL + quote_plus(next_parameter)
-
         response = self.requests_provider(
-            self.LOGIN_URL,
+            self.API_LOGIN_URL,
             is_post=True,
             json={
                 "email": email,
                 "password": password,
-                "redirect_uri": redirect_uri
+            },
+            headers={
+                "Authorization": BASIC_TOKEN
             },
             perform_redirect=False
         )
 
-        if response == 0:
-            self.display.exit("Login: unable to perform auth to Safari Books Online.\n    Try again...")
+        login_response_body = response.json()
 
-        if response.status_code != 200:  # TODO To be reviewed
-            try:
-                error_page = html.fromstring(response.text)
-                errors_message = error_page.xpath("//ul[@class='errorlist']//li/text()")
-                recaptcha = error_page.xpath("//div[@class='g-recaptcha']")
-                messages = (["    `%s`" % error for error in errors_message
-                             if "password" in error or "email" in error] if len(errors_message) else []) + \
-                           (["    `ReCaptcha required (wait or do logout from the website).`"] if len(
-                               recaptcha) else [])
-                self.display.exit(
-                    "Login: unable to perform auth login to Safari Books Online.\n" + self.display.SH_YELLOW +
-                    "[*]" + self.display.SH_DEFAULT + " Details:\n" + "%s" % "\n".join(
-                        messages if len(messages) else ["    Unexpected error!"])
-                )
-            except (html.etree.ParseError, html.etree.ParserError) as parsing_error:
-                self.display.error(parsing_error)
-                self.display.exit(
-                    "Login: your login went wrong and it encountered in an error"
-                    " trying to parse the login details of Safari Books Online. Try again..."
-                )
+        if not login_response_body.get('logged_in',False):
+            self.display.exit("Login: unable to perform auth to Safari Books Online.\n    Try again...")
 
         self.jwt = response.json()  # TODO: save JWT Tokens and use the refresh_token to restore user session
         response = self.requests_provider(self.jwt["redirect_uri"])
