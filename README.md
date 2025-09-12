@@ -173,6 +173,22 @@ In this case, I suggest you to convert the `EPUB` to `AZW3` with Calibre or to `
     
 ---  
   
+## Using Docker
+
+Build the image:
+
+```shell
+$ cd safaribooks/
+$ docker build . -t safaribooks
+```
+
+Similar to the example in the [previous section](#examples), but using Docker:
+
+```shell
+$ mkdir -p Books
+$ docker run --rm -v $(pwd)/Books:/app/Books safaribooks --cred "my_email@gmail.com:MyPassword1!" 9781491958698
+```
+
 ## Thanks!!
 For any kind of problem, please don't hesitate to open an issue here on *GitHub*.  
   
