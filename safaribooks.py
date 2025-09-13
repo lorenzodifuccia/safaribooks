@@ -613,11 +613,21 @@ class SafariBooks:
     def is_image_link(url: str):
         return pathlib.Path(url).suffix[1:].lower() in ["jpg", "jpeg", "png", "gif"]
 
+    @staticmethod
+    def is_html_link(url: str):
+        return pathlib.Path(url).suffix[1:].lower().split('#')[0] in ["htm", "html", "xhtml"]
+
+    @staticmethod
+    def is_image_implied(url: str):
+        return any(x in url for x in ["cover", "images", "graphics"])
+
+    def is_possible_image(self, link):
+        return self.is_image_link(link) or (not self.is_html_link(link) and self.is_image_implied(link))
+            
     def link_replace(self, link):
         if link and not link.startswith("mailto"):
             if not self.url_is_absolute(link):
-                if any(x in link for x in ["cover", "images", "graphics"]) or \
-                        self.is_image_link(link):
+                if (self.is_possible_image(link)):
                     image = link.split("/")[-1]
                     return "Images/" + image
 
