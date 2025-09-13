@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  safaribooks:
+    build: .
+    entrypoint: "/safaribooks/safaribooks.py"
+    volumes:
+       - ./:/safaribooks
+    working_dir: /safaribooks
