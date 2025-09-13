@@ -8,7 +8,7 @@ __pycache__/
 
 Books/
 
-cookies.json
+*.json
 *.log
 *.txt
 *.code-workspace
