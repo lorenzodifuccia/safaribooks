@@ -380,26 +380,30 @@ class SafariBooks:
 
         self.cover = False
         self.get()
-        if not self.cover:
+        if not self.cover and not self.args.no_images:
             self.cover = self.get_default_cover() if "cover" in self.book_info else False
-            cover_html = self.parse_html(
-                html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)), True
-            )
+            if self.cover:
+                cover_html = self.parse_html(
+                    html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)), True
+                )
 
-            self.book_chapters = [{
-                "filename": "default_cover.xhtml",
-                "title": "Cover"
-            }] + self.book_chapters
+                self.book_chapters = [{
+                    "filename": "default_cover.xhtml",
+                    "title": "Cover"
+                }] + self.book_chapters
 
-            self.filename = self.book_chapters[0]["filename"]
-            self.save_page_html(cover_html)
+                self.filename = self.book_chapters[0]["filename"]
+                self.save_page_html(cover_html)
 
         self.css_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
         self.collect_css()
-        self.images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
-        self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
-        self.collect_images()
+        if not self.args.no_images:
+            self.images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
+            self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
+            self.collect_images()
+        else:
+            self.display.info("Skipping image download (--no-images flag set)", state=True)
 
         self.display.info("Creating EPUB file...", state=True)
         self.create_epub()
@@ -722,7 +726,7 @@ class SafariBooks:
 
         xhtml = None
         try:
-            if first_page:
+            if first_page and not self.args.no_images:
                 is_cover = self.get_cover(book_content)
                 if is_cover is not None:
                     page_css = "<style>" \
@@ -818,7 +822,7 @@ class SafariBooks:
                 asset_base_url = SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{}/files".format(self.book_id)
                 api_v2_detected = True
 
-            if "images" in next_chapter and len(next_chapter["images"]):
+            if "images" in next_chapter and len(next_chapter["images"]) and not self.args.no_images:
                 for img_url in next_chapter['images']:
                     if api_v2_detected:
                         self.images.append(asset_base_url + '/' + img_url)
@@ -933,7 +937,10 @@ class SafariBooks:
 
     def create_content_opf(self):
         self.css = next(os.walk(self.css_path))[2]
-        self.images = next(os.walk(self.images_path))[2]
+        if not self.args.no_images and os.path.isdir(self.images_path):
+            self.images = next(os.walk(self.images_path))[2]
+        else:
+            self.images = []
 
         manifest = []
         spine = []
@@ -1085,6 +1092,11 @@ if __name__ == "__main__":
     arguments.add_argument(
         "--preserve-log", dest="log", action='store_true', help="Leave the `info_XXXXXXXXXXXXX.log`"
                                                                 " file even if there isn't any error."
+    )
+    arguments.add_argument(
+        "--no-images", dest="no_images", action='store_true',
+        help="Skip downloading images when creating the EPUB file. This creates smaller files"
+             " and can be useful when images are not essential."
     )
     arguments.add_argument("--help", action="help", default=argparse.SUPPRESS, help='Show this help message.')
     arguments.add_argument(
