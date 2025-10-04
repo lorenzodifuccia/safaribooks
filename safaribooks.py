@@ -381,18 +381,26 @@ class SafariBooks:
         self.cover = False
         self.get()
         if not self.cover:
-            self.cover = self.get_default_cover() if "cover" in self.book_info else False
-            cover_html = self.parse_html(
-                html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)), True
-            )
+            # Check if there's already a cover chapter in the book
+            has_cover_chapter = any("cover" in chapter.get("filename", "").lower() or
+                                   "cover" in chapter.get("title", "").lower()
+                                   for chapter in self.book_chapters)
 
-            self.book_chapters = [{
-                "filename": "default_cover.xhtml",
-                "title": "Cover"
-            }] + self.book_chapters
+            # Only add default cover if no cover chapter exists
+            if not has_cover_chapter and "cover" in self.book_info:
+                self.cover = self.get_default_cover()
+                if self.cover:
+                    cover_html = self.parse_html(
+                        html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)), True
+                    )
 
-            self.filename = self.book_chapters[0]["filename"]
-            self.save_page_html(cover_html)
+                    self.book_chapters = [{
+                        "filename": "default_cover.xhtml",
+                        "title": "Cover"
+                    }] + self.book_chapters
+
+                    self.filename = self.book_chapters[0]["filename"]
+                    self.save_page_html(cover_html)
 
         self.css_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
@@ -572,8 +580,25 @@ class SafariBooks:
         return result + (self.get_book_chapters(page + 1) if response["next"] else [])
 
     def get_default_cover(self):
-        response = self.requests_provider(self.book_info["cover"], stream=True)
-        if response == 0:
+        # Try to get HD quality cover by modifying the URL
+        cover_url = self.book_info["cover"]
+
+        # Try different HD URL patterns
+        hd_url_attempts = [
+            cover_url.replace("/thumb/", "/orig/"),  # Replace thumb with orig
+            cover_url.replace("/thumb/", "/"),  # Remove thumb directory
+            cover_url.replace("thumbnail", "cover"),  # Replace thumbnail with cover
+            cover_url  # Fallback to original
+        ]
+
+        response = None
+        for url in hd_url_attempts:
+            response = self.requests_provider(url, stream=True)
+            if response != 0 and response.status_code == 200:
+                self.display.log("Successfully retrieved HD cover from: %s" % url)
+                break
+
+        if response == 0 or response.status_code != 200:
             self.display.error("Error trying to retrieve the cover: %s" % self.book_info["cover"])
             return False
 
