@@ -65,7 +65,8 @@ class Display:
 
         self.book_ad_info = False
         self.css_ad_info = Value("i", 0)
-        self.images_ad_info = Value("i", 0)
+        self.image_ad_info = Value("i", 0)
+        self.video_ad_info = Value("i", 0)
         self.last_request = (None,)
         self.in_error = False
 
@@ -367,6 +368,7 @@ class SafariBooks:
         self.display.set_output_dir(self.BOOK_PATH)
         self.css_path = ""
         self.images_path = ""
+        self.videos_path = ""
         self.create_dirs()
 
         self.chapter_title = ""
@@ -374,6 +376,9 @@ class SafariBooks:
         self.chapter_stylesheets = []
         self.css = []
         self.images = []
+        self.videos = []
+        self.video_links = []
+        self.video_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
 
         self.display.info("Downloading book contents... (%s chapters)" % len(self.book_chapters), state=True)
         self.BASE_HTML = self.BASE_01_HTML + (self.KINDLE_HTML if not args.kindle else "") + self.BASE_02_HTML
@@ -397,9 +402,10 @@ class SafariBooks:
         self.css_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
         self.collect_css()
-        self.images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
+
+        self.image_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
-        self.collect_images()
+        self.collect_content()
 
         self.display.info("Creating EPUB file...", state=True)
         self.create_epub()
@@ -612,14 +618,20 @@ class SafariBooks:
     @staticmethod
     def is_image_link(url: str):
         return pathlib.Path(url).suffix[1:].lower() in ["jpg", "jpeg", "png", "gif"]
+    @staticmethod
+    def is_video_link(url: str):
+        return pathlib.Path(url).suffix[1:].lower() in ["mp4"]
 
     def link_replace(self, link):
         if link and not link.startswith("mailto"):
             if not self.url_is_absolute(link):
-                if any(x in link for x in ["cover", "images", "graphics"]) or \
-                        self.is_image_link(link):
+                if any(x in link for x in ["cover", "images", "graphics"]) \
+                        or self.is_image_link(link):
                     image = link.split("/")[-1]
                     return "Images/" + image
+                elif self.is_video_link(link):
+                    video = link.split("/")[-1]
+                    return "Video/" + video
 
                 return link.replace(".html", ".xhtml")
 
@@ -658,6 +670,8 @@ class SafariBooks:
                 self.display.exit(self.display.api_error(" "))
 
         book_content = root.xpath("//div[@id='sbo-rt-content']")
+        self.video_links = self.video_links + root.xpath("//div[@id='sbo-rt-content']//video/source/@src")
+        # print('Video links: ' + ", ".join(self.video_links))
         if not len(book_content):
             self.display.exit(
                 "Parser: book content's corrupted or not present: %s (%s)" %
@@ -788,10 +802,16 @@ class SafariBooks:
         self.images_path = os.path.join(oebps, "Images")
         if os.path.isdir(self.images_path):
             self.display.log("Images directory already exists: %s" % self.images_path)
-
         else:
             os.makedirs(self.images_path)
-            self.display.images_ad_info.value = 1
+            self.display.image_ad_info.value = 1
+
+        self.videos_path = os.path.join(oebps, "Video")
+        if os.path.isdir(self.videos_path):
+            self.display.log("Videos directory already exists: %s" % self.videos_path)
+        else:
+            os.makedirs(self.videos_path)
+            self.display.video_ad_info.value = 1
 
     def save_page_html(self, contents):
         self.filename = self.filename.replace(".html", ".xhtml")
@@ -824,7 +844,15 @@ class SafariBooks:
                         self.images.append(asset_base_url + '/' + img_url)
                     else:
                         self.images.append(urljoin(next_chapter['asset_base_url'], img_url))
-
+            ## api doesn't populate currently
+            if "videoclips" in next_chapter and len(next_chapter["videoclips"]):
+                print('inside videoclips 1')
+                for vid_url in next_chapter['videoclips']:
+                    print('inside videoclips 2')
+                    if api_v2_detected:
+                        self.videos.append(asset_base_url + '/' + vid_url)
+                    else:
+                        self.videos.append(urljoin(next_chapter['asset_base_url'], vid_url))
 
             # Stylesheets
             self.chapter_stylesheets = []
@@ -849,6 +877,15 @@ class SafariBooks:
                 self.save_page_html(self.parse_html(self.get_html(next_chapter["content"]), first_page))
 
             self.display.state(len_books, len_books - len(self.chapters_queue))
+        # video links not provided by api, so check for source tag urls and assume they look similar to image urls
+        if len(self.video_links) > 0:
+            video_filenames = [vfn[vfn.rfind('/')+1:vfn.rfind('.mp4')] for vfn in self.video_links]
+            img_links_with_video = [i_url for i_url in self.images if
+                                    i_url[i_url.rfind('/')+1:i_url.rfind('.')] in video_filenames]
+            self.videos = self.videos + [img_url[:img_url.rfind('.')] + '.mp4' for img_url in img_links_with_video]
+            # print('Video links inferred: ' + ", ".join(self.videos))
+            self.display.info("Downloading book videos... (%s files)" % len(self.videos), state=True)
+            self.collect_content(content_type='videos')
 
     def _thread_download_css(self, url):
         css_file = os.path.join(self.css_path, "Style{0:0>2}.css".format(self.css.index(url)))
@@ -871,32 +908,45 @@ class SafariBooks:
 
         self.css_done_queue.put(1)
         self.display.state(len(self.css), self.css_done_queue.qsize())
-
-
-    def _thread_download_images(self, url):
-        image_name = url.split("/")[-1]
-        image_path = os.path.join(self.images_path, image_name)
-        if os.path.isfile(image_path):
-            if not self.display.images_ad_info.value and url not in self.images[:self.images.index(url)]:
+        
+    def _thread_download_content(self, url, content_type='images'):
+        content_name = url.split("/")[-1]
+        if content_type == 'images':
+            content_path = os.path.join(self.images_path, content_name)
+        elif content_type == 'videos':
+            content_path = os.path.join(self.videos_path, content_name)
+        if os.path.isfile(content_path):
+            if not self.display.image_ad_info.value and url not in self.images[:self.images.index(url)]:
                 self.display.info(("File `%s` already exists.\n"
                                    "    If you want to download again all the images,\n"
                                    "    please delete the output directory '" + self.BOOK_PATH + "'"
                                    " and restart the program.") %
-                                  image_name)
-                self.display.images_ad_info.value = 1
+                                  content_name)
+                self.display.image_ad_info.value = 1
+            elif not self.display.video_ad_info.value and url not in self.videos[:self.videos.index(url)]:
+                self.display.info(("File `%s` already exists.\n"
+                                   "    If you want to download again all the videos,\n"
+                                   "    please delete the output directory '" + self.BOOK_PATH + "'"
+                                   " and restart the program.") %
+                                  content_name)
+                self.display.video_ad_info.value = 1
 
         else:
             response = self.requests_provider(urljoin(SAFARI_BASE_URL, url), stream=True)
             if response == 0:
-                self.display.error("Error trying to retrieve this image: %s\n    From: %s" % (image_name, url))
+                self.display.error(f"Error trying to retrieve this {content_type}: %s\n    From: %s" % (content_name, url))
                 return
 
-            with open(image_path, 'wb') as img:
+            with open(content_path, 'wb') as img:
                 for chunk in response.iter_content(1024):
                     img.write(chunk)
 
-        self.images_done_queue.put(1)
-        self.display.state(len(self.images), self.images_done_queue.qsize())
+        if content_type == 'images':
+            self.image_done_queue.put(1)
+            self.display.state(len(self.images), self.image_done_queue.qsize())
+        elif content_type == 'videos':
+            self.video_done_queue.put(1)
+            self.display.state(len(self.videos), self.video_done_queue.qsize())
 
     def _start_multiprocessing(self, operation, full_queue):
         if len(full_queue) > 5:
@@ -918,7 +968,7 @@ class SafariBooks:
         for css_url in self.css:
             self._thread_download_css(css_url)
 
-    def collect_images(self):
+    def collect_content(self, content_type='images'):
         if self.display.book_ad_info == 2:
             self.display.info("Some of the book contents were already downloaded.\n"
                               "    If you want to be sure that all the images will be downloaded,\n"
@@ -928,12 +978,17 @@ class SafariBooks:
         self.display.state_status.value = -1
 
         # "self._start_multiprocessing" seems to cause problem. Switching to mono-thread download.
-        for image_url in self.images:
-            self._thread_download_images(image_url)
+        if content_type == 'images':
+            for image_url in self.images:
+                self._thread_download_content(image_url)
+        elif content_type == 'videos':
+            for video_url in self.videos:
+                self._thread_download_content(video_url, content_type='videos')
 
     def create_content_opf(self):
         self.css = next(os.walk(self.css_path))[2]
         self.images = next(os.walk(self.images_path))[2]
+        self.videos = next(os.walk(self.videos_path))[2]
 
         manifest = []
         spine = []
@@ -951,6 +1006,14 @@ class SafariBooks:
             extension = dot_split[-1]
             manifest.append("<item id=\"{0}\" href=\"Images/{1}\" media-type=\"image/{2}\" />".format(
                 head, i, "jpeg" if "jp" in extension else extension
+            ))
+
+        for i in set(self.videos):
+            dot_split = i.split(".")
+            head = "vid_" + escape("".join(dot_split[:-1]))
+            extension = dot_split[-1]
+            manifest.append("<item id=\"{0}\" href=\"Video/{1}\" media-type=\"video/{2}\" />".format(
+                head, i, extension
             ))
 
         for i in range(len(self.css)):
