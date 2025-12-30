@@ -6,6 +6,8 @@ import sys
 import json
 import shutil
 import pathlib
+import zipfile
+from datetime import datetime, timezone
 import getpass
 import logging
 import argparse
@@ -258,11 +260,10 @@ class SafariBooks:
                     "</rootfiles>" \
                     "</container>"
 
-    # Format: ID, Title, Authors, Description, Subjects, Publisher, Rights, Date, CoverId, MANIFEST, SPINE, CoverUrl
+    # Format: ID, Title, Authors, Description, Subjects, Publisher, Rights, Date, CoverId, MANIFEST, SPINE, CoverUrl, Modified
     CONTENT_OPF = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" \
-                  "<package xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"bookid\" version=\"2.0\" >\n" \
-                  "<metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\" " \
-                  " xmlns:opf=\"http://www.idpf.org/2007/opf\">\n" \
+                  "<package xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"bookid\" version=\"3.0\">\n" \
+                  "<metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\">\n" \
                   "<dc:title>{1}</dc:title>\n" \
                   "{2}\n" \
                   "<dc:description>{3}</dc:description>\n" \
@@ -272,13 +273,14 @@ class SafariBooks:
                   "<dc:language>en-US</dc:language>\n" \
                   "<dc:date>{7}</dc:date>\n" \
                   "<dc:identifier id=\"bookid\">{0}</dc:identifier>\n" \
-                  "<meta name=\"cover\" content=\"{8}\"/>\n" \
+                  "<meta property=\"dcterms:modified\">{12}</meta>\n" \
                   "</metadata>\n" \
                   "<manifest>\n" \
                   "<item id=\"ncx\" href=\"toc.ncx\" media-type=\"application/x-dtbncx+xml\" />\n" \
+                  "<item id=\"nav\" href=\"nav.xhtml\" media-type=\"application/xhtml+xml\" properties=\"nav\" />\n" \
                   "{9}\n" \
                   "</manifest>\n" \
-                  "<spine toc=\"ncx\">\n{10}</spine>\n" \
+                  "<spine>\n{10}</spine>\n" \
                   "<guide><reference href=\"{11}\" title=\"Cover\" type=\"cover\" /></guide>\n" \
                   "</package>"
 
@@ -297,6 +299,15 @@ class SafariBooks:
               "<docAuthor><text>{3}</text></docAuthor>\n" \
               "<navMap>{4}</navMap>\n" \
               "</ncx>"
+
+    # Format: Title, NAV_ITEMS
+    NAV_XHTML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" \
+                "<!DOCTYPE html>\n" \
+                "<html xmlns=\"http://www.w3.org/1999/xhtml\" " \
+                "xmlns:epub=\"http://www.idpf.org/2007/ops\" xml:lang=\"en\" lang=\"en\">\n" \
+                "<head>\n<meta charset=\"utf-8\" />\n<title>{0}</title>\n</head>\n" \
+                "<body>\n<nav epub:type=\"toc\" id=\"toc\">\n" \
+                "<h1>Table of Contents</h1>\n<ol>\n{1}</ol>\n</nav>\n</body>\n</html>"
 
     HEADERS = {
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
@@ -949,20 +960,26 @@ class SafariBooks:
             dot_split = i.split(".")
             head = "img_" + escape("".join(dot_split[:-1]))
             extension = dot_split[-1]
-            manifest.append("<item id=\"{0}\" href=\"Images/{1}\" media-type=\"image/{2}\" />".format(
-                head, i, "jpeg" if "jp" in extension else extension
+            # Add properties="cover-image" for the cover image (EPUB 3)
+            is_cover = self.cover and i in self.cover
+            properties_attr = " properties=\"cover-image\"" if is_cover else ""
+            manifest.append("<item id=\"{0}\" href=\"Images/{1}\" media-type=\"image/{2}\"{3} />".format(
+                head, i, "jpeg" if "jp" in extension else extension, properties_attr
             ))
 
         for i in range(len(self.css)):
             manifest.append("<item id=\"style_{0:0>2}\" href=\"Styles/Style{0:0>2}.css\" "
                             "media-type=\"text/css\" />".format(i))
 
-        authors = "\n".join("<dc:creator opf:file-as=\"{0}\" opf:role=\"aut\">{0}</dc:creator>".format(
+        authors = "\n".join("<dc:creator>{0}</dc:creator>".format(
             escape(aut.get("name", "n/d"))
         ) for aut in self.book_info.get("authors", []))
 
         subjects = "\n".join("<dc:subject>{0}</dc:subject>".format(escape(sub.get("name", "n/d")))
                              for sub in self.book_info.get("subjects", []))
+
+        # EPUB 3 requires dcterms:modified timestamp
+        modified_timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         return self.CONTENT_OPF.format(
             (self.book_info.get("isbn",  self.book_id)),
@@ -976,7 +993,8 @@ class SafariBooks:
             self.cover,
             "\n".join(manifest),
             "\n".join(spine),
-            self.book_chapters[0]["filename"].replace(".html", ".xhtml")
+            self.book_chapters[0]["filename"].replace(".html", ".xhtml"),
+            modified_timestamp
         )
 
     @staticmethod
@@ -1002,23 +1020,51 @@ class SafariBooks:
 
         return r, c, mx
 
-    def create_toc(self):
+    @staticmethod
+    def parse_nav_toc(toc_list):
+        """Parse TOC data into HTML5 nav list items for EPUB 3."""
+        result = ""
+        for item in toc_list:
+            href = item["href"].replace(".html", ".xhtml").split("/")[-1]
+            label = escape(item["label"])
+            if item["children"]:
+                children_html = SafariBooks.parse_nav_toc(item["children"])
+                result += "<li>\n<a href=\"{0}\">{1}</a>\n<ol>\n{2}</ol>\n</li>\n".format(
+                    href, label, children_html)
+            else:
+                result += "<li><a href=\"{0}\">{1}</a></li>\n".format(href, label)
+        return result
+
+    def create_nav_xhtml(self, toc_data):
+        """Create the EPUB 3 navigation document (nav.xhtml)."""
+        nav_items = self.parse_nav_toc(toc_data)
+        return self.NAV_XHTML.format(escape(self.book_title), nav_items)
+
+    def _fetch_toc_data(self):
+        """Fetch TOC data from API."""
         response = self.requests_provider(urljoin(self.api_url, "toc/"))
         if response == 0:
             self.display.exit("API: unable to retrieve book chapters. "
                               "Don't delete any files, just run again this program"
                               " in order to complete the `.epub` creation!")
 
-        response = response.json()
+        toc_data = response.json()
 
-        if not isinstance(response, list) and len(response.keys()) == 1:
+        if not isinstance(toc_data, list) and len(toc_data.keys()) == 1:
             self.display.exit(
-                self.display.api_error(response) +
+                self.display.api_error(toc_data) +
                 " Don't delete any files, just run again this program"
                 " in order to complete the `.epub` creation!"
             )
 
-        navmap, _, max_depth = self.parse_toc(response)
+        return toc_data
+
+    def create_toc(self, toc_data=None):
+        """Create the NCX table of contents."""
+        if toc_data is None:
+            toc_data = self._fetch_toc_data()
+
+        navmap, _, max_depth = self.parse_toc(toc_data)
         return self.TOC_NCX.format(
             (self.book_info["isbn"] if self.book_info["isbn"] else self.book_id),
             max_depth,
@@ -1026,6 +1072,36 @@ class SafariBooks:
             ", ".join(aut.get("name", "") for aut in self.book_info.get("authors", [])),
             navmap
         )
+
+    def _create_epub_zip(self, epub_path):
+        """
+        Create EPUB ZIP file with proper structure per EPUB 3.3 spec.
+
+        The mimetype file MUST be:
+        1. The first file in the archive
+        2. Stored uncompressed (ZIP_STORED)
+        3. Not have any extra field data
+
+        All other files are compressed with ZIP_DEFLATED for smaller file size.
+        """
+        with zipfile.ZipFile(epub_path, 'w') as epub:
+            # 1. Add mimetype FIRST, uncompressed, no extra field
+            mimetype_path = os.path.join(self.BOOK_PATH, "mimetype")
+            epub.write(mimetype_path, "mimetype", compress_type=zipfile.ZIP_STORED)
+
+            # 2. Add all other files with compression
+            for root, dirs, files in os.walk(self.BOOK_PATH):
+                for file in files:
+                    if file == "mimetype":
+                        continue  # Already added first
+                    if file.endswith(".epub"):
+                        continue  # Don't include the epub itself
+
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, self.BOOK_PATH)
+
+                    # Use DEFLATED compression for all other files
+                    epub.write(file_path, arcname, compress_type=zipfile.ZIP_DEFLATED)
 
     def create_epub(self):
         open(os.path.join(self.BOOK_PATH, "mimetype"), "w").write("application/epub+zip")
@@ -1039,19 +1115,26 @@ class SafariBooks:
         open(os.path.join(meta_info, "container.xml"), "wb").write(
             self.CONTAINER_XML.encode("utf-8", "xmlcharrefreplace")
         )
+
+        # Fetch TOC data once for both NCX and nav.xhtml
+        toc_data = self._fetch_toc_data()
+
         open(os.path.join(self.BOOK_PATH, "OEBPS", "content.opf"), "wb").write(
             self.create_content_opf().encode("utf-8", "xmlcharrefreplace")
         )
         open(os.path.join(self.BOOK_PATH, "OEBPS", "toc.ncx"), "wb").write(
-            self.create_toc().encode("utf-8", "xmlcharrefreplace")
+            self.create_toc(toc_data).encode("utf-8", "xmlcharrefreplace")
+        )
+        # EPUB 3 navigation document
+        open(os.path.join(self.BOOK_PATH, "OEBPS", "nav.xhtml"), "wb").write(
+            self.create_nav_xhtml(toc_data).encode("utf-8", "xmlcharrefreplace")
         )
 
-        zip_file = os.path.join(PATH, "Books", self.book_id)
-        if os.path.isfile(zip_file + ".zip"):
-            os.remove(zip_file + ".zip")
+        epub_path = os.path.join(self.BOOK_PATH, self.book_id + ".epub")
+        if os.path.isfile(epub_path):
+            os.remove(epub_path)
 
-        shutil.make_archive(zip_file, 'zip', self.BOOK_PATH)
-        os.rename(zip_file + ".zip", os.path.join(self.BOOK_PATH, self.book_id) + ".epub")
+        self._create_epub_zip(epub_path)
 
 
 # MAIN
