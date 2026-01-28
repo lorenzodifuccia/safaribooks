@@ -137,7 +137,7 @@ class Display:
                      .format(*self.last_request))
 
     def intro(self):
-        output = self.SH_YELLOW + ("""
+        output = self.SH_YELLOW + (r"""
        ____     ___         _
       / __/__ _/ _/__ _____(_)
      _\ \/ _ `/ _/ _ `/ __/ /
@@ -145,7 +145,7 @@ class Display:
       / _ )___  ___  / /__ ___
      / _  / _ \/ _ \/  '_/(_-<
     /____/\___/\___/_/\_\/___/
-""" if random() > 0.5 else """
+""" if random() > 0.5 else r"""
  ██████╗     ██████╗ ██╗  ██╗   ██╗██████╗
 ██╔═══██╗    ██╔══██╗██║  ╚██╗ ██╔╝╚════██╗
 ██║   ██║    ██████╔╝██║   ╚████╔╝   ▄███╔╝
@@ -1095,25 +1095,31 @@ if __name__ == "__main__":
 
     args_parsed = arguments.parse_args()
     if args_parsed.cred or args_parsed.login:
-        user_email = ""
-        pre_cred = ""
+        print("WARNING: Due to recent changes on ORLY website, \n" \
+                "the `--cred` and `--login` options are temporarily disabled.\n"
+                "    Please use the `cookies.json` file to authenticate your account.\n"
+                "    See: https://github.com/lorenzodifuccia/safaribooks/issues/358")
+        arguments.exit()
+        
+        # user_email = ""
+        # pre_cred = ""
 
-        if args_parsed.cred:
-            pre_cred = args_parsed.cred
+        # if args_parsed.cred:
+        #     pre_cred = args_parsed.cred
 
-        else:
-            user_email = input("Email: ")
-            passwd = getpass.getpass("Password: ")
-            pre_cred = user_email + ":" + passwd
+        # else:
+        #     user_email = input("Email: ")
+        #     passwd = getpass.getpass("Password: ")
+        #     pre_cred = user_email + ":" + passwd
 
-        parsed_cred = SafariBooks.parse_cred(pre_cred)
+        # parsed_cred = SafariBooks.parse_cred(pre_cred)
 
-        if not parsed_cred:
-            arguments.error("invalid credential: %s" % (
-                args_parsed.cred if args_parsed.cred else (user_email + ":*******")
-            ))
+        # if not parsed_cred:
+        #     arguments.error("invalid credential: %s" % (
+        #         args_parsed.cred if args_parsed.cred else (user_email + ":*******")
+        #     ))
 
-        args_parsed.cred = parsed_cred
+        # args_parsed.cred = parsed_cred
 
     else:
         if args_parsed.no_cookies:

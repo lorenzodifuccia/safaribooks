@@ -3,15 +3,16 @@ Download and generate *EPUB* of your favorite books from [*Safari Books Online*]
 I'm not responsible for the use of this program, this is only for *personal* and *educational* purpose.  
 Before any usage please read the *O'Reilly*'s [Terms of Service](https://learning.oreilly.com/terms/).  
 
-<a href='https://ko-fi.com/lorenz0x00' target='_blank'><img height='35' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' />
+<a href='https://ko-fi.com/Y8Y0MPEGU' target='_blank'><img height='80' style='border:0px;height:60px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com'/></a>
 
-> ## ⚠ *Attention needed* ⚠ 
-> *If you are a developer and want to help this project, please take a look to the current [Milestone](https://github.com/lorenzodifuccia/safaribooks/milestone/1)*.  
-> *Checkout also the new APIv2 branch: [apiv2](https://github.com/lorenzodifuccia/safaribooks/tree/apiv2)*  
-> *The Community thanks 🙏🏻*
+## ✨✨ *Attention needed* ✨✨
+- This project is no longer actively maintained.  
+- *Login through `safaribooks` no longer works due to changes in ORLY APIs.*
+- *The program needs a major refactor to include new features and integrate new APIs.*
+- **However... it still work for downloading books.**  
+(Use SSO hack: log in via browser, then copy cookies into `cookies.json`, see below and issues. Love ❤️)
 
-> ## ✨ ADV ✨
-> *Take a look at my other GitHub projects: https://github.com/lorenzodifuccia* 👀 ❤️
+---
 
 ## Overview:
   * [Requirements & Setup](#requirements--setup)
