@@ -216,7 +216,7 @@ class Display:
         return message
 
 
-class WinQueue(list):  # TODO: error while use `process` in Windows: can't pickle _thread.RLock objects
+class SimpleQueue(list):
     def put(self, el):
         self.append(el)
 
@@ -228,7 +228,9 @@ class SafariBooks:
     LOGIN_URL = ORLY_BASE_URL + "/member/auth/login/"
     LOGIN_ENTRY_URL = SAFARI_BASE_URL + "/login/unified/?next=/home/"
 
-    API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
+    API_TEMPLATE = SAFARI_BASE_URL + "/api/v2/metadata/?identifier={0}"
+    API_FALLBACK_TEMPLATE = API_ORIGIN_URL + "/api/v2/metadata/?identifier={0}"
+    API_EPUBS_TEMPLATE = SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{0}/files/"
 
     BASE_01_HTML = "<!DOCTYPE html>\n" \
                    "<html lang=\"en\" xml:lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\"" \
@@ -309,6 +311,58 @@ class SafariBooks:
 
     COOKIE_FLOAT_MAX_AGE_PATTERN = re.compile(r'(max-age=\d*\.\d*)', re.IGNORECASE)
 
+    def parse_json_response(self, response, error_message):
+        try:
+            return response.json()
+
+        except ValueError:
+            content_type = response.headers.get("Content-Type", "unknown")
+            body_preview = (response.text or "").strip()[:300].replace("\n", " ")
+            details = (
+                "\n" + self.display.SH_YELLOW + "[*]" + self.display.SH_DEFAULT +
+                " Status: {0}\n"
+                "    Content-Type: {1}\n"
+                "    URL: {2}\n"
+                "    Body preview: {3}".format(
+                    response.status_code,
+                    content_type,
+                    response.url,
+                    body_preview if body_preview else "<empty>"
+                )
+            )
+            self.display.exit(error_message + details)
+
+    def load_cookies(self):
+        with open(COOKIES_FILE, "r", encoding="utf-8-sig") as cookie_file:
+            raw_content = cookie_file.read().strip()
+
+        if not raw_content:
+            self.display.exit("Login: `cookies.json` is empty.\\n"
+                              "    Please re-generate it or use the `--cred`/`--login` options.")
+
+        try:
+            cookies = json.loads(raw_content)
+
+        except json.JSONDecodeError:
+            cookies = {}
+            for cookie in raw_content.split(";"):
+                cookie = cookie.strip()
+                if not cookie or "=" not in cookie:
+                    continue
+
+                name, value = cookie.split("=", 1)
+                cookies[name.strip()] = value.strip()
+
+            if not cookies:
+                self.display.exit("Login: invalid `cookies.json` format.\\n"
+                                  "    Use JSON (object) or a raw cookie string like `a=b; c=d`.")
+
+        if not isinstance(cookies, dict):
+            self.display.exit("Login: invalid `cookies.json` content.\\n"
+                              "    Expected a JSON object with cookie name/value pairs.")
+
+        return cookies
+
     def __init__(self, args):
         self.args = args
         self.display = Display("info_%s.log" % escape(args.bookid))
@@ -325,10 +379,10 @@ class SafariBooks:
 
         if not args.cred:
             if not os.path.isfile(COOKIES_FILE):
-                self.display.exit("Login: unable to find `cookies.json` file.\n"
+                self.display.exit("Login: unable to find `cookies.json` file.\\n"
                                   "    Please use the `--cred` or `--login` options to perform the login.")
 
-            self.session.cookies.update(json.load(open(COOKIES_FILE)))
+            self.session.cookies.update(self.load_cookies())
 
         else:
             self.display.info("Logging into Safari Books Online...", state=True)
@@ -340,12 +394,14 @@ class SafariBooks:
 
         self.book_id = args.bookid
         self.api_url = self.API_TEMPLATE.format(self.book_id)
+        self.epub_api_url = self.API_EPUBS_TEMPLATE.format(self.book_id)
 
         self.display.info("Retrieving book info...")
         self.book_info = self.get_book_info()
         self.display.book_info(self.book_info)
 
         self.display.info("Retrieving book chapters...")
+        self.book_file_images = []
         self.book_chapters = self.get_book_chapters()
 
         self.chapters_queue = self.book_chapters[:]
@@ -354,7 +410,7 @@ class SafariBooks:
             sys.setrecursionlimit(len(self.book_chapters))
 
         self.book_title = self.book_info["title"]
-        self.base_url = self.book_info["web_url"]
+        self.base_url = self.epub_api_url
 
         self.clean_book_title = "".join(self.escape_dirname(self.book_title).split(",")[:2]) \
                                 + " ({0})".format(self.book_id)
@@ -374,6 +430,7 @@ class SafariBooks:
         self.chapter_stylesheets = []
         self.css = []
         self.images = []
+        self.images.extend(self.book_file_images)
 
         self.display.info("Downloading book contents... (%s chapters)" % len(self.book_chapters), state=True)
         self.BASE_HTML = self.BASE_01_HTML + (self.KINDLE_HTML if not args.kindle else "") + self.BASE_02_HTML
@@ -394,10 +451,10 @@ class SafariBooks:
             self.filename = self.book_chapters[0]["filename"]
             self.save_page_html(cover_html)
 
-        self.css_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
+        self.css_done_queue = SimpleQueue()
         self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
         self.collect_css()
-        self.images_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
+        self.images_done_queue = SimpleQueue()
         self.display.info("Downloading book images... (%s files)" % len(self.images), state=True)
         self.collect_images()
 
@@ -417,7 +474,7 @@ class SafariBooks:
         for morsel in set_cookie_headers:
             # Handle Float 'max-age' Cookie
             if self.COOKIE_FLOAT_MAX_AGE_PATTERN.search(morsel):
-                cookie_key, cookie_value = morsel.split(";")[0].split("=")
+                cookie_key, cookie_value = morsel.split(";", 1)[0].split("=", 1)
                 self.session.cookies.set(cookie_key, cookie_value)
 
     def requests_provider(self, url, is_post=False, data=None, perform_redirect=True, **kwargs):
@@ -510,7 +567,10 @@ class SafariBooks:
                     " trying to parse the login details of Safari Books Online. Try again..."
                 )
 
-        self.jwt = response.json()  # TODO: save JWT Tokens and use the refresh_token to restore user session
+        self.jwt = self.parse_json_response(  # TODO: save JWT Tokens and use the refresh_token to restore user session
+            response,
+            "Login: authentication endpoint did not return JSON."
+        )
         response = self.requests_provider(self.jwt["redirect_uri"])
         if response == 0:
             self.display.exit("Login: unable to reach Safari Books Online. Try again...")
@@ -531,45 +591,95 @@ class SafariBooks:
 
     def get_book_info(self):
         response = self.requests_provider(self.api_url)
+        content_type = response.headers.get("Content-Type", "").lower()
+
+        if response == 0 or (response.status_code == 404 and "text/html" in content_type):
+             # Fallback logic logic
+             fallback_url = self.API_FALLBACK_TEMPLATE.format(self.book_id)
+             if self.api_url != fallback_url:
+                 self.display.info("Primary API host failed/404, trying fallback API host...", state=True)
+                 fallback_response = self.requests_provider(fallback_url)
+                 if fallback_response != 0:
+                     self.api_url = fallback_url
+                     response = fallback_response
+
         if response == 0:
             self.display.exit("API: unable to retrieve book info.")
 
-        response = response.json()
-        if not isinstance(response, dict) or len(response.keys()) == 1:
-            self.display.exit(self.display.api_error(response))
+        response = self.parse_json_response(response, "API: unable to parse book info response.")
+        
+        # v2 API returns a list in "results"
+        if "results" in response and len(response["results"]) > 0:
+            book_data = response["results"][0]
+            authors = book_data.get("authors", [])
+            if not authors and "talent" in book_data:
+                authors = [c for c in book_data["talent"].get("contributors", []) if c.get("contributor_type") == "author"]
 
-        if "last_chapter_read" in response:
-            del response["last_chapter_read"]
+            # Map v2 fields to what the script expects
+            info = {
+                "title": book_data.get("name", ""),
+                "authors": authors, 
+                "identifier": book_data.get("identifier", ""),
+                "isbn": book_data.get("isbn", ""),
+                "publishers": book_data.get("publishers", []),
+                "rights": book_data.get("rights", ""),
+                "description": book_data.get("description", {}).get("text/html", "") if isinstance(book_data.get("description"), dict) else book_data.get("description", ""),
+                "issued": book_data.get("issued", ""),
+                "web_url": book_data.get("web_url", "") # Might be empty in v2, check if needed
+            }
+            if "cover" not in info and "cover" in book_data: # Check where cover is in v2
+                 info["cover"] = book_data["cover"] 
+            
+            # v2 might not have 'cover' url directly in metadata results[0] usually
+            # But let's keep it generic. If 'web_url' is missing, we might need to construct it?
+            # The original script uses info["web_url"] for base_url.
+            if not info["web_url"]:
+                 info["web_url"] = SAFARI_BASE_URL + "/library/view/-/" + self.book_id + "/"
 
-        for key, value in response.items():
-            if value is None:
-                response[key] = 'n/a'
+            return info
 
-        return response
+        self.display.exit("API: unable to retrieve book info (v2 format unexpected).")
 
-    def get_book_chapters(self, page=1):
-        response = self.requests_provider(urljoin(self.api_url, "chapter/?page=%s" % page))
+    def get_book_chapters(self, url=None):
+        request_url = url if url else self.epub_api_url
+        response = self.requests_provider(request_url)
         if response == 0:
             self.display.exit("API: unable to retrieve book chapters.")
 
-        response = response.json()
+        response = self.parse_json_response(response, "API: unable to parse book chapters response.")
 
-        if not isinstance(response, dict) or len(response.keys()) == 1:
-            self.display.exit(self.display.api_error(response))
-
-        if "results" not in response or not len(response["results"]):
+        if "results" not in response:
             self.display.exit("API: unable to retrieve book chapters.")
 
         if response["count"] > sys.getrecursionlimit():
             sys.setrecursionlimit(response["count"])
 
         result = []
-        result.extend([c for c in response["results"] if "cover" in c["filename"] or "cover" in c["title"]])
-        for c in result:
-            del response["results"][response["results"].index(c)]
+        for item in response.get("results", []):
+            # V2 returns all files. Filter for chapters (HTML/XHTML).
+            if item.get("media_type", "") in ["application/xhtml+xml", "text/html", "application/x-dtbncx+xml"] or \
+               item.get("filename", "").lower().endswith((".html", ".xhtml", ".htm")):
+               
+               # Exclude NCX if we don't want it in the spine, or keep it?
+               # Original didn't seem to have NCX in the chapter list usually?
+               # Let's include everything looking like a content document.
+               
+               result.append({
+                   "content": item["url"],
+                   "filename": item["filename"],
+                   "title": item.get("title", item["filename"]),
+                   "asset_base_url": self.epub_api_url
+               })
 
-        result += response["results"]
-        return result + (self.get_book_chapters(page + 1) if response["next"] else [])
+            # Check for images in V2 API
+            elif item.get("media_type", "").startswith("image/") or \
+                    item.get("filename", "").lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp")):
+                self.book_file_images.append(item["url"])
+
+        if response.get("next"):
+            result += self.get_book_chapters(response["next"])
+            
+        return result
 
     def get_default_cover(self):
         response = self.requests_provider(self.book_info["cover"], stream=True)
@@ -594,7 +704,8 @@ class SafariBooks:
 
         root = None
         try:
-            root = html.fromstring(response.text, base_url=SAFARI_BASE_URL)
+            parser = html.HTMLParser(encoding="utf-8")
+            root = html.fromstring(response.content, parser=parser, base_url=SAFARI_BASE_URL)
 
         except (html.etree.ParseError, html.etree.ParserError) as parsing_error:
             self.display.error(parsing_error)
@@ -657,7 +768,15 @@ class SafariBooks:
             if len(root.xpath("//div[@class='controls']/a/text()")):
                 self.display.exit(self.display.api_error(" "))
 
+        # Remove scripts
+        for script in root.xpath("//script"):
+            script.getparent().remove(script)
+
         book_content = root.xpath("//div[@id='sbo-rt-content']")
+        if not len(book_content):
+             # Fallback to body
+             book_content = root.xpath("//body")
+        
         if not len(book_content):
             self.display.exit(
                 "Parser: book content's corrupted or not present: %s (%s)" %
@@ -1003,25 +1122,23 @@ class SafariBooks:
         return r, c, mx
 
     def create_toc(self):
-        response = self.requests_provider(urljoin(self.api_url, "toc/"))
-        if response == 0:
-            self.display.exit("API: unable to retrieve book chapters. "
-                              "Don't delete any files, just run again this program"
-                              " in order to complete the `.epub` creation!")
-
-        response = response.json()
-
-        if not isinstance(response, list) and len(response.keys()) == 1:
-            self.display.exit(
-                self.display.api_error(response) +
-                " Don't delete any files, just run again this program"
-                " in order to complete the `.epub` creation!"
+        navmap = ""
+        c = 0
+        for chapter in self.book_chapters:
+            c += 1
+            chapter_id = "navPoint-%s" % c
+            # Use filename as title if title is just filename (better UI?)
+            # Or just use what we have.
+            title = chapter["title"]
+            filename = chapter["filename"].replace(".html", ".xhtml")
+            
+            navmap += '<navPoint id="{0}" playOrder="{1}"><navLabel><text>{2}</text></navLabel><content src="{3}"/></navPoint>\n'.format(
+                chapter_id, c, escape(title), filename
             )
 
-        navmap, _, max_depth = self.parse_toc(response)
         return self.TOC_NCX.format(
-            (self.book_info["isbn"] if self.book_info["isbn"] else self.book_id),
-            max_depth,
+            (self.book_info.get("isbn") if self.book_info.get("isbn") else self.book_id),
+            "1", # Depth
             self.book_title,
             ", ".join(aut.get("name", "") for aut in self.book_info.get("authors", [])),
             navmap
