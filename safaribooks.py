@@ -833,18 +833,9 @@ class SafariBooks:
             self.chapter_title = next_chapter["title"]
             self.filename = next_chapter["filename"]
 
-            asset_base_url = next_chapter['asset_base_url']
-            api_v2_detected = False
-            if 'v2' in next_chapter['content']:
-                asset_base_url = SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{}/files".format(self.book_id)
-                api_v2_detected = True
-
             if "images" in next_chapter and len(next_chapter["images"]):
                 for img_url in next_chapter['images']:
-                    if api_v2_detected:
-                        self.images.append(asset_base_url + '/' + img_url)
-                    else:
-                        self.images.append(urljoin(next_chapter['asset_base_url'], img_url))
+                    self.images.append(self.api_url + '/' + img_url)
 
 
             # Stylesheets
@@ -867,7 +858,7 @@ class SafariBooks:
                     self.display.book_ad_info = 2
 
             else:
-                self.save_page_html(self.parse_html(self.get_html(next_chapter["content"]), first_page))
+                self.save_page_html(self.parse_html(self.get_html(next_chapter["content_url"]), first_page))
 
             self.display.state(len_books, len_books - len(self.chapters_queue))
 
