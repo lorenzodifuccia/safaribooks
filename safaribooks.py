@@ -537,7 +537,7 @@ class SafariBooks:
             self.display.exit("API: unable to retrieve book info.")
 
         response = response.json()
-        if not isinstance(response, dict) or len(response.keys()) == 1:
+        if not isinstance(response, dict) or len(response.keys()) == 1 or "chapters" not in response:
             self.display.exit(self.display.api_error(response))
 
         search_response = self.requests_provider(self.api_search_url)
@@ -556,29 +556,41 @@ class SafariBooks:
 
         return response
 
-    def get_book_chapters(self, page=1):
-        response = self.requests_provider(urljoin(self.api_url, "chapter/?page=%s" % page))
-        if response == 0:
-            self.display.exit("API: unable to retrieve book chapters.")
+    def get_book_chapters(self):
+        def from_api(api_url):
+            response = self.requests_provider(api_url)
+            if response == 0:
+                self.display.exit("API: unable to retrieve book chapters.")
 
-        response = response.json()
+            response = response.json()
 
-        if not isinstance(response, dict) or len(response.keys()) == 1:
-            self.display.exit(self.display.api_error(response))
+            if not isinstance(response, dict) or len(response.keys()) == 1:
+                self.display.exit(self.display.api_error(response))
 
-        if "results" not in response or not len(response["results"]):
-            self.display.exit("API: unable to retrieve book chapters.")
+            if "results" not in response or not len(response["results"]):
+                self.display.exit("API: unable to retrieve book chapters.")
 
-        if response["count"] > sys.getrecursionlimit():
-            sys.setrecursionlimit(response["count"])
+            if response["count"] > sys.getrecursionlimit():
+                sys.setrecursionlimit(response["count"])
+
+            if response["next"]:
+                response["results"] += from_api(response["next"])
+            return response["results"]
+
+        chapters_list = from_api(self.book_info["chapters"])
+        files_list = from_api(self.api_url + "files/")
+        files_dict = {f["ourn"]: f for f in files_list}
+        for c in chapters_list:
+            if c["ourn"] not in files_dict:
+                self.display.exit(f"API: chapter {c["ourn"]} not in files list")
+            c.update(files_dict[c["ourn"]])
 
         result = []
-        result.extend([c for c in response["results"] if "cover" in c["filename"] or "cover" in c["title"]])
+        result.extend([c for c in chapters_list if "cover" in c["filename"] or "cover" in c["title"]])
         for c in result:
-            del response["results"][response["results"].index(c)]
+            del chapters_list[chapters_list.index(c)]
 
-        result += response["results"]
-        return result + (self.get_book_chapters(page + 1) if response["next"] else [])
+        return result + chapters_list
 
     def get_default_cover(self):
         response = self.requests_provider(self.book_info["cover"], stream=True)
