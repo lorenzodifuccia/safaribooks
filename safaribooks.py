@@ -228,7 +228,8 @@ class SafariBooks:
     LOGIN_URL = ORLY_BASE_URL + "/member/auth/login/"
     LOGIN_ENTRY_URL = SAFARI_BASE_URL + "/login/unified/?next=/home/"
 
-    API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
+    API_TEMPLATE = SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{0}/"
+    API_TEMPLATE_SEARCH = SAFARI_BASE_URL + "/api/v2/search/?query={0}&limit=1"
 
     BASE_01_HTML = "<!DOCTYPE html>\n" \
                    "<html lang=\"en\" xml:lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\"" \
@@ -340,6 +341,7 @@ class SafariBooks:
 
         self.book_id = args.bookid
         self.api_url = self.API_TEMPLATE.format(self.book_id)
+        self.api_search_url = self.API_TEMPLATE_SEARCH.format(self.book_id)
 
         self.display.info("Retrieving book info...")
         self.book_info = self.get_book_info()
@@ -537,6 +539,13 @@ class SafariBooks:
         response = response.json()
         if not isinstance(response, dict) or len(response.keys()) == 1:
             self.display.exit(self.display.api_error(response))
+
+        search_response = self.requests_provider(self.api_search_url)
+        search_response = search_response.json()
+        if not isinstance(search_response, dict) or len(search_response.get("results")) != 1:
+            self.display.exit(self.display.api_error(search_response))
+
+        response.update(search_response["results"][0])
 
         if "last_chapter_read" in response:
             del response["last_chapter_read"]
