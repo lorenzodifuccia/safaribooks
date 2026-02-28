@@ -383,7 +383,7 @@ class SafariBooks:
         self.cover = False
         self.get()
         if not self.cover:
-            self.cover = self.get_default_cover() if "cover" in self.book_info else False
+            self.cover = self.get_default_cover() if "cover_url" in self.book_info else False
             cover_html = self.parse_html(
                 html.fromstring("<div id=\"sbo-rt-content\"><img src=\"Images/{0}\"></div>".format(self.cover)), True
             )
@@ -593,9 +593,9 @@ class SafariBooks:
         return result + chapters_list
 
     def get_default_cover(self):
-        response = self.requests_provider(self.book_info["cover"], stream=True)
+        response = self.requests_provider(self.book_info["cover_url"], stream=True)
         if response == 0:
-            self.display.error("Error trying to retrieve the cover: %s" % self.book_info["cover"])
+            self.display.error("Error trying to retrieve the cover: %s" % self.book_info["cover_url"])
             return False
 
         file_ext = response.headers["Content-Type"].split("/")[-1]
