@@ -833,9 +833,7 @@ class SafariBooks:
             self.chapter_title = next_chapter["title"]
             self.filename = next_chapter["filename"]
 
-            if "images" in next_chapter and len(next_chapter["images"]):
-                for img_url in next_chapter['images']:
-                    self.images.append(self.api_url + '/' + img_url)
+            self.images.extend(next_chapter["related_assets"]["images"])
 
 
             # Stylesheets
