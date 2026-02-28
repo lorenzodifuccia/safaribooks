@@ -837,9 +837,7 @@ class SafariBooks:
 
 
             # Stylesheets
-            self.chapter_stylesheets = []
-            if "stylesheets" in next_chapter and len(next_chapter["stylesheets"]):
-                self.chapter_stylesheets.extend(x["url"] for x in next_chapter["stylesheets"])
+            self.chapter_stylesheets = next_chapter["related_assets"]["stylesheets"]
 
             if "site_styles" in next_chapter and len(next_chapter["site_styles"]):
                 self.chapter_stylesheets.extend(next_chapter["site_styles"])
