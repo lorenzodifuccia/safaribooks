@@ -1002,8 +1002,8 @@ class SafariBooks:
             r += "<navPoint id=\"{0}\" playOrder=\"{1}\">" \
                  "<navLabel><text>{2}</text></navLabel>" \
                  "<content src=\"{3}\"/>".format(
-                    cc["fragment"] if len(cc["fragment"]) else cc["id"], c,
-                    escape(cc["label"]), cc["href"].replace(".html", ".xhtml").split("/")[-1]
+                    f"nav-{cc["fragment"]}", c, escape(cc["title"]),
+                    cc["reference_id"].replace(".html", ".xhtml").split("/")[-1]
                  )
 
             if cc["children"]:
@@ -1015,7 +1015,7 @@ class SafariBooks:
         return r, c, mx
 
     def create_toc(self):
-        response = self.requests_provider(urljoin(self.api_url, "toc/"))
+        response = self.requests_provider(self.book_info["table_of_contents"])
         if response == 0:
             self.display.exit("API: unable to retrieve book chapters. "
                               "Don't delete any files, just run again this program"
