@@ -18,7 +18,6 @@ from multiprocessing import Process, Queue, Value
 from urllib.parse import urljoin, urlparse, parse_qs, quote_plus
 
 
-
 PATH = os.path.dirname(os.path.realpath(__file__))
 COOKIES_FILE = os.path.join(PATH, "cookies.json")
 
@@ -316,9 +315,9 @@ class SafariBooks:
         self.display.intro()
 
         self.session = requests.Session()
-        
         if USE_PROXY:  # DEBUG
             self.session.proxies = PROXIES
+            self.session.verify = False
 
         self.session.headers.update(self.HEADERS)
 
