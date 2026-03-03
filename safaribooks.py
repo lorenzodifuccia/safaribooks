@@ -534,7 +534,18 @@ class SafariBooks:
         if response == 0:
             self.display.exit("API: unable to retrieve book info.")
 
-        response = response.json()
+        if response.status_code != 200:
+            self.display.exit(
+                ("API: unable to retrieve book info (HTTP %s).\n"
+                 "    The book identifier might be wrong or the book is not available on Safari Books Online.\n"
+                 "    The book identifier is the digits that you can find in the URL:\n"
+                 "    `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`") % response.status_code
+            )
+
+        try:
+            response = response.json()
+        except (json.JSONDecodeError, ValueError):
+            self.display.exit("API: unable to parse book info response. The API response was not valid JSON.")
         if not isinstance(response, dict) or len(response.keys()) == 1:
             self.display.exit(self.display.api_error(response))
 
@@ -552,7 +563,13 @@ class SafariBooks:
         if response == 0:
             self.display.exit("API: unable to retrieve book chapters.")
 
-        response = response.json()
+        if response.status_code != 200:
+            self.display.exit("API: unable to retrieve book chapters (HTTP %s)." % response.status_code)
+
+        try:
+            response = response.json()
+        except (json.JSONDecodeError, ValueError):
+            self.display.exit("API: unable to parse book chapters response. The API response was not valid JSON.")
 
         if not isinstance(response, dict) or len(response.keys()) == 1:
             self.display.exit(self.display.api_error(response))
@@ -1009,7 +1026,15 @@ class SafariBooks:
                               "Don't delete any files, just run again this program"
                               " in order to complete the `.epub` creation!")
 
-        response = response.json()
+        if response.status_code != 200:
+            self.display.exit("API: unable to retrieve book TOC (HTTP %s). "
+                              "Don't delete any files, just run again this program"
+                              " in order to complete the `.epub` creation!" % response.status_code)
+
+        try:
+            response = response.json()
+        except (json.JSONDecodeError, ValueError):
+            self.display.exit("API: unable to parse TOC response. The API response was not valid JSON.")
 
         if not isinstance(response, list) and len(response.keys()) == 1:
             self.display.exit(
@@ -1056,6 +1081,12 @@ class SafariBooks:
 
 # MAIN
 if __name__ == "__main__":
+    # Handle ssl-skip parameter if present
+    ssl_skip = False
+    if len(sys.argv) > 1 and sys.argv[1] == "ssl-skip":
+        ssl_skip = True
+        sys.argv.pop(1)  # Remove "ssl-skip" from arguments
+    
     arguments = argparse.ArgumentParser(prog="safaribooks.py",
                                         description="Download and generate an EPUB of your favorite books"
                                                     " from Safari Books Online.",
@@ -1094,6 +1125,8 @@ if __name__ == "__main__":
     )
 
     args_parsed = arguments.parse_args()
+    # Store ssl_skip flag in args for potential use
+    args_parsed.ssl_skip = ssl_skip
     if args_parsed.cred or args_parsed.login:
         print("WARNING: Due to recent changes on ORLY website, \n" \
                 "the `--cred` and `--login` options are temporarily disabled.\n"
