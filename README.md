@@ -89,6 +89,26 @@ optional arguments:
 The first time you use the program, you'll have to specify your Safari Books Online account credentials (look [`here`](/../../issues/15) for special character).  
 The next times you'll download a book, before session expires, you can omit the credential, because the program save your session cookies in a file called `cookies.json`.  
 For **SSO**, please use the `sso_cookies.py` program in order to create the `cookies.json` file from the SSO cookies retrieved by your browser session (please follow [`these steps`](/../../issues/150#issuecomment-555423085)).  
+
+**Getting cookies from the browser (for `cookies.json`)**: While logged into Safari Books Online / O'Reilly in your browser, open the site, open the browser’s Developer Console (e.g. F12 or right‑click → Inspect → Console), paste and run this command. Copy the printed JSON and save it as `cookies.json` in the project directory.
+
+```javascript
+console.log(JSON.stringify(document.cookie.split(';').map(c => c.split('=')).map(i => [i[0].trim(), i[1].trim()]).reduce((r, i) => {r[i[0]] = i[1]; return r;}, {})))
+```
+
+To run the above from the command line against a Chromium-based browser (Chrome, Edge, Brave, etc.), start the browser with remote debugging so you can attach DevTools or automate commands:
+
+```bash
+# Linux (Chromium or Google Chrome)
+chromium --remote-debugging-port=9222
+# or
+google-chrome --remote-debugging-port=9222
+
+# macOS (Google Chrome)
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222
+```
+
+Then open `http://localhost:9222` to list tabs, or open the target tab in the browser and use DevTools (F12 → Console) to paste and run the JavaScript snippet.  
   
 Pay attention if you use a shared PC, because everyone that has access to your files can steal your session. 
 If you don't want to cache the cookies, just use the `--no-cookies` option and provide all time your credential through the `--cred` option or the more safe `--login` one: this will prompt you for credential during the script execution.
