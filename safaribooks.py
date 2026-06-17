@@ -202,14 +202,15 @@ class Display:
     @staticmethod
     def api_error(response):
         message = "API: "
-        if "detail" in response and "Not found" in response["detail"]:
+        detail = response.get("detail", response.get("message", ""))
+        if detail and "not found" in detail.lower():
             message += "book's not present in Safari Books Online.\n" \
                        "    The book identifier is the digits that you can find in the URL:\n" \
                        "    `" + SAFARI_BASE_URL + "/library/view/book-name/XXXXXXXXXXXXX/`"
 
         else:
             os.remove(COOKIES_FILE)
-            message += "Out-of-Session%s.\n" % (" (%s)" % response["detail"]) if "detail" in response else "" + \
+            message += ("Out-of-Session (%s).\n" % detail if detail else "Out-of-Session.\n") + \
                        Display.SH_YELLOW + "[+]" + Display.SH_DEFAULT + \
                        " Use the `--cred` or `--login` options in order to perform the auth login to Safari."
 
@@ -229,6 +230,7 @@ class SafariBooks:
     LOGIN_ENTRY_URL = SAFARI_BASE_URL + "/login/unified/?next=/home/"
 
     API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
+    API_V2_TEMPLATE = SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{0}/"
 
     BASE_01_HTML = "<!DOCTYPE html>\n" \
                    "<html lang=\"en\" xml:lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\"" \
@@ -340,6 +342,7 @@ class SafariBooks:
 
         self.book_id = args.bookid
         self.api_url = self.API_TEMPLATE.format(self.book_id)
+        self.use_v2 = False
 
         self.display.info("Retrieving book info...")
         self.book_info = self.get_book_info()
@@ -534,7 +537,14 @@ class SafariBooks:
         if response == 0:
             self.display.exit("API: unable to retrieve book info.")
 
-        response = response.json()
+        if response.status_code == 404:
+            return self._get_book_info_v2()
+
+        try:
+            response = response.json()
+        except ValueError:
+            self.display.exit("API: unable to retrieve book info (unexpected response format).")
+
         if not isinstance(response, dict) or len(response.keys()) == 1:
             self.display.exit(self.display.api_error(response))
 
@@ -547,7 +557,37 @@ class SafariBooks:
 
         return response
 
+    def _get_book_info_v2(self):
+        self.display.info("v1 API not found, trying v2 API...")
+        v2_url = self.API_V2_TEMPLATE.format(self.book_id)
+        response = self.requests_provider(v2_url)
+        if response == 0 or response.status_code != 200:
+            self.display.exit(self.display.api_error({"message": "Not Found"}))
+
+        try:
+            b = response.json()
+        except ValueError:
+            self.display.exit("API: unable to retrieve book info (unexpected response format).")
+
+        self.use_v2 = True
+        desc = b.get("descriptions", {})
+        return {
+            "title": b.get("title", "n/a"),
+            "authors": [],
+            "identifier": b.get("identifier", self.book_id),
+            "isbn": b.get("isbn", "n/a"),
+            "publishers": [],
+            "rights": "n/a",
+            "description": desc.get("text/html", desc.get("text/plain", "n/a")),
+            "issued": b.get("publication_date", "n/a"),
+            "web_url": SAFARI_BASE_URL + "/library/view/-/{}/".format(self.book_id),
+            "cover": SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{}/files/cover.html".format(self.book_id),
+        }
+
     def get_book_chapters(self, page=1):
+        if self.use_v2:
+            return self._get_book_chapters_v2()
+
         response = self.requests_provider(urljoin(self.api_url, "chapter/?page=%s" % page))
         if response == 0:
             self.display.exit("API: unable to retrieve book chapters.")
@@ -570,6 +610,43 @@ class SafariBooks:
 
         result += response["results"]
         return result + (self.get_book_chapters(page + 1) if response["next"] else [])
+
+    def _get_book_chapters_v2(self):
+        chapters_url = SAFARI_BASE_URL + "/api/v2/epub-chapters/?epub_identifier=urn:orm:book:{}".format(self.book_id)
+        response = self.requests_provider(chapters_url)
+        if response == 0:
+            self.display.exit("API: unable to retrieve book chapters.")
+
+        try:
+            data = response.json()
+        except ValueError:
+            self.display.exit("API: unable to retrieve book chapters (unexpected response format).")
+
+        if "results" not in data or not data["results"]:
+            self.display.exit("API: unable to retrieve book chapters.")
+
+        files_base = SAFARI_BASE_URL + "/api/v2/epubs/urn:orm:book:{}/files".format(self.book_id)
+        chapters = []
+        for ch in data["results"]:
+            filename = ch["ourn"].split(":chapter:")[-1]
+            assets = ch.get("related_assets", {})
+            images = [
+                img.split("/files/")[-1]
+                for img in assets.get("images", [])
+            ]
+            stylesheets = [{"url": url} for url in assets.get("stylesheets", [])]
+            chapters.append({
+                "filename": filename,
+                "title": ch.get("title", filename),
+                "content": ch.get("content_url", "{}/{}".format(files_base, filename)),
+                "asset_base_url": files_base,
+                "images": images,
+                "stylesheets": stylesheets,
+            })
+
+        cover_chapters = [c for c in chapters if "cover" in c["filename"].lower() or "cover" in c["title"].lower()]
+        rest = [c for c in chapters if c not in cover_chapters]
+        return cover_chapters + rest
 
     def get_default_cover(self):
         response = self.requests_provider(self.book_info["cover"], stream=True)
@@ -1003,22 +1080,42 @@ class SafariBooks:
         return r, c, mx
 
     def create_toc(self):
-        response = self.requests_provider(urljoin(self.api_url, "toc/"))
-        if response == 0:
-            self.display.exit("API: unable to retrieve book chapters. "
-                              "Don't delete any files, just run again this program"
-                              " in order to complete the `.epub` creation!")
+        if self.use_v2:
+            toc_entries = [
+                {
+                    "depth": 1,
+                    "fragment": "",
+                    "id": c["filename"].replace(".html", "").replace(".xhtml", ""),
+                    "label": c["title"],
+                    "href": c["filename"],
+                    "children": [],
+                }
+                for c in self.book_chapters
+            ]
+            navmap, _, max_depth = self.parse_toc(toc_entries)
+        else:
+            response = self.requests_provider(urljoin(self.api_url, "toc/"))
+            if response == 0:
+                self.display.exit("API: unable to retrieve book chapters. "
+                                  "Don't delete any files, just run again this program"
+                                  " in order to complete the `.epub` creation!")
 
-        response = response.json()
+            try:
+                response = response.json()
+            except ValueError:
+                self.display.exit("API: unable to retrieve book TOC (unexpected response format). "
+                                  "Don't delete any files, just run again this program"
+                                  " in order to complete the `.epub` creation!")
 
-        if not isinstance(response, list) and len(response.keys()) == 1:
-            self.display.exit(
-                self.display.api_error(response) +
-                " Don't delete any files, just run again this program"
-                " in order to complete the `.epub` creation!"
-            )
+            if not isinstance(response, list) and len(response.keys()) == 1:
+                self.display.exit(
+                    self.display.api_error(response) +
+                    " Don't delete any files, just run again this program"
+                    " in order to complete the `.epub` creation!"
+                )
 
-        navmap, _, max_depth = self.parse_toc(response)
+            navmap, _, max_depth = self.parse_toc(response)
+
         return self.TOC_NCX.format(
             (self.book_info["isbn"] if self.book_info["isbn"] else self.book_id),
             max_depth,
