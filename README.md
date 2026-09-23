@@ -11,8 +11,30 @@ Before any usage please read the *O'Reilly*'s [Terms of Service](https://learnin
 - *The program needs a major refactor to include new features and integrate new APIs.*
 - **However... it still work for downloading books.**  
 (Use SSO hack: log in via browser, then copy cookies into `cookies.json`, see below and issues. Love ❤️)
+- **2026 update: the `/api/v1/book/` endpoints used by `safaribooks.py` now return `404`.** Use [`download_v2.py`](#download_v2py-api-v2) instead, it rebuilds the EPUB from the v2 API.
 
 ---
+
+## `download_v2.py` (API v2)
+O'Reilly removed the v1 API, so `safaribooks.py` stops right after the login with a `JSONDecodeError`.  
+`download_v2.py` downloads the same book through `/api/v2/epubs/urn:orm:book:<ID>/files/`, which exposes every file of the original EPUB (OPF, NCX, CSS, fonts, images and chapters), and packs them into `Books/<Title> (<ID>)/<ID>.epub`.
+
+1. Log in to https://learning.oreilly.com with your browser.
+2. Create `cookies.json` next to the scripts with, at least, the `orm-jwt` and `orm-rt` cookies  
+   (DevTools → *Application* → *Cookies* → `https://learning.oreilly.com`, or run `retrieve_cookies.py`):
+   ```json
+   {"orm-jwt": "eyJ...", "orm-rt": "24ec..."}
+   ```
+3. Run it with the book ID (the digits in the book URL):
+   ```shell
+   $ python3 download_v2.py 9798341630505
+   [*] Fundamentos de la arquitectura de software, 2.ª edición
+   [*] 292 files
+   [-] Done: .../Books/Fundamentos de la arquitectura de software, 2.ª edición (9798341630505)/9798341630505.epub
+   ```
+
+Files already present in `Books/<Title> (<ID>)/OEBPS/` are skipped, so if O'Reilly's anti-bot (Akamai) answers `403` for a while, wait a few minutes and run the same command again to resume.  
+Do not send requests with an old browser `User-Agent`: O'Reilly invalidates the session (`orm-jwt`) as soon as it sees one, which is why the headers of `safaribooks.py` were updated too.
 
 ## Overview:
   * [Requirements & Setup](#requirements--setup)
