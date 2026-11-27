@@ -627,13 +627,16 @@ class SafariBooks:
 
         if APIVER == 2:
             response2 = self.requests_provider(self.APIV1_INFO.format(self.book_id))
-            if response2 == 0:
-                self.display.exit("API: unable to retrieve v1 book info.")
-
-            response2 = response2.json()
-            for k in ["authors", "subjects", "topics", "rights", "publishers", "web_url"]:
-                if k in response2:
-                    response[k] = response2[k]
+            try:
+                if response2 != 0 and response2.status_code == 200:
+                    response2 = response2.json()
+                    for k in ["authors", "subjects", "topics", "rights", "publishers", "web_url"]:
+                        if k in response2:
+                            response[k] = response2[k]
+            except ValueError:
+                pass
+            response.setdefault(
+                "web_url", SAFARI_BASE_URL + "/library/view/-/" + self.book_id + "/")
 
         return response
 
